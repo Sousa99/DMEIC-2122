@@ -1,0 +1,8 @@
+# Filter out auxiliary files
+latex/*.aux
+latex/*.fdb_latexmk
+latex/*.fls
+latex/*.log
+latex/*.synctex.gz
+# PDFs not saved in this directory
+latex/*.pdf
