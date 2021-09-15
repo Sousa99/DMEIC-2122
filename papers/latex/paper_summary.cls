@@ -3,10 +3,26 @@
 \ProvidesClass{Paper_Summary}
 \LoadClass{article}
 
-\DeclareRobustCommand{\papertitle}[1] {{
-    \title{ \textbf{#1} \\ Paper Summary}
+\usepackage{graphicx}
+\graphicspath{ {resources/} }
+
+% ================================== VARIABLES ================================== 
+\newcommand{\varpapertitle}{Default Paper Title}
+\newcommand{\vardate}{Default Date}
+% ================================== ========= ================================== 
+
+\DeclareRobustCommand{\makepapertitle}[0] {{
+    \title{
+        \includegraphics[width=2cm]{IST_Logo.png} \\
+        \vspace{1cm}  
+        \textbf{\varpapertitle} \\ Paper Summary
+    }
     \author{Rodrigo Borges Pessoa de Sousa }
-    \date{September 2021}
+    \date{\vardate}
+
+    
+    
+    \maketitle
 }}
 
 \DeclareRobustCommand{\breakline} {{
