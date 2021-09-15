@@ -1,10 +1,10 @@
 #!/bin/bash
-
 latex_papers="./latex"
 
-rm ${latex_papers}/*.aux
-rm ${latex_papers}/*.fdb_latexmk
-rm ${latex_papers}/*.fls
-rm ${latex_papers}/*.log
-rm ${latex_papers}/*.synctex.gz
-rm ${latex_papers}/*.pdf
+rm -f ${latex_papers}/*.aux
+rm -f ${latex_papers}/*.fdb_latexmk
+rm -f ${latex_papers}/*.fls
+rm -f ${latex_papers}/*.log
+rm -f ${latex_papers}/*.synctex.gz
+rm -f ${latex_papers}/*.dvi
+rm -f ${latex_papers}/*.pdf

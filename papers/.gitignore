@@ -4,5 +4,9 @@ latex/*.fdb_latexmk
 latex/*.fls
 latex/*.log
 latex/*.synctex.gz
+latex/*.dvi
 # PDFs not saved in this directory
 latex/*.pdf
+
+# Do not commit PDF's folder
+pdf
