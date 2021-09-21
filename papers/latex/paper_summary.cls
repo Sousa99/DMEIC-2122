@@ -6,6 +6,8 @@
 \usepackage{graphicx}
 \graphicspath{ {resources/} }
 
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+
 % ================================== VARIABLES ================================== 
 \newcommand{\varpapertitle}{Default Paper Title}
 \newcommand{\vardate}{Default Date}
