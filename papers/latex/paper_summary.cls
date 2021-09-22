@@ -10,20 +10,23 @@
 
 % ================================== VARIABLES ================================== 
 \newcommand{\varpapertitle}{Default Paper Title}
+\newcommand{\varpaperauthor}{Default Paper Author}
 \newcommand{\vardate}{Default Date}
 % ================================== ========= ================================== 
 
 \DeclareRobustCommand{\makepapertitle}[0] {{
     \title{
+        \vspace{-5em}
         \includegraphics[width=2cm]{IST_Logo.png} \\
         \vspace{1cm}  
-        \textbf{\varpapertitle} \\ Paper Summary
+        \textbf{\varpapertitle} \\
+        \Large{by \varpaperauthor} \\
+        \vspace{0.5cm}
+        \Large{Paper Summary}
     }
     \author{Rodrigo Borges Pessoa de Sousa }
     \date{\vardate}
 
-    
-    
     \maketitle
 }}
 
