@@ -7,6 +7,7 @@
 \graphicspath{ {resources/} }
 
 \usepackage[a4paper, total={6in, 8in}]{geometry}
+\usepackage{multirow}
 
 % ================================== VARIABLES ================================== 
 \newcommand{\varpapertitle}{Default Paper Title}
