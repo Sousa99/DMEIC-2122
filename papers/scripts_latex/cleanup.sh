@@ -1,6 +1,8 @@
 #!/bin/bash
 latex_papers="./latex"
 
+cd ..
+
 rm -f ${latex_papers}/*.aux
 rm -f ${latex_papers}/*.fdb_latexmk
 rm -f ${latex_papers}/*.fls
