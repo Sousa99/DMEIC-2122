@@ -9,6 +9,9 @@
 \usepackage[a4paper, total={6in, 8in}]{geometry}
 \usepackage{multirow}
 
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1em}
+
 % ================================== VARIABLES ================================== 
 \newcommand{\varpapertitle}{Default Paper Title}
 \newcommand{\varpaperauthor}{Default Paper Author}

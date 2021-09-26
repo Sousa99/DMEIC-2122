@@ -6,7 +6,9 @@ declare -a packages=(
     "multirow"
 )
 
+mkdir -p ${PACKAGE_DIR}
 cd ${PACKAGE_DIR}
+
 mkdir -p tex/latex
 mkdir -p temp
 cd temp
