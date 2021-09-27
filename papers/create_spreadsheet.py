@@ -21,12 +21,12 @@ TICK_MARK = 'X'
 @dataclass
 class Charactheristic:
     key: str
-    value: int
+    value: float
 
 @dataclass
 class Technique:
     key: str
-    value: int
+    value: float
 
 @dataclass
 class Metric:
@@ -62,8 +62,8 @@ class PaperSummaryStruct:
         elif code == "DATE": self.date = values[0]
         elif code == "START-DATE": self.start_date = datetime.strptime(values[0], '%d/%m/%Y')
         elif code == "END-DATE": self.end_date = datetime.strptime(values[0], '%d/%m/%Y')
-        elif code == "CHARACTHERISTIC": self.charactheristics.append(Charactheristic(values[0], int(values[1])))
-        elif code == "TECHNIQUE": self.techniques.append(Technique(values[0], int(values[1])))
+        elif code == "CHARACTHERISTIC": self.charactheristics.append(Charactheristic(values[0], float(values[1])))
+        elif code == "TECHNIQUE": self.techniques.append(Technique(values[0], float(values[1])))
         elif code == "METRIC": self.metrics.append(Metric(values[0]))
         elif code == "PROBLEM": self.problems.append(Problem(values[0]))
         elif code == "CITATION": self.citations.append(Citation(values[0]))
@@ -73,8 +73,8 @@ class PaperSummaryStruct:
 class PaperStats:
     papers: List[PaperSummaryStruct] = field(default_factory=list)
     # Stats
-    charactheristics: Dict[str, Dict[int, int]] = field(default_factory=dict)
-    techniques: Dict[str, Dict[int, int]] = field(default_factory=dict)
+    charactheristics: Dict[str, Dict[int, float]] = field(default_factory=dict)
+    techniques: Dict[str, Dict[int, float]] = field(default_factory=dict)
     metrics: Dict[str, List[int]] = field(default_factory=dict)
     problems: Dict[str, List[int]] = field(default_factory=dict)
     citations: Dict[str, List[int]] = field(default_factory=dict)
@@ -157,11 +157,11 @@ class PaperStats:
         
         sheet.freeze_panes(1, 2)
 
-    def write_sheet_with_score(self, writer: pd.ExcelWriter, sheet_name: str, info_dict: Dict[str, Dict[int, int]]):
+    def write_sheet_with_score(self, writer: pd.ExcelWriter, sheet_name: str, info_dict: Dict[str, Dict[int, float]]):
 
         # ================================== SET TYPES AND WRITE ==================================
         df_dictionary = { 'Paper Title': pd.Series(dtype=str) }
-        for item_key in info_dict: df_dictionary[item_key] = pd.Series(dtype=int)
+        for item_key in info_dict: df_dictionary[item_key] = pd.Series(dtype=float)
         df = pd.DataFrame(df_dictionary)
 
         for paper_index, paper in enumerate(self.papers):
