@@ -192,6 +192,23 @@ class PaperStats:
 
         sheet.freeze_panes(1, 2)
 
+        # ================================== FORMULAS ==================================
+
+        first_free_row = len(self.papers) - 1 + 2
+        sheet.write(first_free_row + 1, 0, 'Sum Value')
+        sheet.write(first_free_row + 1 + 1, 0, 'Mean Value')
+
+        for column_index, item_key in enumerate(info_dict):
+            count, sum = 0, 0
+            item = info_dict[item_key]
+
+            for paper_index in item:
+                count = count + 1
+                sum = sum + item[paper_index]
+
+            sheet.write(first_free_row + 1, column_index + 2, sum)
+            sheet.write(first_free_row + 1 + 1, column_index + 2, sum / count)
+
     def write_sheet_without_score(self, writer: pd.ExcelWriter, sheet_name: str, info_dict: Dict[str, List[int]]):
 
         # ================================== SET TYPES AND WRITE ==================================
@@ -225,6 +242,17 @@ class PaperStats:
             sheet.set_column(col_idx, col_idx, column_length, format)
 
         sheet.freeze_panes(1, 2)
+
+        # ================================== FORMULAS ==================================
+
+        first_free_row = len(self.papers) - 1 + 2
+        sheet.write(first_free_row + 1, 0, 'Count Times')
+
+        for column_index, item_key in enumerate(info_dict):
+            item = info_dict[item_key]
+            count = len(item)
+
+            sheet.write(first_free_row + 1, column_index + 2, count)
 
 # ======================================= ===== =======================================
 
