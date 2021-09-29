@@ -8,7 +8,7 @@ GoogleAuth.DEFAULT_SETTINGS['client_config_file'] = './credentials/google_api_se
 DRIVE_FOLDER = '1CUmXm65yHfqrMogHHsq5yL4UiTmNkVZW'
 
 UPLOAD_DIRECTORIES = ['./pdf', './stats']
-BLACKLIST_FILES = ['Template.pdf']
+BLACKLIST_FILES = []
 # ==================================== ========== ====================================
 
 # ==================================== AUX FUNCTIONS ====================================

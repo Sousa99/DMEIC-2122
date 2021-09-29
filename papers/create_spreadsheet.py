@@ -10,6 +10,7 @@ from typing import List, Dict, Tuple
 DIR_LATEX_PAPERS = "./latex/"
 VALID_EXTENSIONS = ["tex"]
 BLACKLIST = ["Template.tex"]
+BLACKLIST_FILES_WITH_WORD = ["- Critique"]
 
 CODE="% $"
 
@@ -237,6 +238,12 @@ for file in os.listdir(directory):
      filename = os.fsdecode(file)
      extension = filename.split('.')[-1]
      if extension in VALID_EXTENSIONS and filename not in BLACKLIST:
+
+        blacklisted = False
+        for blacklist in BLACKLIST_FILES_WITH_WORD:
+            if filename.find(blacklist) != -1: blacklisted = True
+
+        if blacklisted: continue
 
         print("⚙️  [{0}] Converting file".format(filename))
         file = open(directory + file, 'r')
