@@ -152,11 +152,11 @@ class PaperStats:
         # ================================== SET TYPES AND WRITE ==================================
 
         for column in df:
-            column_length = max(df[column].astype(str).map(len).max(), len(column)) * 1.10
+            column_length = max(df[column].astype(str).map(len).max(), len(column))
             col_idx = df.columns.get_loc(column) + 1
             sheet.set_column(col_idx, col_idx, column_length)
         
-        sheet.freeze_panes(1, 2)
+        sheet.freeze_panes(1, 1)
 
     def write_sheet_with_score(self, writer: pd.ExcelWriter, sheet_name: str, info_dict: Dict[str, Dict[int, float]]):
 
@@ -183,14 +183,14 @@ class PaperStats:
 
         for column in df:
             format = None
-            column_length = max(df[column].astype(str).map(len).max(), len(column)) * 1.10
+            column_length = max(df[column].astype(str).map(len).max(), len(column))
 
             if column != 'Paper Title': format = format_center
 
             col_idx = df.columns.get_loc(column) + 1
             sheet.set_column(col_idx, col_idx, column_length, format)
 
-        sheet.freeze_panes(1, 2)
+        sheet.freeze_panes(1, 1)
 
         # ================================== FORMULAS ==================================
 
@@ -234,14 +234,14 @@ class PaperStats:
 
         for column in df:
             format = None
-            column_length = max(df[column].astype(str).map(len).max(), len(column)) * 1.10
+            column_length = max(df[column].astype(str).map(len).max(), len(column))
 
             if column != 'Paper Title': format = format_center
 
             col_idx = df.columns.get_loc(column) + 1
             sheet.set_column(col_idx, col_idx, column_length, format)
 
-        sheet.freeze_panes(1, 2)
+        sheet.freeze_panes(1, 1)
 
         # ================================== FORMULAS ==================================
 

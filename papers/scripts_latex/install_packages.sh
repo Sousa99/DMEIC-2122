@@ -1,9 +1,18 @@
 #!/bin/bash
 
 PACKAGE_DIR=$(kpsewhich -var-value=TEXMFHOME)
-DOWNLOAD_LINK="https://mirrors.ctan.org/macros/latex/contrib/"
+declare -a DOWNLOAD_LINK=(
+    "https://mirrors.ctan.org/macros/latex/contrib/"
+    "https://mirrors.ctan.org/macros/generic/"
+)
 declare -a packages=(
     "multirow"
+    "hyperref"
+    "pdftexcmds"
+    "infwarerr"
+    "pdfescape"
+    "letltxmacro"
+    "bitset"
 )
 
 mkdir -p ${PACKAGE_DIR}
@@ -18,15 +27,25 @@ do
     if ! [[ -d ../tex/latex/${package} ]]
     then
         # Geting
-        wget "${DOWNLOAD_LINK}${package}.zip"
+        for download_link in "${DOWNLOAD_LINK[@]}"
+        do
+            if wget --spider "${download_link}${package}.zip"
+            then
+                wget "${download_link}${package}.zip"
+            fi
+        done
         # Unziping
         unzip ${package}.zip
 
         # Compiling
         cd $package
-        latex ${package}.ins
-        cd ..
+        if test -f "${package}.ins"; then
+            latex "${package}.ins"
+        else
+            tex "${package}.dtx"
+        fi
 
+        cd ..
         # Moving to appropriate place
         mv ${package} ../tex/latex
     fi  

@@ -5,6 +5,7 @@ latex/*.fls
 latex/*.log
 latex/*.synctex.gz
 latex/*.dvi
+latex/*.out
 # PDFs not saved in this directory
 latex/*.pdf
 

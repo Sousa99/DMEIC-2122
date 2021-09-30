@@ -9,6 +9,14 @@
 \usepackage[a4paper, total={6in, 8in}]{geometry}
 \usepackage{multirow}
 
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+
 \setlength{\parindent}{0em}
 \setlength{\parskip}{1em}
 
