@@ -1,0 +1,93 @@
+\documentclass{Paper_Summary}
+
+% $REF{An introduction to latent semantic analysis, Landauer T. Foltz P. Laham D. Discourse Processes, (1998), 259-284, 25(2-3)}
+% $TITLE{An introduction to latent semantic analysis}
+% $AUTHOR{Landauer T. Foltz P. Laham D}
+% $DATE{1998}
+
+% $START-DATE{04/10/2021}
+% $END-DATE{06/10/2021}
+
+% ================================== VARIABLES ================================== 
+\renewcommand{\varpapertitle}{{An introduction to latent semantic analysis}}
+\renewcommand{\varpaperauthor}{Landauer T. Foltz P. Laham D}
+\renewcommand{\vardate}{{October 2021}}
+% ================================== ========= ================================== 
+
+\begin{document}
+\makepapertitle
+
+\breakline
+
+\begin{center}
+    \section*{Focus}
+\end{center}
+    
+    This paper does not describe a study that was carried out but instead allows for an open discussion of \textbf{Latent Semantic Analysis}, how its carried out, its possible advantages, and limitations.
+
+    Latent Semantic Analysis (LSA) can extrapolate the latent (not explicit) meaning of a word or passage. The main difference between this methodology and previously tested and defined ones is that LSA does not require any knowledge inputted to extract more knowledge.
+
+    In the beginning, the paper gives an excellent description of LSA. The paper compares LSA to the way a child learns and expands its internal vocabulary. One-quarter of the vocabulary retained by a child is gathered directly through spoken sentences. The rest comes from mental associations between words that might not have even been expressed together.
+
+    LSA proposes a similar approach. When given a big corpus, LSA associates words and passages, not only through co-occurrences of these words but also through co-occurrences with other words. For example, if through a corpus the following two sentences are given:
+    \begin{itemize}
+        \item \emph{He has a cat as a pet.}
+        \item \emph{He has a dog as a pet.}
+    \end{itemize}
+    Directly we can conclude that \(cat \leftrightarrow pet\) and \(dog \leftrightarrow pet\) are related, but LSA goes one step further and suggests that there is a strong relation between \(cat \leftrightarrow dog\) as well. The paper defends that this is similar to the way our brain works.
+
+    LSA uses, as its foundation, another algorithm called \textbf{Singular Value Decomposition (SVD)}. SVD states that any matrix can be decomposed into the product of three different matrixes: 
+    \[ X = W \cdot S \cdot P \]
+    \begin{itemize}
+        \item \textbf{X}: Matrix with words as rows and columns as the passages. Each cell is filled in, originally, with the relative frequency of words in each passage. Then the value of each cell is converted to its \(log\). Finally, each cell is then divided by the row entropy level (\( -\ddot{O} p log p \)).
+        \item \textbf{W}: Describes original row entities as vectors of derived orthogonal factor values.
+        \item \textbf{S}: A Diagonal matrix containing scaling values.
+        \item \textbf{P}: Describes the original column entities as vectors of derived orthogonal factor values.
+    \end{itemize}
+    The last step to an LSA is dimensionality reduction. By removing some values from \(S\) (and the corresponding rows and columns from the other matrices), typically the ones with lower values, we will be reducing the dimensionality of the data. The key factor for a good LSA is dimensionality. Choosing this \emph{correct} dimensionality can be quite hard.
+    
+    Some methods help to find the right dimensionality for LSA:
+    \begin{enumerate}
+        \item \textbf{Synonim Test}: By defining or adding some terms or passages that should have similar meanings, we can test out different dimensionalities and see how the score evolves for these synonyms.
+        \item \textbf{Unrelated Terms}: The same strategy can be employed but in this case with a term that we think should not be correlated with any of the remaining words or passages.
+    \end{enumerate}
+    
+    Of course, there are some limitations. LSA makes no use of the order of words, syntactic relations, logic, or morphology. It is important to note that LSA was still in considerable development, and its future was uncertain.
+
+\breakline
+
+\newpage
+
+\section{Psychosis Characteristics}
+\emph{* None to discuss, not the objective of this paper *}
+
+\section{Techniques}
+    \begin{itemize}
+        % $TECHNIQUE{Latent Semantic Analysis; 1}
+        \item \textbf{Latent Semantic Analysis}: The main technique discussed throughout the paper is the LSA, its advantages and disavantages.
+    \end{itemize}
+
+\section{Metrics}
+\emph{* None to discuss, not the objective of this paper *}
+
+\section{Problems}
+\emph{* None to discuss, not the objective of this paper *}
+
+
+\section{Final Remarks}
+\emph{* None to discuss, not the objective of this paper *}
+
+\breakline
+
+\begin{center}
+    \section*{Possibly Useful Citations}
+\end{center}
+
+    \begin{itemize}
+        % $CITATION{LSA Potential}
+        \item \textbf{(Landauer T. Foltz P. Laham D, 1998, p. 4)}: "and so far as writers have put such things into words, or that their words have reflected such matters unintentionally, LSA has at least potential access to knowledge about them."
+        % $CITATION{LSA Reach}
+        \item \textbf{(Landauer T. Foltz P. Laham D, 1998, p. 5)}: "One might consider LSA's maximal knowledge of the world to be analogous to a well-read nuns knowledge of sex (...)."
+    \end{itemize}
+
+\end{document}
