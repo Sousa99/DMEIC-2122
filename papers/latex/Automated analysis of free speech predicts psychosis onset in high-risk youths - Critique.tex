@@ -1,0 +1,38 @@
+\documentclass{Paper_Summary}
+
+% ================================== VARIABLES ================================== 
+\renewcommand{\varpapertitle}{{Automated analysis of free speech predicts psychosis onset in high-risk youths}}
+\renewcommand{\varpaperauthor}{Bedi G. Carrillo F. Cecchi G. et al.}
+\renewcommand{\vardate}{{October 2021}}
+% ================================== ========= ================================== 
+
+\begin{document}
+\makepapertitle
+
+\breakline
+
+\begin{center}
+    \section*{Critique}
+\end{center}
+
+    The paper developed a classifier that used the sentence's coherence and other syntactic measures extrapolated from patients' open structure interviews. The paper innovated by focusing on semantic and syntactic analysis instead of time analysis, and they also justified each metric by independent testing.
+
+    The paper revolves around sentence coherence, and the paper used \emph{Latent Semantic Analysis} in order to calculate each word's meaning, and in turn, the sentence's meaning. With these sentences' meanings, coherence could be achieved by exploiting the cosine operation.
+
+    However, this metric for coherence had not yet been proved by other studies, so the paper carried out an independent study. It took several texts from different sources and incrementally shuffled the sentences. By shuffling the sentences, the coherence would decrease, given that the subject of the sentences would be more disconnected. Then using the method described above, the study proved that it could capture this coherence decrement.
+
+    Another positive characteristic of the paper is its brevity, focusing on what is important but always justifying its decisions so that the reader can easily follow the methodology and results.
+
+    The only limitation was the relatively small and restrictive sample. This limitation is one that the thesis will take into account.
+
+    The thesis will differentiate itself from this paper by:
+    \begin{itemize}
+        \item Exploring possibly more factors (and combinations) and comparing them to time analysis to evaluate what is the best approach.
+        \item Will take into account different pathologies and medications.
+        \item While the paper tried to identify \emph{CHR State}, the thesis will focus on simply differentiating schizophrenic patients from the remaining groups.
+        \item The tone and focus will be in helping clinicians in the diagnosis and not substitute them.
+    \end{itemize}
+
+\breakline
+
+\end{document}

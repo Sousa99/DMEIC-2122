@@ -1,0 +1,98 @@
+\documentclass{Paper_Summary}
+
+% $REF{Automated analysis of free speech predicts psychosis onset in high-risk youths, Bedi G. Carrillo F. Cecchi G. et al. NPJ Schizophrenia, (2015), 1(1)}
+% $TITLE{Automated analysis of free speech predicts psychosis onset in high-risk youths}
+% $AUTHOR{Bedi G. Carrillo F. Cecchi G. et al.}
+% $DATE{2015}
+
+% $START-DATE{08/10/2021}
+% $END-DATE{09/10/2021}
+
+% ================================== VARIABLES ================================== 
+\renewcommand{\varpapertitle}{{Automated analysis of free speech predicts psychosis onset in high-risk youths}}
+\renewcommand{\varpaperauthor}{Bedi G. Carrillo F. Cecchi G. et al.}
+\renewcommand{\vardate}{{October 2021}}
+% ================================== ========= ================================== 
+
+\begin{document}
+\makepapertitle
+
+\breakline
+
+\begin{center}
+    \section*{Focus}
+\end{center}
+    
+    This study had as its central objective the identification/ forecasting of \textbf{Clinical High-Risk} schizophrenic patients from a set. This advanced identification would allow for better and more specialized treatment for these very same patients. Besides this identification, it would be a proof of concept for the standardization of the clinic diagnosis of schizophrenic patients through automated markers and recent technological developments.
+
+    This main objective was interconnected with their main focus method-wise. The objective was to identify, at least in part, by analyzing the coherence of the overall interview.
+
+    The duration of the study was lengthy since every schizophrenic patient was classified as \emph{CHR +} or \emph{CHR -} 2.5 years after the study.
+
+\breakline
+
+\newpage
+
+\section{Psychosis Characteristics}
+    \begin{itemize}
+        % $CHARACTHERISTIC{Loss of Coherence; 1}
+        \item \textbf{Loss of Coherence}: The main Characteristic that the paper focuses on is schizophrenic patients reportedly loss of coherence. Most of the study focuses on integrating this metric into the classifier and evaluating it correctly.
+        % $CHARACTHERISTIC{Poverty of Speech; 0.5}
+        \item \textbf{Poverty of Speech}: The paper touches on the eventuality that schizophrenic patients, among other things, display poverty of speech. The study used the maximum number of words in a phrase as a possible metric for this reason.
+    \end{itemize}
+
+\section{Techniques}
+    \begin{itemize}
+        % $TECHNIQUE{Structured Interview for Prodromal Syndromes / Scale of Prodromal Symptoms; 1}
+        \item \textbf{Structured Interview for Prodromal Syndromes/Scale of Prodromal Symptoms (SIPS / SOPS)}: Semi-structured interview composed of 19 scales defined in \emph{SOPS}. This assessment was used to evaluate \emph{CHR Status} of the patients quarterly.
+        % $TECHNIQUE{Open Structured Interview; 1}
+        \item \textbf{Open Structured Interview}: Used to obtain the transcript of the patient's speech which was later on processed.
+        % $TECHNIQUE{Transcript Ponctuatuon Removal; 1}
+        \item \textbf{Transcript Punctuation Removal}: The study removed the punctuation from the transcripts of open interviews done with the patients. This process is recommended since the division into sentences should be done based solely on automatic processes to not add bias into what is considered or not a sentence based on context.
+        % $TECHNIQUE{Transcript Lemmatization; 1}
+        \item \textbf{Transcript Lemmatization}: Process of replacing transcript words by their root word. The smallest division in \emph{NLP} are morphemes, the smallest meaningful part of words. By simplifying the words into a single word representing the meaning, we come closer to the true meaning of the sentence.
+        % $TECHNIQUE{Latent Semantic Analysis; 1}
+        \item \textbf{Latent Semantic Analysis (LSA)}: LSA was researched in-depth in a previous paper review and is a highly associative model. LSA discovers associations among words in the text through their co-occurrences and occurrences with other similar words. By the end, each word has a vector of a previously defined dimension associated with it, which symbolizes the word's meaning (in an abstract manner).
+        % $TECHNIQUE{Part of Speech Tagging; 1}
+        \item \textbf{Part of Speech Tagging (POS Tagging)}: The study classified each word according to its \emph{Part of Speech}, equivalent to the grammatical class of the word.
+    \end{itemize}
+
+\section{Metrics}
+    \begin{itemize}
+        % $METRIC{CHR Status}
+        \item \textbf{CHR Status}: The target variable of the study. The study classified the patients as \textbf{CHR +} or \textbf{CHR -} differentiating if they were considered a Clinical High Risk or not, respectively. The study tried to predict this target variable according to other factors.
+        \item \textbf{Sentence Meaning}: The study calculated the sentence's meaning by averaging out the \emph{LSA vectors} associated with each one of the words.
+        % $METRIC{First Order Sentence Coherence}
+        \item \textbf{First Order Sentence Coherence (FOC)}: After averaging out the \emph{LSA vectors} associated with the words present in each sentence, the study calculated the \emph{FOC} using the cosine of the average vector of each sentence and the subsequent sentence.
+        % $METRIC{Second Order Sentence Coherence}
+        \item \textbf{Second Order Sentence Coherence (SOC)}: After averaging out the \emph{LSA vectors} associated with the words present in each sentence, the study calculated the \emph{FOC} using the cosine of the average vector of each sentence and the sentence two positions ahead. Meaning that there is a sentence in the middle of these two that is not used in the calculation.
+        % $METRIC{Number of Determiners Normalized by Phrase Length}
+        \item \textbf{Number of Determiners Normalized by Phrase Length}: Through the \emph{POS Tagging} of each word, the study calculated the number of determiners normalized by the patient's phrase length.
+    \end{itemize}
+
+\section{Problems}
+    \begin{itemize}
+        % $PROBLEM{Small Sample}
+        \item \textbf{Small Sample}: Even the paper states that its major downside is the rather small sample size. This limitation offers as a possible justification for the 100\% accuracy. There were only 34 participants, five of which classified as \emph{CHR +} 2.5 years later. 
+    \end{itemize}
+
+
+\section{Final Remarks}
+    
+    The study achieved positive results. It was able of, at least suggesting, that semantic and other \emph{Natural Language Processes} offer a possible improvement versus the standardized clinical testing.
+
+    The study achieved mainly two conclusions:
+    \begin{enumerate}
+        \item The achieved classifier showed 100\% accuracy using only the frequency of determiners normalized by phrase length, the minimum semantic coherence, and maximum phrase length.
+        \item The achieved formula that used coherence, the number of determiners, and max phrase length proved to have a much higher correlation to the CHR state of the patient.
+        \item The SIPS/SOPS scores showed an inferior accuracy and almost no correlation with the CHF outcome state.
+    \end{enumerate}
+
+\breakline
+
+\begin{center}
+    \section*{Possibly Useful Citations}
+\end{center}
+    \emph{* None found *}
+
+\end{document}

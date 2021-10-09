@@ -81,37 +81,44 @@ class PaperStats:
     citations: Dict[str, List[int]] = field(default_factory=dict)
 
     def add_paper_summary(self, paper: PaperSummaryStruct):
-        new_index = len(self.papers)
         self.papers.append(paper)
-
-        # Charactheristics
-        for charactheristic in paper.charactheristics:
-            if charactheristic.key in self.charactheristics: self.charactheristics[charactheristic.key][new_index] = charactheristic.value
-            else: self.charactheristics[charactheristic.key] = { new_index: charactheristic.value }
-
-        # Techniques
-        for technique in paper.techniques:
-            if technique.key in self.techniques: self.techniques[technique.key][new_index] = technique.value
-            else: self.techniques[technique.key] = { new_index: technique.value }
-
-        # Metrics
-        for metric in paper.metrics:
-            if metric.key in self.metrics: self.metrics[metric.key].append(new_index)
-            else: self.metrics[metric.key] = [new_index]
-
-        # Problems
-        for problem in paper.problems:
-            if problem.key in self.problems: self.problems[problem.key].append(new_index)
-            else: self.problems[problem.key] = [new_index]
-
-        # Citations
-        for citation in paper.citations:
-            if citation.key in self.citations: self.citations[citation.key].append(new_index)
-            else: self.citations[citation.key] = [new_index]
 
         return
 
+    def compute_attributes(self):
+
+        for new_index, paper in enumerate(self.papers):
+            # Charactheristics
+            for charactheristic in paper.charactheristics:
+                if charactheristic.key in self.charactheristics: self.charactheristics[charactheristic.key][new_index] = charactheristic.value
+                else: self.charactheristics[charactheristic.key] = { new_index: charactheristic.value }
+
+            # Techniques
+            for technique in paper.techniques:
+                if technique.key in self.techniques: self.techniques[technique.key][new_index] = technique.value
+                else: self.techniques[technique.key] = { new_index: technique.value }
+
+            # Metrics
+            for metric in paper.metrics:
+                if metric.key in self.metrics: self.metrics[metric.key].append(new_index)
+                else: self.metrics[metric.key] = [new_index]
+
+            # Problems
+            for problem in paper.problems:
+                if problem.key in self.problems: self.problems[problem.key].append(new_index)
+                else: self.problems[problem.key] = [new_index]
+
+            # Citations
+            for citation in paper.citations:
+                if citation.key in self.citations: self.citations[citation.key].append(new_index)
+                else: self.citations[citation.key] = [new_index]
+
+
     def export_to_excel(self):
+
+        self.papers.sort(key=lambda x: x.start_date, reverse=False)
+        self.compute_attributes()
+
         writer = pd.ExcelWriter(FILE_STATS_EXCEL, engine='xlsxwriter',
             date_format = 'dd/mm/yyyy', datetime_format='dd/mm/yyyy')
         self.write_summary(writer)
