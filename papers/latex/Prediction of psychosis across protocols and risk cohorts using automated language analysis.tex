@@ -1,0 +1,92 @@
+\documentclass{Paper_Summary}
+
+% $REF{Prediction of psychosis across protocols and risk cohorts using automated language analysis, Corcoran C. Carrillo F. Fernández-Slezak D. et al. World Psychiatry, (2018), 67-75, 17(1)}
+% $TITLE{Prediction of psychosis across protocols and risk cohorts using automated language analysis}
+% $AUTHOR{Corcoran C. Carrillo F. Fernández-Slezak D. et al.}
+% $DATE{2018}
+
+% $START-DATE{11/10/2021}
+% $END-DATE{14/10/2021}
+
+% ================================== VARIABLES ================================== 
+\renewcommand{\varpapertitle}{{Prediction of psychosis across protocols and risk cohorts using automated language analysis}}
+\renewcommand{\varpaperauthor}{Corcoran C. Carrillo F. Fernández-Slezak D. et al.}
+\renewcommand{\vardate}{{October 2021}}
+% ================================== ========= ================================== 
+
+\begin{document}
+\makepapertitle
+
+\breakline
+
+\begin{center}
+    \section*{Focus}
+\end{center}
+
+    This paper serves basically as a follow-up from the last paper that was analyzed, \emph{"Automated analysis of free speech predicts psychosis onset in high-risk youths"} by the same authors. This study tries to explore its previous limitations in order to corroborate its analysis.
+
+    The paper addresses the same problem with an almost identical methodology but expanding in regards to its domain. The study tries to differentiate once again \emph{Clinical High Risk (CHR)} patients from those that do not present themselves as high risk but at the same time try to differentiate patients from normals.
+
+\breakline
+
+\newpage
+
+\section{Psychosis Characteristics}
+    \begin{itemize}
+        % $CHARACTHERISTIC{Loss of Coherence; 1}
+        \item \textbf{Loss of Coherence}: Patients who experience schizophrenic psychosis tend to display a loss of coeherence in speech.
+        % $CHARACTHERISTIC{Disruption of Syntax Rules; 1}
+        \item \textbf{Syntax Rules Broken}: Schizophrenic patients tend to break repeatedly syntax rules while speaking.
+    \end{itemize}
+
+\section{Techniques}
+    \begin{itemize}
+        % $TECHNIQUE{Latent Semantic Analysis; 1}
+        \item \textbf{Latent Semantic Analysis (LSA)}: Latent Semantic Analysis provides an efficient technique to define a word's meaning. The meaning of each vector es expressed through a vector composed of N components instead of explicitly stated. The cosine of this vector with any other will express how similar the meaning of the two words is. The co-occurrences of words with other words determine the vector and its components.
+        % $TECHNIQUE{Part of Speech Tagging; 1}
+        \item \textbf{Part of Speech Tagging (POS Tagging)}: Part of Speech tagging maps each word to its corresponding part of speech. Although the relation is not 1:1, part of speech tags can be associated with grammatical class and syntactic functions.
+        % $TECHNIQUE{Structured Interview for Prodromal Syndromes / Scale of Prodromal Symptoms; 1}
+        \item \textbf{Structured Interview for Prodromal Syndromes/Scale of Prodromal Symptoms (SIPS / SOPS)}: Used in order to evaluate if the patients met the criteria in order to enter the study.
+        % $TECHNIQUE{Retelling; 1}
+        \item \textbf{Story Retelling}: Used in order to evaluate if the patients met the criteria in order to enter the study.
+        % $TECHNIQUE{Open Structured Interview; 1}
+        \item \textbf{Open Structured Interview}: The study realized open-ended interviews with a subset of the patients in order to obtain a bigger corpus to analyze their speech.
+    \end{itemize}
+
+\section{Metrics}
+    \begin{itemize}
+        % $METRIC{K Inter-word Distance}
+        \item \textbf{K Inter-word Distance}: Ideally, these cosine distances would be measured, like in the previous study, sentence to sentence, but the prompt interview gathered small sentences (maximum of 20 words). Instead of measuring the cosine distance sentence to sentence, the study measured the cosine distances K to K words. Then this value was separated into its various components: \textbf{maximum}, \textbf{minimum}, \textbf{90\% percentile}, \textbf{mean}, and \textbf{standard deviation}.
+        % $METRIC{Frequency of POSs}
+        \item \textbf{Frequency of specific POSs}: Since every transcript and their corresponding words' POS was attained then the frequencies for \textbf{comaprative adjectives}, \textbf{pronouns}, \textbf{determiners}, \textbf{pronouns}, and \textbf{adjectives} were calculated.
+        % $METRIC{Sentence Length}
+        \item \textbf{Sentence Length}: Every recording was then transcribed which allowed for the attainment of sentence's length. This length allows for the calculation of relative frequencies of POSs.
+        % $METRIC{Frequency of WHs}
+        \item \textbf{Frequency of WHs}: Through the transcript the frequencies of words such as \emph{What}, \emph{Who}, \emph{Which}, etc were attained.
+    \end{itemize}
+
+\section{Problems}
+    \begin{itemize}
+        % $PROBLEM{Small Sample}
+        \item \textbf{Sample Size}: Although this paper expands on its previous study by enlarging its sample size, even here its limited in the number of patients, even the own authors state it.
+    \end{itemize}
+
+
+\section{Final Remarks}
+    
+    Although the study did not achieve the 100\% accuracy that it had achieved in its previous iteration, which was expected due to the bigger sample size, it achieved admirable results.
+
+    The study achieved an accuracy of 83\% in distinguishing \emph{CHR+} from \emph{CHR-} patients. Regarding the discrimination between normal controls and schizophrenic patients, the classifier reached 72\% accuracy.
+
+\breakline
+
+\begin{center}
+    \section*{Possibly Useful Citations}
+\end{center}
+
+    \begin{itemize}
+        % $CITATION{Understanding Language}
+        \item \textbf{(Corcoran C. Carrillo F. Fernández-Slezak D. et al., 2018, p. 67)}: "Language offers a privileged view into the mind: it is thebasis by which we infer others’ thought processes, such that disorganized language is considered to reflect disorder inthought."
+    \end{itemize}
+
+\end{document}
