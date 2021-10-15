@@ -1,0 +1,91 @@
+\documentclass{Paper_Summary}
+
+% $REF{A machine learning approach to predicting psychosis using semantic density and latent content analysis, Rezaii N. Walker E. Wolff P. npj Schizophrenia, (2019), 5(1)}
+% $TITLE{A machine learning approach to predicting psychosis using semantic density and latent content analysis}
+% $AUTHOR{Rezaii N. Walker E. Wolff P.}
+% $DATE{2019}
+
+% $START-DATE{14/10/2021}
+% $END-DATE{15/10/2021}
+
+% ================================== VARIABLES ================================== 
+\renewcommand{\varpapertitle}{{A machine learning approach to predicting psychosis using semantic density and latent content analysis}}
+\renewcommand{\varpaperauthor}{Rezaii N. Walker E. Wolff P.}
+\renewcommand{\vardate}{{October 2021}}
+% ================================== ========= ================================== 
+
+\begin{document}
+\makepapertitle
+
+\breakline
+
+\begin{center}
+    \section*{Focus}
+\end{center}
+
+    This study focuses on the prediction of onset psychosis, stating that the early detection and intervention shows evidence of helping in slowing the decline of cognitive abilities. Various abnormalities characterize onset psychosis, but a few signs and characteristics can be identified previously in the prodromal phase.
+
+    In literature, some subclinical abnormalities can be detected as early as the prodromal phase. At this stage, a \emph{digital phenotype} (characterization of an individual's knowledge and thought processes) can allow for the prediction of possible future mental disorders.
+
+    The study also points out the differentiation between \emph{negative} and \emph{positive} psychotic symptoms.
+
+\breakline
+
+\newpage
+
+\section{Psychosis Characteristics}
+    \begin{itemize}
+        % $CHARACTHERISTIC{Poverty of Speech; 1}
+        \item \textbf{Poverty of Speech / Low Semantic Density}: Considered a negative symptom of psychosis, characterized by abnormal small and low semantic complexity sentences.
+        % $CHARACTHERISTIC{Distractibility; 1}
+        % $CHARACTHERISTIC{Auditory Hallucinations; 1}
+        \item \textbf{Auditory Halluciantions}: Considered a positive symptom in which the patient is overly descriptive when it comes to sounds. Sometimes the patient even states that it can hear people talk or sounds when there is none. Other times, the patient assimilates certain situations with sounds that would not be usually associated.
+    \end{itemize}
+
+\section{Techniques}
+    \begin{itemize}
+        % $TECHNIQUE{Structured Interview for Prodromal Syndromes / Scale of Prodromal Symptoms; 1}
+        \item \textbf{Structured Interview for Prodromal Syndromes/Scale of Prodromal Symptoms (SIPS / SOPS)}: The study conducted a Semi-structured interview on every patient in order to obtain a recording of their discourse that could be later analyzed.
+        % $TECHNIQUE{Latent Content Analysis; 1}
+        \item \textbf{Latent Content Analysis (LCA)}: Not only similar in name to \emph{Latent Semantic Analysis} but also in methodology. It still obtains the meaning of every word by analyzing its co-occurrences with every other word and expressing this meaning through a vector. However, it goes one step further, analyzing which and how many words are required to achieve the same sentence meaning and compares this sentences' meanings to the meaning of a set of probe words.
+        % $TECHNIQUE{Vector Unpacking; 1}
+        \item \textbf{Vector Unpacking}: Technique characterized by the decomposition of a sentence meaning to its various meaningful components and trying to map these various components into the words within. Later, from the various meaningful components, the study ascertained if it could reconstruct every word within. 
+        % $TECHNIQUE{Probe Word Clustering; 1}
+        \item \textbf{Probe Word Clustering}: By comparing the content of the patients transcripts against probe words it could be mapped to which type of content it most resembles. Then cluster like groups of these probe words could be created and analysed according to which group the patient was inserted.
+    \end{itemize}
+
+\section{Metrics}
+    \begin{itemize}
+        % $METRIC{Semantic Density}
+        \item \textbf{Semantic Density}: Each word was first analyzed in context with every word from a given corpus. By doing this, the cosine similarity between every word was achieved. This cosine similarity later allowed the measurement of the meaning of any given sentence simply by summing the values from every sentence within. This metric is then associated with negative symptoms.
+        % $METRIC{Frequency of POSs}
+        \item \textbf{Idea Density}: Calculated through the number of propositions in a given set of words.
+        % $METRIC{Auditory Cluster}
+        \item \textbf{Auditory Clustering}: Through the probe words previously stated, clusters of meaning were created. The authors then calculated a classifier based on the cluster which defined auditory sensations. This metric is then associated with \emph{positive psuchotic symptoms}.
+    \end{itemize}
+
+\section{Problems}
+    \begin{itemize}
+        % $PROBLEM{Small Sample}
+        \item \textbf{Small Sample}: The study has a rather small sample which could have affected greatly the results obtained.
+        % $PROBLEM{No Control Group}
+        \item \textbf{No Control Group}: The study did not test its hypothesis with a control group, meaning that it did not identify schizophrenic psycosis, but instead clinical high risk.
+        % $PROBLEM{Difference with other Neurological Disorders}
+        \item \textbf{Difference with other Neurological Disorders}: The study did not test its hypothesis with different neurological diseases, which would evaluate if these classifier are in fact effective at identifying the disease or simply the onset of neurological diseases.
+        % $PROBLEM{Overfitting}
+        \item \textbf{Overfitting}: Due to the very small sample size there is a possibility of overfitting to the data. This limitation was controlled by restricting the number of variables used for the classifier, the paper defends that it only used two, but in fact, due to the nature of \emph{Latent Content Analysis} its in fact a higher dimensionality.
+    \end{itemize}
+
+
+\section{Final Remarks}
+    
+    The study achieved great results although this could be inpart due to limited scample size in which it was based. Nonetheless, and at the very least served as a proof of concept for the techniques both old and new used in this state.
+
+\breakline
+
+\begin{center}
+    \section*{Possibly Useful Citations}
+\end{center}
+    \emph{* None found *}
+
+\end{document}
