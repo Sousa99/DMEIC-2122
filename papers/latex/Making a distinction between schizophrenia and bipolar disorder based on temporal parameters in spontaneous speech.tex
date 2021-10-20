@@ -1,0 +1,91 @@
+\documentclass{Paper_Summary}
+
+% $REF{ Making a distinction between schizophrenia and bipolar disorder based on temporal parameters in spontaneous speech, Gosztolya G. Bagi A. Szalóki S et al. Proceedings of the Annual Conference of the International Speech Communication Association, INTERSPEECH, (2020), 4566-4570}
+% $TITLE{Making a distinction between schizophrenia and bipolar disorder based on temporal parameters in spontaneous speech}
+% $AUTHOR{Gosztolya G. Bagi A. Szalóki S et al.}
+% $DATE{2020}
+
+% $START-DATE{19/10/2021}
+% $END-DATE{20/10/2021}
+
+% ================================== VARIABLES ================================== 
+\renewcommand{\varpapertitle}{{Making a distinction between schizophrenia and bipolar disorder based on temporal parameters in spontaneous speech}}
+\renewcommand{\varpaperauthor}{Gosztolya G. Bagi A. Szalóki S et al.}
+\renewcommand{\vardate}{{October 2021}}
+% ================================== ========= ================================== 
+
+\begin{document}
+\makepapertitle
+
+\breakline
+
+\begin{center}
+    \section*{Focus}
+\end{center}
+    
+    So far, this is the only study read and found which tries to distinguish the differences between neurological disorders. Although this seems like a problem and logical focus from a clinician's and diagnosis standpoint, it seems to be avoided by most studies.
+
+    Nonetheless, this paper tries to identify and differentiate \textbf{schizophrenic patients} and \textbf{bipolar disorder patients}. Each one of the mentioned pathologies, in turn, could and was separated into two subgroups:
+    \begin{itemize}
+        \item \textbf{Schizophrenia - S}: Schizophrenic patients that are characterized by frontal dysfunction and reduced functionality in both hemispheres of the brain.
+        \item \textbf{Schizophrenia - Z}: Schizophrenic patients that are characterized only by left frontal dysfunction.
+        \item \textbf{Bipolar Disorder - \emph{I}}: Bipolar patients that have displayed one or more manic or mixed episodes.
+        \item \textbf{Bipolar Disorder - \emph{II}}: Bipolar patients that have experienced one or more hypomanic episodes. It is the more frequent diagnosis.
+    \end{itemize}
+
+    The focus of the study was mainly on word embeddings and temporal analysis of the discourse of patients.
+
+\breakline
+
+\newpage
+
+\section{Psychosis Characteristics}
+    \begin{itemize}
+        % $CHARACTHERISTIC{Speech Apathy; 1}
+        \item \textbf{Tone and Inflection Reduced}: The main characteristic of schizophrenic patients that the study focused on was the lack of tone and inflection in schizophrenic patients' discourse (also denominated as \emph{speech apathy}).
+        % $CHARACTHERISTIC{Cerebral Frontal Region Attenuated; 0.5}
+        \item \textbf{Cerebral Frontal Region Attenuated}: Although not used for the study, the authors pointed out that schizophrenic patients reportedly have a frontal cerebral dysfunction. The \emph{S subtype} reportedly have only left frontal dysfunction, while the \emph{Z sybtype} have a dysfunction in both hemispheres.
+    \end{itemize}
+
+\section{Techniques}
+    \begin{itemize}
+        % $TECHNIQUE{Memory Task; 1}
+        % $TECHNIQUE{Structured Interview; 1}
+        \item \textbf{Single Question Memory Task}: Test subjects were asked a single question which relied on their memory, in this case, "\emph{Tell me about your previous day!}". This single question serves no other purpose besides the creation of the corpus for further analysis.
+    \end{itemize}
+
+\section{Metrics}
+    \begin{itemize}
+        % $METRIC{DSM Criterion}
+        \item \textbf{DSM-5 Criterion}: DSM-5 refers to a manual called \emph{Diagnostic and Statistical Manual of Mental Disorders} on its fifth edition. This manual is one of the best and contributed majorly to improving the reliability of psychiatric diagnosis. \href{https://en.wikipedia.org/wiki/DSM-5}{Further Information}
+        % $METRIC{Articulation Rate}
+        \item \textbf{Articulation Rate}: the number of phonemes per second during speech (not inclunding hesitations).
+        % $METRIC{Speech Tempo}
+        \item \textbf{Speech Tempo}: the number of phonemes per second during speech (including hesitations).
+        % $METRIC{Duration of Utterance}
+        \item \textbf{Duration of Utterance}: the duration of the utterance in miliseconds.
+        % $METRIC{Silent Pauses Identified}
+        \item \textbf{Silent Pauses Identified}: the silent pauses were identified. Its \emph{occurrence rate}, \emph{duration rate}, \emph{frequency} and \emph{average duration} were calculated.
+        % $METRIC{Filled Pauses Identified}
+        \item \textbf{Filled Pauses Identified}: the filled pauses were identified. Its \emph{occurrence rate}, \emph{duration rate}, \emph{frequency} and \emph{average duration} were calculated.
+    \end{itemize}
+
+\section{Problems}
+    \begin{itemize}
+        % $PROBLEM{Small Sample}
+        \item \textbf{Small Sample}: The sample used in the study is small, and this problem is worsened by the fact that each neurological disorder is divided into subgroups. The authors tried to overcome the problem by dividing the transcript of each patient into its utterances, reasoning that the smaller parts are still representative of the patient and it characteristic, however, the same logic applies to the possibility of overfitting.
+    \end{itemize}
+
+
+\section{Final Remarks}
+    
+    The results obtained showed a clear distinction between neurological disorders even if only considering time and speech metrics even the subdivisions of each disease are distinguishable between themselves. However, there is some proximity between the subtypes of each disorder.
+
+\breakline
+
+\begin{center}
+    \section*{Possibly Useful Citations}
+\end{center}
+\emph{* None found *}
+
+\end{document}

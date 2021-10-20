@@ -116,6 +116,7 @@ class PaperStats:
 
     def export_to_excel(self):
 
+        self.papers.sort(key=lambda x: x.end_date, reverse=False)
         self.papers.sort(key=lambda x: x.start_date, reverse=False)
         self.compute_attributes()
 
