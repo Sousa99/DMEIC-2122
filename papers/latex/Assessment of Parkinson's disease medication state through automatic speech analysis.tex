@@ -1,0 +1,87 @@
+\documentclass{Paper_Summary}
+
+% $REF{Assessment of Parkinson's disease medication state through automatic speech analysis, Pompili A. Solera-Ureña R. Abad A et al. Proceedings of the Annual Conference of the International Speech Communication Association, INTERSPEECH, (2020), 4591-4595}
+% $TITLE{Assessment of Parkinson's disease medication state through automatic speech analysis}
+% $AUTHOR{Pompili A. Solera-Ureña R. Abad A et al.}
+% $DATE{2020}
+
+% $START-DATE{20/10/2021}
+% $END-DATE{21/10/2021}
+
+% ================================== VARIABLES ================================== 
+\renewcommand{\varpapertitle}{{Assessment of Parkinson's disease medication state through automatic speech analysis}}
+\renewcommand{\varpaperauthor}{Pompili A. Solera-Ureña R. Abad A et al.}
+\renewcommand{\vardate}{{October 2021}}
+% ================================== ========= ================================== 
+
+\begin{document}
+\makepapertitle
+
+\breakline
+
+\begin{center}
+    \section*{Focus}
+\end{center}
+
+    This paper focused on the study of the identification of a patient's state in terms of medication. The patients part of the study all suffer from \emph{Parkinson's Disease}, which is known to display moton and non-motor symptoms.
+
+    Through speech analysis, the authors hoped to be able of identifying the clinical medication state of the patient, either:
+    \begin{itemize}
+        \item \textbf{OFF}: The patient is not under medication and therefore is suffering from these motor and non-motor symptoms, meaning that it should receive medication in order to control these symptoms.
+        \item \textbf{ON}: The patient is still under medication, therefore not displaying as strong of symptoms and not requiring further medication so far.
+    \end{itemize}
+
+    This identification of medical state is important for two reasons:
+    \begin{itemize}
+        \item Analytical point of view of trying to id the effects of medication on patients and how they progress.
+        \item Provides a way for clinicians to id if the patients are in genuine need of medication.
+    \end{itemize}
+
+    The authors used a corpus composed of recordings from \emph{mixed speech} and \emph{semi-structured storytelling tasks} which were then:
+    \begin{enumerate}
+        \item \textbf{Pre-processed}: The recording were first segmented to separate the patient's discourse from the interviewer's discourse. Then feature extraction was applied to the segmented recordings.
+        \item \textbf{Fed Neural Network}: This neural network was composed of three hidden layers, with 32 to 512 nodes. The activation function used for the hidden layers was the \emph{ReLU} and the activation function for the output layer the \emph{sigmoid function}.
+    \end{enumerate}
+
+    The process of feature extraction focused mainly on word embeddings that described the subject's discourse gathered through a library called \emph{GeMaps}.
+
+\breakline
+
+\newpage
+
+\section{Psychosis Characteristics}
+\emph{* None to discuss, not the objective of this paper *}
+
+\section{Techniques}
+    \begin{itemize}
+        % $TECHNIQUE{Subject to Subject Evaluation; 1}
+        \item \textbf{Subject to Subject Evaluation}: In this paper, instead of trying to develop a classifier for \emph{all possible patients}, the authors developed the methodology for the creation of a classifier \emph{for each one of the test subjects}. This multiple classifier creation is based on the knowledge that medication does not affect every person in the same way. In order to create this set of classifiers, the parameters for its creation are constant and only the train and test set or modified, meaning that the entries for subject \emph{A} do not affect the classification for subject \emph{B}.
+    \end{itemize}
+
+\section{Metrics}
+\emph{* None to discuss, not the objective of this paper *}
+
+\section{Problems}
+\emph{* None to discuss, not the objective of this paper *}
+
+
+\section{Final Remarks}
+    
+    The authors, when first tried to develop a single classifier capable of distinguishing every patient's medical state (either \emph{ON} or \emph{OFF} medication), were unsuccessful. The authors achieved with this classifier roughly a \emph{65\%} accuracy, which is only partly better than a random classifier.
+
+    However, when the study focused on trying to develop a single classifier for each patient, although using the same parameters for the creation of all classifiers, the study achieved much better results, between \emph{90\% to 95\%} accuracy.
+
+    The results obtained show:
+    \begin{itemize}
+        \item Medication states can be identified automatically through speech and discourse analysis
+        \item The medication effect differs from individual to individual, meaning that the results and metrics must be compared against a baseline from the same individual.
+    \end{itemize}
+
+\breakline
+
+\begin{center}
+    \section*{Possibly Useful Citations}
+\end{center}
+\emph{* None found *}
+
+\end{document}
