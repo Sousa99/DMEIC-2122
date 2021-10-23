@@ -1,0 +1,39 @@
+\documentclass{Paper_Summary}
+
+% ================================== VARIABLES ================================== 
+\renewcommand{\varpapertitle}{{Automatic Analysis of the Emotional Content of Speech in Daylong Child-Centered Recordings from a Neonatal Intensive Care Unit}}
+\renewcommand{\varpaperauthor}{Vaaras E. Ahlqvist-Björkroth S. Drossos K et al}
+\renewcommand{\vardate}{{October 2021}}
+% ================================== ========= ================================== 
+
+\begin{document}
+\makepapertitle
+
+\breakline
+
+\begin{center}
+    \section*{Critique}
+\end{center}
+
+    The study described in this paper tried to identify a two-dimensional emotion from an \textbf{unlabelled} large set of recordings. The emotion was defined through its level of \textbf{valence} and \textbf{arousal}.
+
+    Although initially, this study appears to be unrelated to the future thesis study due to:
+    \begin{enumerate}
+        \item The domain being completely different, this study focuses on the emotion mapping of neonatal recordings to the emotion associated with the speech and in the future thesis focusing on the distinction of schizophrenic patients from a control group.
+        \item The thesis' data is a labeled dataset which should take advantage of \emph{supervised} algorithms, whereas this study has a \emph{unsupervised} strategy. 
+    \end{enumerate}
+    However, during the \emph{image description} test, where subjects are asked to create a story that revolves around a given image or describe what comes to mind:
+    \begin{enumerate}
+        \item One of the main features that should be analyzed is the emotional valence associated with the subject's speech.
+        \item The recordings are not labeled with their corresponding valence, and therefore we are in the presence of unlabeled data.
+    \end{enumerate}
+
+    The study used text features retrieved through the use of libraries similar to \emph{GeMaps} which were then fed to \emph{Deep Neural Networks} in order to achieve a \emph{Word Embedding} which is capable of describing the various utterances. The future thesis is not interested in following this approach. The only step that the thesis might be interesting in using is the final creation of \textbf{K-Medoids Clustering} in order to achieve a representation and classification for the various utterances.
+
+    The values used to develop the \emph{K-Medoids Clusters} could be achieved through the use of \textbf{probe words} similar to a methodology previously described in another study. Probe words could be retrieved from a labeled dataset of words with their valence mapped. Then these probes words would be used to verify how related in semantics the utterances are to the probe word's meaning. Finally, a classifier could be built based on the distance from any given utterance to the cluster.
+
+    The results obtained were positive, although the methodology and the general ideas behind the methodology were more relevant for the future development of the thesis.
+
+\breakline
+
+\end{document}
