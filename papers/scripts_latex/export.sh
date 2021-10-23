@@ -6,11 +6,22 @@ cleanup="./cleanup.sh"
 cd ..
 cd ${latex_papers}
 
-latexmk -pdf -quiet
+for file_tex in *.tex; do
+    filename=$( echo ${file_tex} | cut -f 1 -d '.' )
+    file_pdf=$( echo "${pdf}/${filename}.pdf")
+
+    if (! [ -f "../$file_pdf" ]) | [ "$file_tex" -nt "../$file_pdf" ]; then
+
+        echo "⚙️    ${filename}"
+        latexmk -pdf -quiet "$file_tex"
+        mv "./${filename}.pdf" "../${file_pdf}"
+        echo
+
+    fi
+
+done
+
 cd ..
-
-mkdir -p ${pdf}
-
-mv ${latex_papers}/*.pdf ${pdf}/
 cd ./scripts_latex
+
 ${cleanup}
