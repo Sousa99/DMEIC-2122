@@ -1,0 +1,105 @@
+\documentclass{Paper_Summary}
+
+% $REF{Thought disorder measured as random speech structure classifies negative symptoms and schizophrenia diagnosis 6 months in advance, Mota N. Copelli M. Ribeiro S. npj Schizophrenia, (2017), 3(1)}
+% $TITLE{Thought disorder measured as random speech structure classifies negative symptoms and schizophrenia diagnosis 6 months in advance}
+% $AUTHOR{Mota N. Copelli M. Ribeiro S.}
+% $DATE{2017}
+
+% $START-DATE{24/10/2021}
+% $END-DATE{24/10/2021}
+
+% ================================== VARIABLES ================================== 
+\renewcommand{\varpapertitle}{{Thought disorder measured as random speech structure classifies negative symptoms and schizophrenia diagnosis 6 months in advance}}
+\renewcommand{\varpaperauthor}{Mota N. Copelli M. Ribeiro S.}
+\renewcommand{\vardate}{{October 2021}}
+% ================================== ========= ================================== 
+
+\begin{document}
+\makepapertitle
+
+\breakline
+
+\begin{center}
+    \section*{Focus}
+\end{center}
+
+    The paper discusses a study in which the authors try to effectively and accurately identify schizophrenia diagnoses from patients who had only displayed a first clinical contact due to onset psychosis.
+
+    The authors try to predict through the production and analysis of a \textbf{word graph} and metrics extrapolated from this graph. Such measure can study the coherence of discourse but just as well its internal structure. These word graph metrics are correlated with utterance length and so must first be normalized and then measured against the probability of the metrics appearing by randomness.
+
+    The study described in this paper was carried out in a \emph{Portuguese} population, both as patients and control group. The overall study could be separated into three different groups: \textbf{schizophrenic patients}, \textbf{bipolar patients} and \textbf{control group}.
+
+\breakline
+
+\newpage
+
+\section{Psychosis Characteristics}
+    \begin{itemize}
+        % $CHARACTHERISTIC{Poverty of Speech; 0.5}
+        \item \textbf{Poverty of Speech}: Schizophrenic patients typically are categorized with formal thought disorder, with poverty of speech being one of the key characteristics. The poverty of speech is characterized by reduced complexity of discourse both in structure and vocabulary.
+        % $CHARACTHERISTIC{Absence of Topic; 0.5}
+        \item \textbf{Absence of Topic / Derailment}: Schizophrenic patients typically are categorized with formal thought disorder, with derailment being one of the key characteristics. Derailment is characterized by the absence of the main topic that serves as a guiding wire through discourse.
+        % $CHARACTHERISTIC{Word Salad; 0.5}
+        \item \textbf{Word Salad}: Schizophrenic patients typically are categorized with formal thought disorder, with \emph{word salad} being one of the key characteristics. \emph{Word salad} is characterized by the interchangability like useness of words by schizophrenic patients, with which discourse loses meaning or becomes confusing. 
+    \end{itemize}
+
+\section{Techniques}
+    \begin{itemize}
+        % $TECHNIQUE{Word Graph Analysis; 1}
+        \item \textbf{Word Graph Analysis}: Allows for the assessment of topological structures of discourse. These topological structures can then be compared to others to identify possible deviations and reduced discourse coherence. The main advantage of this technique against the more usual and explored \emph{LSA} is that it does not require a large corpus and is quite efficient. Described as the production of directed graphs where words are mapped to nodes and temporal connectedness of words as links between said nodes.
+        % $TECHNIQUE{Dream Report; 1}
+        % $TECHNIQUE{Memory preceding Dream Report; 0.5}
+        % $TECHNIQUE{Earliest Memory Report; 0.5}
+        \item \textbf{Dream / Memory Report}: Subjects were asked to describe the eraliest memory that they remembered, a memory from the preceding day of the dream and the dream itself.
+        % $TECHNIQUE{Affective Image Story; 1}
+        \item \textbf{Affective Image Story}: Subjects were asked to create a small story surrounding an affective image displayed to them. There were three images, one \emph{positive}, one \emph{neutral} and one \emph{negative}.
+        % $TECHNIQUE{Matching of Control with Schizophrenic; 1}
+        \item \textbf{Matching of Control with Patients}: Each patient was matched with a corresponding control. Matching was done according to their \emph{age}, \emph{sex}, and \emph{education level}.
+        
+    \end{itemize}
+
+\section{Metrics}
+    \begin{itemize}
+        % $METRIC{Word Graph: Number of Edges}
+        \item \textbf{Number of Edges in Word Graph}: The number of edges in a word graph is seen as a good metric to measure speech connectedness.
+        % $METRIC{Word Graph: Number of Nodes in LCC}
+        \item \textbf{Number Nodes in Largest Connected Component in Word Graph}: The number nodes in the largest \emph{Connected Component} in a word graph is seen as a good metric to measure speech connectedness. \emph{Strong Connected Components} is a group of nodes that are accessible to each other through the directed graph.
+        % $METRIC{Word Graph: Number of nodes in LSC}
+        \item \textbf{Number Nodes in Largest Strong Connected Component in Word Graph}: The number of nodes in the largest \emph{Strong Connected Component} in a word graph is seen as a good metric to measure speech connectedness. \emph{Strong Connected Components} is a group of nodes that are accessible to each other through the directed graph.
+        % $METRIC{Word Graph: Probability of LCC}
+        \item \textbf{Probability of Largest Connected Component}: The probability of the largest \emph{Connected Component} in a word graph occurring, calculated by doing random shuffles of the word in the utterance.
+        % $METRIC{Word Graph: Probability of LSC}
+        \item \textbf{Probability of Largest Strongly Connected Component}: The probability of the largest \emph{Strong Connected Component} in a word graph occurring, calculated by doing random shuffles of the word in the utterance.
+        % $METRIC{Positive and Negative Syndrome Scale}
+        \item \textbf{Positive and Negative Syndrome Scale (PANSS)}: A scale created for measuring/classifying the severity of the symptoms of schizophrenia. Recognized as a gold standard for clinicians' evaluation of a schizophrenic patient. \href{https://en.wikipedia.org/wiki/Positive_and_Negative_Syndrome_Scale}{Further Information}
+
+    \end{itemize}
+
+\section{Problems}
+    \begin{itemize}
+        % $PROBLEM{Small Sample}
+        \item \textbf{Small Sample}: The study has a rather small sample which could have affected greatly the results obtained.
+        % $PROBLEM{Patients under Medication}
+        \item \textbf{Patients under medication}: Study was carried out with subjects who were taking antipsychotic medication that could have affected the results even if the authors did not find any correlation between the medication dosage and the results.
+        
+    \end{itemize}
+
+
+\section{Final Remarks}
+    
+    The results obtained allowed for the following conclusions:
+    \begin{itemize}
+        \item Through word graph measures, the authors developed an index that accurately distinguished patients of schizophrenic psychosis from those with either bipolar disease or the control group.
+        \item The developed index or any other measure is unable of distinguishing between bipolar disorder patients and control group.
+        \item The developed index is correlated with negative symptoms showed by schizophrenic psychotic patients.
+        \item The tests that most contributed for the results obtained and therefore the discriminative and predictive power of the classificator were the \emph{dream retelling} and \emph{negative story surrounding affective image}. The best results were achieved through the combination of both techniques but either one individually achieved good results.
+    \end{itemize}
+
+\breakline
+
+\begin{center}
+    \section*{Possibly Useful Citations}
+\end{center}
+\emph{* None found *}
+
+\end{document}
