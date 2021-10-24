@@ -76,7 +76,9 @@ def update_file(drive, files_info, file_path, filename, modified_date):
         elif (file_info.title == filename):
             delete_file(file_info.fileRef)
 
-    if (not updated): upload_file(drive, file_path, filename)
+    if (not updated):
+        upload_file(drive, file_path, filename)
+        print()
 
 
 # ==================================== === ========= ====================================
