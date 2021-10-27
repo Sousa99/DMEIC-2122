@@ -1,0 +1,102 @@
+\documentclass{Paper_Summary}
+
+% $REF{Graph analysis of dream reports is especially informative about psychosis, Mota N. Furtado R. Maia P et al. Scientific Reports, (2014), 4}
+% $TITLE{Graph analysis of dream reports is especially informative about psychosis}
+% $AUTHOR{Mota N. Furtado R. Maia P et al.}
+% $DATE{2014}
+
+% $START-DATE{27/10/2021}
+% $END-DATE{27/10/2021}
+
+% ================================== VARIABLES ================================== 
+\renewcommand{\varpapertitle}{{Graph analysis of dream reports is especially informative about psychosis}}
+\renewcommand{\varpaperauthor}{Mota N. Furtado R. Maia P et al.}
+\renewcommand{\vardate}{{October 2021}}
+% ================================== ========= ================================== 
+
+\begin{document}
+\makepapertitle
+
+\breakline
+
+\begin{center}
+    \section*{Focus}
+\end{center}
+
+    The following paper follows the standard approach previously followed by the same authors. The authors focus on the general structure of discourse mainly from dream reports where the test subject is in a noradrenergic state that approximates it to the psychosis state.
+
+    The authors have, on previously analyzed papers, focused on predicting schizophrenic diagnosis. However, in this paper, the authors focus on the identification/differentiation between schizophrenic patients, bipolar patients, and the control group. The hypothesis predicted that \emph{waking} reports would not provide enough information for the correct differentiation of all three groups.
+
+\breakline
+
+\newpage
+
+\section{Psychosis Characteristics}
+    \begin{itemize}
+        % $CHARACTHERISTIC{Poverty of Speech; 1}
+        \item \textbf{Poverty of Speech}: Schizophrenic patients typically are categorized with formal thought disorder, with poverty of speech being one of the key characteristics. The poverty of speech is characterized by reduced complexity of discourse both in structure and vocabulary.
+        % $CHARACTHERISTIC{Absence of Topic; 0.5}
+        \item \textbf{Absence of Topic / Derailment}: Schizophrenic patients typically are categorized with formal thought disorder, with derailment being one of the key characteristics. Derailment is characterized by the absence of the main topic that serves as a guiding wire through discourse.
+        % $CHARACTHERISTIC{Word Salad; 0.5}
+        \item \textbf{Word Salad}: Schizophrenic patients are characterized by formal thought disorders. \emph{Word salad} being one of the key characteristics. \emph{Word salad} is characterized by the interchangeability likeness of words by schizophrenic patients, with which discourse loses meaning or becomes confusing. 
+    
+    \end{itemize}
+
+\section{Techniques}
+    \begin{itemize}
+        % $TECHNIQUE{Word Graph Analysis; 1}
+        \item \textbf{Word Graph Analysis}: Allows for the assessment of topological structures of discourse. These topological structures can then be compared to others to identify possible deviations and reduced discourse coherence. The main advantage of this technique against the more usual and explored \emph{LSA} is that it does not require a large corpus and is quite efficient. Described as the production of directed graphs where words are mapped to nodes and temporal connectedness of words as links between said nodes.
+        % $TECHNIQUE{Dream Report; 1}
+        % $TECHNIQUE{Memory preceding Dream Report; 1}
+        \item \textbf{Dream / Memory Report}: Subjects were asked to describe a memory from the preceding day of the dream and the dream itself.
+    \end{itemize}
+
+\section{Metrics}
+    \begin{itemize}
+        % $METRIC{Word Graph: Number of Nodes}
+        \item \textbf{Number of Nodes in Word Graph}: The number of nodes in a word graph is seen as a good metric to measure speech complexity.
+        % $METRIC{Word Graph: Number of Edges}
+        \item \textbf{Number of Edges in Word Graph}: The number of edges in a word graph is seen as a good metric to measure speech connectedness.
+        % $METRIC{Word Graph: Number of Nodes in LCC}
+        \item \textbf{Number Nodes in Largest Connected Component in Word Graph}: The number nodes in the largest \emph{Connected Component} in a word graph is seen as a good metric to measure speech connectedness. \emph{Strong Connected Components} is a group of nodes that are accessible to each other through the directed graph.
+        % $METRIC{Word Graph: Number of nodes in LSC}
+        \item \textbf{Number Nodes in Largest Strong Connected Component in Word Graph}: The number of nodes in the largest \emph{Strong Connected Component} in a word graph is seen as a good metric to measure speech connectedness. \emph{Strong Connected Components} is a group of nodes that are accessible to each other through the directed graph.
+        % $METRIC{Word Graph: Number of Repeated Edges}
+        \item \textbf{Number of Repeated Edges}: The number of edges linking the same pair of nodes, seen as a measure to evaluate speech recurrence.
+        % $METRIC{Word Graph: Number of Parallel Edges}
+        \item \textbf{Number of Parallel Edges}: The number of parallel edges linking the same pair of nodes given that the source node of an edge could be the target node of the parallel edge, seen as a measure to evaluate speech recurrence.
+        % $METRIC{Word Graph: Size and Number of Cycles}
+        \item \textbf{Size and Number of Cycles}: The number of cycles and their size can be identified in order to evaluate speech recurrence. The computation of these cycles is done through \emph{the adjacency matrix}.
+        % $METRIC{Word Graph: Average Total Degree}
+        \item \textbf{Average Total Degree (ATD)}: Given a node, the \emph{Total Degree} is the sum of \emph{in and out} edges. The \emph{Average Total Degree} is simply the average of the \emph{total degree} of all nodes.
+        % $METRIC{Word Graph: Global Attributes}
+        \item \textbf{Density}: The density of a word graph can be calculated by \(2 \times E / (N \times (N - 1))\).
+        \item \textbf{Diameter}: The length of the longest shortest path between the node pairs of a network.
+        \item \textbf{Average Shortes Path (ASP)}: The average length of the shortest path between pairs of nodes of a network.
+        % $METRIC{Word Graph: Average Clustering Coefficient}
+        \item \textbf{Average Clustering Coefficient}: \emph{Clustering Coefficient Map (CCMap)} is the set of fractions of all n neighbors that are also neighbors of each other.
+        % $METRIC{Positive and Negative Syndrome Scale}
+        \item \textbf{Positive and Negative Syndrome Scale (PANSS)}: A scale created for measuring/classifying the severity of the symptoms of schizophrenia. Recognized as a gold standard for clinicians' evaluation of a schizophrenic patient. \href{https://en.wikipedia.org/wiki/Positive_and_Negative_Syndrome_Scale}{Further Information}
+        % $METRIC{Brief Psychiatric Rating Scale}
+        \item \textbf{Brief Psychiatric Rating Scale (BPRS)}: One of the oldest and most used scales which evaluates patient's symptoms such as \emph{depression}, \emph{axiety} and \emph{hallucinations}. \href{https://en.wikipedia.org/wiki/Brief_Psychiatric_Rating_Scale}{Further Information}
+    \end{itemize}
+
+\section{Problems}
+    \begin{itemize}
+        % $PROBLEM{Patients under Medication}
+        \item \textbf{Patients under medication}: Study was carried out with subjects who were taking antipsychotic medication that could have affected the results even if the authors did not find any correlation between the medication dosage and the results.
+    \end{itemize}
+
+
+\section{Final Remarks}
+
+    The study proved its own hypothesis which is even better since the the sample size of the study is considerable.
+
+\breakline
+
+\begin{center}
+    \section*{Possibly Useful Citations}
+\end{center}
+\emph{* None found *}
+
+\end{document}
