@@ -1,0 +1,112 @@
+\documentclass{Paper_Summary}
+
+% $REF{Speech graphs provide a quantitative measure of thought disorder in psychosis, Mota N. Vasconcelos N. Lemos N et al. PLoS ONE, (2012), 7(4)}
+% $TITLE{Speech graphs provide a quantitative measure of thought disorder in psychosis}
+% $AUTHOR{Mota N. Vasconcelos N. Lemos N et al.}
+% $DATE{2012}
+
+% $START-DATE{27/10/2021}
+% $END-DATE{28/10/2021}
+
+% ================================== VARIABLES ================================== 
+\renewcommand{\varpapertitle}{{Speech graphs provide a quantitative measure of thought disorder in psychosis}}
+\renewcommand{\varpaperauthor}{Mota N. Vasconcelos N. Lemos N et al.}
+\renewcommand{\vardate}{{October 2021}}
+% ================================== ========= ================================== 
+
+\begin{document}
+\makepapertitle
+
+\breakline
+
+\begin{center}
+    \section*{Focus}
+\end{center}
+
+    This paper, similar to previous studies by the same authors, focuses on the use of \textbf{word/speech graphs} to analyze discourse structure, divergence, and recurrence. Through this analysis, the authors hypothesize that \textbf{psychotic disorders} such as \textbf{schizophrenia} and \textbf{mania} can be accurately identified and differentiated from controls.
+    
+    Although the disorders mentioned are described as \textbf{thought disorders}, the analysis of speech structure can provide insights into possible faulty thought processes.
+
+    From the features extracted from developed word graphs, classifiers were developed in order to classify each recording into a given group. The authors experimented with various possible classifiers, with \textbf{Naive Bayes} and \textbf{Radial Basis Function} proving to be the classifiers with a better performance according to the classification metrics chosen.
+
+\breakline
+
+\newpage
+
+\section{Psychosis Characteristics}
+    \begin{itemize}
+        % $CHARACTHERISTIC{Poverty of Speech; 1}
+        \item \textbf{Poverty of Speech}: Schizophrenic patients typically are categorized with formal thought disorder, with a poverty of speech being one of the key characteristics. The poverty of speech is characterized by reduced complexity of discourse both in structure and vocabulary.
+        % $CHARACTHERISTIC{Disruption on Flow of Ideas; 0.2}
+        \item \textbf{Disruption on the flow of ideas}: Speaker is inconsistent with what is considered the natural flow of ideas and how each one typically originates from a connection with a previous one.
+        
+    \end{itemize}
+
+\section{Techniques}
+    \begin{itemize}
+        % $TECHNIQUE{Word Graph Analysis; 1}
+        \item \textbf{Word Graph Analysis}: Allows for the assessment of topological structures of discourse. These topological structures can then be compared to others to identify possible deviations and reduced discourse coherence. The main advantage of this technique against the more usual and explored \emph{LSA} is that it does not require a large corpus and is quite efficient. Described as the production of directed graphs where words are mapped to nodes and temporal connectedness of words as links between said nodes.
+        % $TECHNIQUE{Dream Report; 1}
+        \item \textbf{Dream Report}: Subjects were asked to describe a dream.
+    
+    \end{itemize}
+
+\section{Metrics}
+    \begin{itemize}
+        % $METRIC{Word Graph: Number of Nodes}
+        \item \textbf{Number of Nodes in Word Graph}: The number of nodes in a word graph is seen as a good metric to measure speech complexity.
+        % $METRIC{Word Graph: Number of Edges}
+        \item \textbf{Number of Edges in Word Graph}: The number of edges in a word graph is seen as a good metric to measure speech connectedness.
+        % $METRIC{Word Graph: Number of Nodes in LCC}
+        \item \textbf{Number Nodes in Largest Connected Component in Word Graph}: The number nodes in the largest \emph{Connected Component} in a word graph is seen as a good metric to measure speech connectedness. \emph{Strong Connected Components} is a group of nodes that are accessible to each other through the directed graph.
+        % $METRIC{Word Graph: Number of nodes in LSC}
+        \item \textbf{Number Nodes in Largest Strong Connected Component in Word Graph}: The number of nodes in the largest \emph{Strong Connected Component} in a word graph is seen as a good metric to measure speech connectedness. \emph{Strong Connected Components} is a group of nodes that are accessible to each other through the directed graph.
+        % $METRIC{Word Graph: Number of Repeated Edges}
+        \item \textbf{Number of Repeated Edges}: The number of edges linking the same pair of nodes, seen as a measure to evaluate speech recurrence.
+        % $METRIC{Word Graph: Number of Parallel Edges}
+        \item \textbf{Number of Parallel Edges}: The number of parallel edges linking the same pair of nodes given that the source node of an edge could be the target node of the parallel edge, seen as a measure to evaluate speech recurrence.
+        % $METRIC{Word Graph: Size and Number of Cycles}
+        \item \textbf{Size and Number of Cycles}: The number of cycles and their size can be identified in order to evaluate speech recurrence. The computation of these cycles is done through \emph{the adjacency matrix}.
+        % $METRIC{Word Graph: Average Total Degree}
+        \item \textbf{Average Total Degree (ATD)}: Given a node, the \emph{Total Degree} is the sum of \emph{in and out} edges. The \emph{Average Total Degree} is simply the average of the \emph{total degree} of all nodes.
+        % $METRIC{Word Graph: Global Attributes}
+        \item \textbf{Density}: The density of a word graph can be calculated by \(2 \times E / (N \times (N - 1))\).
+        \item \textbf{Diameter}: The length of the longest shortest path between the node pairs of a network.
+        \item \textbf{Average Shortes Path (ASP)}: The average length of the shortest path between pairs of nodes of a network.
+        % $METRIC{Word Graph: Node Identification}
+        \item \textbf{Dream Nodes and Waking Nodes}: The numbers of each type of node. In this case, the authors asked subjects to describe their dreams and therefore identified \emph{mannually} which nodes referenced a \emph{dream} or a \emph{waking} memory. This feature was related to the characteristic of \emph{flight of thought} of \emph{manic} patients. 
+        % $METRIC{Positive and Negative Syndrome Scale}
+        \item \textbf{Positive and Negative Syndrome Scale (PANSS)}: A scale created for measuring/classifying the severity of the symptoms of schizophrenia. Recognized as a gold standard for clinicians' evaluation of a schizophrenic patient. \href{https://en.wikipedia.org/wiki/Positive_and_Negative_Syndrome_Scale}{Further Information}
+        % $METRIC{Brief Psychiatric Rating Scale}
+        \item \textbf{Brief Psychiatric Rating Scale (BPRS)}: One of the oldest and most used scales which evaluates patient's symptoms such as \emph{depression}, \emph{axiety} and \emph{hallucinations}. \href{https://en.wikipedia.org/wiki/Brief_Psychiatric_Rating_Scale}{Further Information}
+        % $METRIC{DSM Criterion}
+        \item \textbf{DSM-IV Criterion}: DSM-IV refers to a manual called \emph{Diagnostic and Statistical Manual of Mental Disorders} on its fourth edition. This manual is one of the best and contributed majorly to improving the reliability of psychiatric diagnosis. \href{https://en.wikipedia.org/wiki/Diagnostic_and_Statistical_Manual_of_Mental_Disorders#DSM-IV_(1994)}{Further Information}
+    
+    \end{itemize}
+
+\section{Problems}
+    \begin{itemize}
+        % $PROBLEM{Small Sample}
+        \item \textbf{Small Sample}: The study has a rather small sample which could have affected greatly the results obtained.
+        % $PROBLEM{Patients under Medication}
+        \item \textbf{Patients under medication}: Study was carried out with subjects who were taking antipsychotic medication that could have affected the results. The effects of this limitation are worsened by the fact that the study does not discuss differences between manic patients' and schizophrenic patients' medication and their dosage.
+    \end{itemize}
+
+
+\section{Final Remarks}
+    
+    The results achieved were promising and confirmed the hypothesis initially set by the authors.
+    A more in-depth analysis of the study is done in the \emph{Critique}. However, the fact that even the authors defend the use of classification systems like the one developed as an \textbf{aid} to clinicians' diagnosis supports the future thesis' work.
+
+\breakline
+
+\begin{center}
+    \section*{Possibly Useful Citations}
+\end{center}
+
+    \begin{itemize}
+        % $CITATION{System as an Aid to Clinicians}
+        \item \textbf{(Mota N. Vasconcelos N. Lemos N et al., 2012, p. 3)}: "This indicates that the quantitative analysis of speech graphs is not redundant with the major psychometric scales but rather complementary, because it measures speech structure symptoms not well grasped by those instruments."
+    \end{itemize}
+
+\end{document}
