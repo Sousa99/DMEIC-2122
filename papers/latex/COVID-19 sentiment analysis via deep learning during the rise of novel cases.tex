@@ -1,0 +1,75 @@
+\documentclass{Paper_Summary}
+
+% $REF{COVID-19 sentiment analysis via deep learning during the rise of novel cases, Chandra R. Krishna A. PLoS ONE, (2021), 16(8 August)}
+% $TITLE{COVID-19 sentiment analysis via deep learning during the rise of novel cases}
+% $AUTHOR{Chandra R. Krishna A.}
+% $DATE{2021}
+
+% $START-DATE{28/10/2021}
+% $END-DATE{29/10/2021}
+
+% ================================== VARIABLES ================================== 
+\renewcommand{\varpapertitle}{{COVID-19 sentiment analysis via deep learning during the rise of novel cases}}
+\renewcommand{\varpaperauthor}{Chandra R. Krishna A.}
+\renewcommand{\vardate}{{October 2021}}
+% ================================== ========= ================================== 
+
+\begin{document}
+\makepapertitle
+
+\breakline
+
+\begin{center}
+    \section*{Focus}
+\end{center}
+
+    This paper focused on the study of the progression of \textbf{sentiment} during the peak of cases of \emph{COVID-19} cases in India in a few selected areas. The study analyzed the sentiment expressed by the population through publicly accessible tweets from the general population.
+
+    The study analyzed sentiment from expressed pieces of information, in this case, tweets which were then converted into \textbf{word embeddings} through the use of an already developed tool \textbf{GLoVe}. The authors then fed this \emph{word embeddings} to a \emph{multi-label classifier model} which guessed as to which (possibly choosing more than one) emotion was being expressed with the piece of information.
+
+    The studied possible emotions were:\emph{optimistic}, \emph{thankful}, \emph{empathetic}, \emph{pessimistic}, \emph{anxious}, \emph{sad}, \emph{annoyed}, \emph{denial}, \emph{official report}, \emph{surprise}, \emph{joking}.
+
+    The three models tested on the study:
+    \begin{itemize}
+        \item \textbf{Long Short-Term Memory RNN (LSTM)}: In theory \textbf{Recurrent Neural Networks} are capable of dealing better with \emph{Natural Language Processing} since they classify each inputted element on the basis of this element and \emph{theoretically} on every element that preceded this one. In practice, RNNs are only capable of correctly representing a few preceding elements. \textbf{LSTM} solves this problem. The authors do not discuss the architecture of LSTMs, but they grasp the preceding words in a superior manner. 
+        \item \textbf{Bidirectional Long Short-Term Memory RNN (BD-LSTM)}: There is yet another problem that affects the results obtained when studying \emph{Natural Language Processing}. In Natural Language, words can be affected by \textbf{preceding} but also by \textbf{proceding} words. \textbf{BD-LSTM} architectures take advantage of these two effects on any given element: the effect by preceding and proceeding elements.
+        \item \textbf{Bi-Directional Encoder Representations from Transformers (BERT)}: The authors do not describe in detail the architecture of how it works, so further research is necessary to understand the inner workings. But it is a \emph{state-of-the-art} architecture that takes into account the \emph{bidirectional} property of \emph{Natural Language Processing}.
+    \end{itemize}
+
+    Both \textbf{LSTM} and \textbf{BD-LSTM} were composed of:
+    \begin{itemize}
+        \item A \textbf{300 nodes} input layer.
+        \item Two hidden layer with \textbf{128 nodes} and \textbf{64 nodes}.
+        \item A output layer with \textbf{11 nodes}, each corresponding to one of the eleven sentiments.
+    \end{itemize}
+
+    Important to note that the tweets used in the study, before being converted into a \emph{word embedding} its first \textbf{pre-processed}. One of the main steps of the \emph{pre-processment} was the transformation of emoticon icons (emojis) into corresponding words or words.
+
+\breakline
+
+\newpage
+
+\section{Psychosis Characteristics}
+\emph{* None to discuss, not the objective of the paper *}
+
+\section{Techniques}
+\emph{* None to discuss, not the objective of the paper *}
+
+\section{Metrics}
+\emph{* None to discuss, not the objective of the paper *}
+
+\section{Problems}
+\emph{* None to discuss, not the objective of the paper *}
+
+
+\section{Final Remarks}
+\emph{* None to discuss, not the objective of the paper *}
+
+\breakline
+
+\begin{center}
+    \section*{Possibly Useful Citations}
+\end{center}
+\emph{* None found *}
+
+\end{document}
