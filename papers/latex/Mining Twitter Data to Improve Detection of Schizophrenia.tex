@@ -1,0 +1,84 @@
+\documentclass{Paper_Summary}
+
+% $REF{Mining Twitter Data to Improve Detection of Schizophrenia, McManus K. Mallory E. Goldfeder R. et al.}
+% $TITLE{Mining Twitter Data to Improve Detection of Schizophrenia}
+% $AUTHOR{McManus K. Mallory E. Goldfeder R. et al.}
+% $DATE{Unknown}
+
+% $START-DATE{29/10/2021}
+% $END-DATE{30/10/2021}
+
+% ================================== VARIABLES ================================== 
+\renewcommand{\varpapertitle}{{Mining Twitter Data to Improve Detection of Schizophrenia}}
+\renewcommand{\varpaperauthor}{McManus K. Mallory E. Goldfeder R. et al.}
+\renewcommand{\vardate}{{October 2021}}
+% ================================== ========= ================================== 
+
+\begin{document}
+\makepapertitle
+
+\breakline
+
+\begin{center}
+    \section*{Focus}
+\end{center}
+
+    This paper focused on identifying schizophrenic patients from control subjects through \emph{microblogging posts} such as \emph{Twitter posts}. The authors used the Twitter API in order to procure both the schizophrenic patients and the control subjects.
+
+    The authors considered a given user schizophrenic if:
+    \begin{enumerate}
+        \item User self-identifies in its description as a diagnosed schizophrenic.
+        \item User self-identifies in its status as a diagnosed schizophrenic.
+        \item User follows \emph{@schizotribe}, a well-known community of diagnosed schizophrenics.
+    \end{enumerate}
+
+    The authors then extracted features from said posts which were then fed to models such as \emph{Naive Bayes (NB)}, \emph{Artificial Neural Networks (ANNs)}, and \emph{Support Vector Machines (SVMs)}.
+
+\breakline
+
+\newpage
+
+\section{Psychosis Characteristics}
+\emph{* Not extracted, since the author do not use the characteristics stated as justification for the features chosen and do not describe these characteristics in detail *}
+
+\section{Techniques}
+    \begin{itemize}
+        % $TECHNIQUE{Microblogging extracted Features; 0.5}
+        \item \textbf{Microblogging extracted Features}: The authors used public microblogging posts to gather a corpus for later analysis of both schizophrenic patients and control subjects. Although having its problems, this provides an easy way of acquiring corpora.
+    \end{itemize}
+
+\section{Metrics}
+    \begin{itemize}
+        % $METRIC{Microblogging: Number of Friends}
+        \item \textbf{Number of Friends}: The number of friends that the user had in the microblogging community wa sused as a feature.
+        % $METRIC{Microblogging: Time of the Day for Posts}
+        \item \textbf{Time of the Day for Posts}: The time of the day at which users make posts in the microblog community.
+        % $METRIC{Microblogging: Time between Posts}
+        \item \textbf{Time between Posts}: The time between user's microblogging posts.
+        % $METRIC{Microblogging: Schizophrenia related Words}
+        \item \textbf{Schizophrenia related Words}: The ammount of words used that are related with \emph{schizophrenia}.
+        % $METRIC{Microblogging: Emoticons Used}
+        \item \textbf{Emoticons Used}: The number and what emoticons are used by the users was used as a feature for classification.
+    \end{itemize}
+
+\section{Problems}
+    \begin{itemize}
+        % $PROBLEM{Small Sample}
+        \item \textbf{Small Sample}: The study has a rather small sample which could have affected greatly the results obtained.
+        % $PROBLEM{Unreliable Features}
+        \item \textbf{Unreliable Features}: The study used features which at best might lead to unreliable results. In this case some features and even training classification can be associated to \emph{self-diagnosis}.
+    \end{itemize}
+
+
+\section{Final Remarks}
+    
+    The results obtained defend the possible use of microblogging posts as a possible support feature for clinicians' diagnoses. The features used for the discretization are somewhat unreliable even if defended by the authors.
+
+\breakline
+
+\begin{center}
+    \section*{Possibly Useful Citations}
+\end{center}
+\emph{* None found *}
+
+\end{document}
