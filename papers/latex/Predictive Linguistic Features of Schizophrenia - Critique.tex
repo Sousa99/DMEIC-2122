@@ -1,0 +1,34 @@
+\documentclass{Paper_Summary}
+
+% ================================== VARIABLES ================================== 
+\renewcommand{\varpapertitle}{{Predictive Linguistic Features of Schizophrenia}}
+\renewcommand{\varpaperauthor}{Kayi E. Diab M. Pauselli L. et al.}
+\renewcommand{\vardate}{{November 2021}}
+% ================================== ========= ================================== 
+
+\begin{document}
+\makepapertitle
+
+\breakline
+
+\begin{center}
+    \section*{Critique}
+\end{center}
+
+    This paper was helpful since it explored almost all possible aspects of \emph{natural language processing}. It studied \emph{syntax}, \emph{semnatics} and even \emph{pragmatics}. The paper focuses on more recent techniques, improved versions of older alternatives that achieve better results and are more efficient.
+
+    The big problem with the study is that since the authors focused on a large number of techniques, there was a loss of focus on the features used. The features used for classification could have been better explored and explained in terms of their meaning.
+
+    The techniques used are interesting, and for easier comprehension, the discussion will be made in bullet points:
+    \begin{itemize}
+        \item \textbf{POS Tagging} provides insightful analysis of the structure of discourse. However, POS has been analyzed extensively in previous works (including the preceding work to the thesis) and does not grasp the content and meaning of discourse.
+        \item \textbf{Dependency Parsing} could provide an alternative to speech graphs. However, further investigation is needed for its viability since the authors do not describe the features extracted from this technique.
+        \item \textbf{SRL, LDA and GLoVE Clustering} could provide an alternative to probe words clustering and general semantic analysis. These techniques still lead us to the problem of needing an annotated corpus in order to extrapolate meaning from the results, excepting the \emph{LDA} which works similarly to \emph{LSA}. Further investigation of these techniques must be done in order to judge if appropriate for the thesis.
+        \item \textbf{LCB}: presents itself as a brand new domain for exploration from the data. There is no already thought technique for the thesis that matches this one. The technique of \emph{LCB} could provide impressive results. However, further investigation of the technique is needed to determine if a corpus is needed. This approach would more than likely be only beneficial during the test of \emph{affective images}.
+    \end{itemize}
+
+    This paper follows an alluring approach by trying to justify the use and analysis of this large amount of aspects of \emph{Natural Language}. Only at the end do the authors conclude which were most meaningful for the classification and extrapolate which aspects of \emph{NL} are more meaningful for the problem at hand.
+
+\breakline
+
+\end{document}

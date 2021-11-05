@@ -1,0 +1,109 @@
+\documentclass{Paper_Summary}
+
+% $REF{Predictive Linguistic Features of Schizophrenia, Kayi E. Diab M. Pauselli L. et al. (2018)}
+% $TITLE{Predictive Linguistic Features of Schizophrenia}
+% $AUTHOR{Kayi E. Diab M. Pauselli L. et al.}
+% $DATE{2018}
+
+% $START-DATE{03/11/2021}
+% $END-DATE{04/11/2021}
+
+% ================================== VARIABLES ================================== 
+\renewcommand{\varpapertitle}{{Predictive Linguistic Features of Schizophrenia}}
+\renewcommand{\varpaperauthor}{Kayi E. Diab M. Pauselli L. et al.}
+\renewcommand{\vardate}{{November 2021}}
+% ================================== ========= ================================== 
+
+\begin{document}
+\makepapertitle
+
+\breakline
+
+\begin{center}
+    \section*{Focus}
+\end{center}
+
+    This paper focuses on the identification and differentiation of psychotic patients from controls, similar to many others. However, this paper, instead of focusing only on one step of \emph{Natural Language Processing} it tries to provide an overview of its various steps and make conclusions out of it by interpreting and analyzing the results obtained.
+
+    Besides providing a quick overview of the in-depth analysis made by the authors, it also is one of the first papers to focus on the distinction between \textbf{semantinc} and \textbf{pragmatic} meaning of a sentence.
+
+    The data used for analysis came from two different sources in two different formats:
+    \begin{enumerate}
+        \item \textbf{LabWriting}: 93 patients and 95 controls were integrated into this study where they were asked to \textbf{write} two different one paragraph-length \textbf{essays}: the first answering to \emph{"What is it like you average Sunday?"} and \emph{"What makes you angry?"}.
+        \item \textbf{Twitter Set}: The authors also used \emph{tweets} of 174 self-reported diagnosed Twitter users and 174, age and gender-matched, controls Twitter users.
+    \end{enumerate}
+
+\breakline
+
+\newpage
+
+\section{Psychosis Characteristics}
+    \begin{itemize}
+        % $CHARACTHERISTIC{Disruption of Syntax Rules; 1}
+        \item \textbf{Reduction of Syntax Complexity}: Schizophrenic patients appear to have a reduction of syntax complexity during the discourse, meaning that the very structure of discourse becomes simpler than with controls.
+        % $CHARACTHERISTIC{Absence of Topic; 1}
+        \item \textbf{Impaired Semantics}: Schizophrenic patients have impaired semantics during the discourse. One of the main characteristics that accompany this symptom is \emph{Absence of Topic}.
+        % $CHARACTHERISTIC{Speech Apathy; 1}
+        \item \textbf{Tone and Inflection Reduced}: Schizophrenic patients typically display a lack of tone and inflection in discourse (also denominated as \emph{speech apathy}).
+    \end{itemize}
+
+\section{Techniques}
+    \begin{itemize}
+        % $TECHNIQUE{Part of Speech Tagging; 1}
+        \item \textbf{Part of Speech Tagging}: The written dataset is parsed according to \emph{Part of Speech Tagging}. \emph{Part of Speech Tags} although not directly mapped one to one, can be associated with the idea of \emph{syntatic classes}. 
+        % $TECHNIQUE{Dependency Parse; 1}
+        \item \textbf{Dependency Parsing}: The dependency amongst sentence and possibly phrase components are connected according to dependencies. The dependency parsing allows for the analysis of the discourse's structure and complexity.
+        % $TECHNIQUE{Semantic Role Labeling; 1}
+        \item \textbf{Semantic Role Labeling (SRL)}: Constitutes on the mapping of segments of subject's essays to one or more \emph{semmantic roles} which are similar to topics or the situation to which the segment refers. This methodology relies on a classificator already fitted to other data.
+        % $TECHNIQUE{Latent Dirichlet Allocation; 1}
+        \item \textbf{Latent Dirichlet Allocation (LDA)}: Constitutes on the mapping of segments of subject's essays to one or more \emph{topics}. This methodology computes topics simply by the distribution and inter-relation between in words in the given data, similar to \emph{LSA}.
+        % $TECHNIQUE{Word Embeddings Clustering; 1}
+        \item \textbf{GLoVE Clustering}: The authors computed \emph{GLoVE embeddings} for each word in the essay written by the subjects, and then a clustering methodology is used in order to divide this words embeddings into groups.
+        % $TECHNIQUE{Level of Committed Belief; 1}
+        \item \textbf{Level of Committed Belief (LCB)}: The belief level of the subject while stating the propositions. This level of belief is distinguished into four different types, all expressing different belief levels or types.
+        \begin{itemize}
+            \item \textbf{Committed Belief (CB)}: the subject beliefs the stated proposition.
+            \item \textbf{Non-committed Belief (NCB)}: the subject might even believe the proposition, but it does not believe it firmly.
+            \item \textbf{Reported Belief (ROB)}: the belief stated by the subject is not his, believing it or not.
+            \item \textbf{Non-Attributable Belief (NA)}: the subject is not stating a belief.
+        % $TECHNIQUE{Sentiment Analysis; 1}
+        % $TECHNIQUE{Sentiment Intensity Analysis; 1}
+        \item \textbf{Sentiment and Sentiment Intensity}: The authors used the \emph{Stanford Sentiment Analysis} tool in order to compute the sentiment as well as its intensity. Sentiment can have the following values: \emph{very negative}, \emph{negative}, \emph{neutral}, \emph{positive} and \emph{very positive}. The sentiment intensity is also produced at the sentence level.
+        \end{itemize}
+    \end{itemize}
+
+\section{Metrics}
+    \begin{itemize}
+        % $METRIC{Frequency of POSs}
+        \item \textbf{Frequency of POSs}: The frequency of each one of the \emph{Parts of Speech} was used as a feature for the classifier, but before such frequencies were analyzed by the authors.
+        \item \textbf{Frequency of each Semantic Role and Topic}
+        \item \textbf{Frequency of each Level of Commited Belief}
+    \end{itemize}
+
+\section{Problems}
+    \begin{itemize}
+        % $PROBLEM{Unreliable Features}
+        \item \textbf{Unreliable Features}: The study used as labels for the Twitter dataset whether the user \emph{self-diagnosed} as schizophrenic, which although was dealt partially by the authors, by manually verifying whether they believed that the self-diagnosis was honest, still there is some unreliability.
+        % $PROBLEM{Missing Explanation}
+        \item \textbf{Missing Feature Explanation}: Likely due to the number of techniques used by the authors, there is no in-depth explanation of the features used for classification, simply the techniques and what they encompass but not necessarily what is fed to the final classifier.
+    \end{itemize}
+
+
+\section{Final Remarks}
+    
+    The best classification was achieved with all the features (\emph{syntatic}, \emph{semantic} and \emph{pragmatics}), which further justifies the full analysis of information in such complex scenarios.
+
+\breakline
+
+\begin{center}
+    \section*{Possibly Useful Citations}
+\end{center}
+
+    \begin{itemize}
+        % $CITATION{Schizophrenia Evolution}
+        \item \textbf{(Kayi E. Diab M. Pauselli L. et al., 2018, p. 1)}: "Schizophrenia research has not kept pace with technologies in computational linguistics, especially in semantics and pragmatics."
+        % $CITATION{Current Schizophrenia Development}
+        \item \textbf{(Kayi E. Diab M. Pauselli L. et al., 2018, p. 1)}: "Similar to other psychoses, schizophrenia has been studied extensively on the neu-rological and behavioral levels."
+    \end{itemize}
+
+\end{document}
