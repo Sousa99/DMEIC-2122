@@ -1,0 +1,80 @@
+\documentclass{Paper_Summary}
+
+% $REF{An automated method to analyze language use in patients with schizophrenia and their first-degree relatives, Elvevåg B. Foltz P. Rosenstein M. et al. Journal of Neurolinguistics, (2010), 270-284, 23(3)}
+% $TITLE{An automated method to analyze language use in patients with schizophrenia and their first-degree relatives}
+% $AUTHOR{Elvevåg B. Foltz P. Rosenstein M. et al.}
+% $DATE{2010}
+
+% $START-DATE{05/11/2021}
+% $END-DATE{05/11/2021}
+
+% ================================== VARIABLES ================================== 
+\renewcommand{\varpapertitle}{{An automated method to analyze language use in patients with schizophrenia and their first-degree relatives}}
+\renewcommand{\varpaperauthor}{Elvevåg B. Foltz P. Rosenstein M. et al.}
+\renewcommand{\vardate}{{November 2021}}
+% ================================== ========= ================================== 
+
+\begin{document}
+\makepapertitle
+
+\breakline
+
+\begin{center}
+    \section*{Focus}
+\end{center}
+
+    This paper focuses on the correct identification of schizophrenic patients from controls while at the same time trying to evaluate if a model can distinguish family members who are patients as well from controls in order to study the heritability of the illness.
+
+    For complexity reasons that the author did not go in-depth with, the classification could not be done all at once, trying to identify four different groups, so the authors focused on a set of sub-problems one by one:
+    \begin{enumerate}
+        \item Identification of \textbf{patient family participants} and \textbf{control family participants}.
+        \item Identification of \textbf{patient non-family participants} and \textbf{control non-family participants}.
+        \item Identification of \textbf{all patients} and \textbf{all controls}.
+        \item Identification of \textbf{control family participants} and \textbf{controls non-family participants}.
+    \end{enumerate}
+
+    The authors also separate the various methodologies used for schizophrenia classification through discourse:
+    \begin{enumerate}
+        \item \textbf{Surface Measures}: Provides surface level insights of discourse, such as \emph{word counts}, \emph{mean speech rate} and \emph{mean speech length}.
+        \item \textbf{Derived Theoretic Statistical Features}: Rely on the likelihood of speech patterns happening in discourse when compared to other corpora.
+        \item \textbf{Statistic Semantic Measures}: Techniques such as \emph{Latent Semantic Analysis} which, through statistical operations, try to derive meaning.
+    \end{enumerate}
+
+\breakline
+
+\newpage
+
+\section{Psychosis Characteristics}
+\emph{* None found *}
+
+\section{Techniques}
+    \begin{itemize}
+        % $TECHNIQUE{Latent Semantic Analysis; 1}
+        \item \textbf{Latent Semantic Analysis (LSA)}: LSA was researched in-depth in a previous paper review and is a highly associative model. LSA discovers associations among words in the text through their co-occurrences and occurrences with other similar words. By the end, each word has a vector of a previously defined dimension associated with it, which symbolizes the word's meaning (in an abstract manner).
+    \end{itemize}
+
+\section{Metrics}
+\emph{* None to discuss *}
+
+\section{Problems}
+    \begin{itemize}
+        % $PROBLEM{Patients under Medication}
+        \item \textbf{Patients under medication}: Study was carried out with subjects who were taking medication to manage symptoms, and this could have affected the results. The study does not reveal the type of medication and differences among patients, which worsens the effects of this limitation.
+        % $PROBLEM{Different Environments}
+        \item \textbf{Different Environments}: The paper records various subjects' discourses, but the authors did not always pose the same question to the subjects, which could have introduced bias into the results.
+        % $PROBLEM{Missing Explanation}
+        \item \textbf{Missing Feature Explanation}: There is no in-depth explanation of the features used for classification, simply the techniques and what they encompass but not necessarily what the authors fed to the final classifier.
+    \end{itemize}
+
+
+\section{Final Remarks}
+\emph{* None to discuss *}
+
+\breakline
+
+\begin{center}
+    \section*{Possibly Useful Citations}
+\end{center}
+\emph{* None found *}
+
+\end{document}
