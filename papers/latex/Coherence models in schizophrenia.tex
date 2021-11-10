@@ -1,0 +1,93 @@
+\documentclass{Paper_Summary}
+
+% $REF{Coherence models in schizophrenia, Just S. Haegert E. KpYánová N. et al. Proceedings of the Sixth Workshop on Computational Linguistics and Clinical Psychology, (2019)}
+% $TITLE{Coherence models in schizophrenia}
+% $AUTHOR{Just S. Haegert E. KpYánová N. et al.}
+% $DATE{2019}
+
+% $START-DATE{10/11/2021}
+% $END-DATE{10/11/2021}
+
+% ================================== VARIABLES ================================== 
+\renewcommand{\varpapertitle}{{Coherence models in schizophrenia}}
+\renewcommand{\varpaperauthor}{Just S. Haegert E. KpYánová N. et al.}
+\renewcommand{\vardate}{{November 2021}}
+% ================================== ========= ================================== 
+
+\begin{document}
+\makepapertitle
+
+\breakline
+
+\begin{center}
+    \section*{Focus}
+\end{center}
+
+    The authors of this study focused on the previously read study \emph{Automatic Detection of Incoherent Speech for Diagnosing Schizophrenia} by expanding on it, mainly by using a larger dataset in order to have a better generalization power.
+
+    The methodology is the same as the mentioned paper. The authors followed the same methodology for the baseline and improved models that relied on \emph{Latent Semantic Analysis}, and then possible application of pre-processing techniques on the transcripts with techniques such as \emph{TF-IDF}, \emph{Smooth Inverse Frequency (SIF)} and \emph{Sent2Vec}.
+    
+    However, the author did not explore the possibility of an automatic \emph{Referential Coherence Model} since, according to the authors, it was prone to errors. Instead, the authors proceeded with a manual analysis of the transcribed recordings for the two possible types of \emph{ambiguous pronouns}.
+
+\breakline
+
+\newpage
+
+\section{Psychosis Characteristics}
+    \begin{itemize}
+        % $CHARACTHERISTIC{Disruption on Flow of Ideas; 1}
+        % $CHARACTHERISTIC{Distractibility; 1}
+        % $CHARACTHERISTIC{Loss of Coherence; 1}
+        \item \textbf{Loss of Coherence}: Loss of coherence is the basis for the study, and it is seen as the main symptom from \textbf{Formal Thought Disorder (FTD)}. Other extremelly related symptoms includes basic \emph{disruption of the flow of ideas} and general \emph{distractibility}.
+        % $CHARACTHERISTIC{Loss of Referential Standarts; 1}
+        \item \textbf{Loss of Referential Standarts}: The second basis for the study is the referential problems displayed by schizophrenic patients. Is common for schizophrenic patients for:
+        \begin{itemize}
+            \item Use referential pronouns and never specifying the entity refered by the pronoun.
+            \item The entity is referenced only after the pronoun is used (\emph{cataphora}), which although not impossible by controls, is less usual.
+        \end{itemize}
+        % $CHARACTHERISTIC{Neologization; 1}
+        \item \textbf{Neologizing}: to make or use new words or create new meanings for existing words (by definition).
+    \end{itemize}
+
+\section{Techniques}
+    \begin{itemize}
+        % $TECHNIQUE{Semi-Structured Interview; 1}
+        \item \textbf{Semi-Structured Interview}: The authors ran interviews with each one of the subjects. Asking them 8 to 10 questions each for a specified amount of time. These interviews were recorded, transcribed, and tagged as spoken by the interviewer (trained clinician) or by the subject.
+        % $TECHNIQUE{Latent Semantic Analysis; 1}
+        \item \textbf{Latent Semantic Analysis (LSA)}: Latent Semantic Analysis provides an efficient technique to define a word's meaning. The meaning of each vector is expressed through a vector composed of N components instead of explicitly stated. The cosine of this vector with any other will express how similar the meaning of the two words is. The co-occurrences of words with other words determine the vector and its components.
+        % $TECHNIQUE{Referential Coherence Model; 1}
+        \item \textbf{Referential Coherence Model}: The authors used a referential coherence model with the objective of identifying document references to a single entity. The authors used a pre-trained co-reference model from another study. The transcribed interviews were fed to the model, which then returned lists of references to a single entity.
+    \end{itemize}
+
+\section{Metrics}
+    \begin{itemize}
+        % $METRIC{First Order Sentence Coherence}
+        \item \textbf{First Order Sentence Coherence (FOC)}: After averaging out the \emph{LSA vectors} associated with the words present in each sentence, the study calculated the \emph{FOC} using the cosine of the average vector of each sentence and the subsequent sentence. This coherence was calculated with both models, baseline and each one of the improved versions.
+        % $METRIC{Number of Ambiguous References}
+        \item \textbf{Number of Ambiguous Pronouns}: The number of ambiguous pronouns were used as a feature for later analysis. A reference was considered ambiguous if and only if the first element of a list, resulting of the \emph{Referential Coherence Model} was a \emph{pronoun}.
+    \end{itemize}
+
+\section{Problems}
+    \begin{itemize}
+        % $PROBLEM{Small Sample}
+        \item \textbf{Small Sample}: Although certainly improved when compared to the original study, this study still has a rather small sample. The hypothesis of generalization is possible but must be carefully considered.
+        % $PROBLEM{Patients under Medication}
+        \item \textbf{Patients under medication}: Study does not mention the patient's medication or their dosage. Since the schizophrenic group of patients belonged to a clinic, at least some of the elements will be under medication. Some medication might have effects on a patient's discourse and therefore must at least be referred.
+        % $PROBLEM{Bias in Classification}
+        \item \textbf{Bias in Classification}: Both the transcription and the referential identification of ambiguous pronouns was done by the authors which might have, unvoluntarily, added bias to the data and altered the obtained results.
+        
+    \end{itemize}
+
+
+\section{Final Remarks}
+
+    Similarily to the study that this one is based, the authors conclude that the applied methodologies are able of classifying each one of the three groups much better than the original and standard \emph{Latent Semantic Analysis}.
+
+\breakline
+
+\begin{center}
+    \section*{Possibly Useful Citations}
+\end{center}
+\emph{* None found *}
+
+\end{document}
