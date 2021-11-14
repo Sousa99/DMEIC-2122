@@ -30,7 +30,7 @@ class FileInfo:
 def convertDriveDate(drive_date_string):
 
     convertDate = dateutil.parser.isoparse(drive_date_string);
-    convertDate = convertDate + datetime.timedelta(hours = 1);
+    convertDate = convertDate + datetime.timedelta(hours = 0);
     return convertDate
 
 # ==================================== ====== ====================================
