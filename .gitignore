@@ -1,3 +1,5 @@
 # Data should remain confidential
-data
-analysis/records
+/data/*
+/analysis/records/*
+# Scripts are exception
+!/data/scripts
