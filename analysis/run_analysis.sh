@@ -11,10 +11,8 @@ mkdir "$DIR"
 
 # run completeness analysis
 echo "📊 Completeness Analysis"
-CONTROL_OUTPUT_FILE="$DIR${NOW} - completeness - control"
-PSYCHOSIS_OUTPUT_FILE="$DIR${NOW} - completeness - psychosis"
-python3 ./completeness.py -save "${CONTROL_OUTPUT_FILE}" -data $CONTROL
-python3 ./completeness.py -save "${PSYCHOSIS_OUTPUT_FILE}" -data $PSYCHOSIS -psychosis
+OUTPUT_FILE="$DIR${NOW} - completeness"
+python3 ./completeness.py -save "${OUTPUT_FILE}" -controls_data "${CONTROL}" -psychosis_data "${PSYCHOSIS}"
 echo
 
 # run pre-distribution analysis

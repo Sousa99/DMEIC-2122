@@ -108,9 +108,6 @@ def retrieveDurationInformation(recordings_path: str, df_info, type: str, tasks:
 
 TASKS = [ "Task 1", "Task 2", "Task 3", "Task 4", "Task 5", "Task 6", "Task 7" ]
 
-PLOT_ROWS = 2
-PLOT_COLUMNS_TASK = math.ceil(len(TASKS) / PLOT_ROWS)
-
 # ======================================================================================
 
 
@@ -129,17 +126,16 @@ task_df = pd.DataFrame(information)
 task_df.set_index('id') 
 #print(task_df)
 
+sns.set_theme(palette="deep")
+
 plt.clf()
-g = sns.FacetGrid(task_df, col="task", sharex=False, sharey=False)
-g.map_dataframe(sns.distplot, x="duration", hue='type', multiple='dodge', kde=True)
+sns.displot(data=task_df, x="duration", col="task", hue='type', multiple='dodge', kde=True, common_bins=False)
 plt.savefig(args.save + ' - task duration by type.png')
 
 plt.clf()
-g = sns.FacetGrid(task_df, row="gender", col="task", sharex=False, sharey=False)
-g.map_dataframe(sns.distplot, x="duration", hue='type', multiple='dodge', kde=True)
+sns.displot(data=task_df, x="duration", row="gender", col="task", hue='type', multiple='dodge', kde=True, common_bins=False)
 plt.savefig(args.save + ' - task duration by gender.png')
 
 plt.clf()
-g = sns.FacetGrid(task_df, row="schooling", col="task", sharex=False, sharey=False)
-g.map_dataframe(sns.distplot, x="duration", hue='type', multiple='dodge')
+sns.displot(data=task_df, x="duration", row="schooling", col="task", hue='type', multiple='dodge', kde=True, common_bins=False)
 plt.savefig(args.save + ' - task duration by schooling.png')
