@@ -25,8 +25,18 @@ parser.add_argument("-controls_rec",    help="controls recordings path")
 parser.add_argument("-psychosis_rec",   help="psychosis recordings path")
 args = parser.parse_args()
 
-if ( not args.controls_data or not args.psychosis_data or not args.controls_rec or not args.psychosis_rec or not args.save ):
-    print("🙏 Please provide a 'save' file prefix, and a 'control' and 'psychosis' data and recordings path")
+requirements = [
+    { 'arg': args.save, 'key': 'save', 'help': 'save file name prefix'},
+    { 'arg': args.controls_data, 'key': 'controls_data', 'help': 'path to controls\' data'},
+    { 'arg': args.psychosis_data, 'key': 'psychosis_data', 'help': 'path to psychosis\' data'},
+    { 'arg': args.controls_rec, 'key': 'controls_rec', 'help': 'path to controls\' recordings'},
+    { 'arg': args.psychosis_rec, 'key': 'psychosis_rec', 'help': 'path to psychosis\' recordings'},
+]
+
+if ( any(not req['arg'] for req in requirements) ):
+    print("🙏 Please provide a:")
+    for requirement in requirements:
+        print('\t\'{}\': {}'.format(requirement['key'], requirement['help']))
     exit(1)
 
 # =================================== AUXILIARY FUNCTIONS ===================================
@@ -121,15 +131,15 @@ task_df.set_index('id')
 
 plt.clf()
 g = sns.FacetGrid(task_df, col="task", sharex=False, sharey=False)
-g.map_dataframe(sns.histplot, x="duration", hue="type", kde=True)
+g.map_dataframe(sns.distplot, x="duration", hue='type', multiple='dodge', kde=True)
 plt.savefig(args.save + ' - task duration by type.png')
 
 plt.clf()
 g = sns.FacetGrid(task_df, row="gender", col="task", sharex=False, sharey=False)
-g.map_dataframe(sns.histplot, x="duration", hue="type", kde=True)
+g.map_dataframe(sns.distplot, x="duration", hue='type', multiple='dodge', kde=True)
 plt.savefig(args.save + ' - task duration by gender.png')
 
 plt.clf()
 g = sns.FacetGrid(task_df, row="schooling", col="task", sharex=False, sharey=False)
-g.map_dataframe(sns.histplot, x="duration", hue="type", kde=True)
+g.map_dataframe(sns.distplot, x="duration", hue='type', multiple='dodge')
 plt.savefig(args.save + ' - task duration by schooling.png')
