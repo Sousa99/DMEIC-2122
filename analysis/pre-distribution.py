@@ -68,16 +68,15 @@ def printProgressBar(iteration, total, prefix = '', suffix = '', decimals = 1, l
     if iteration == total: 
         print()
 
-def retrieveDurationInformation(recordings_path: str, df_info, type: str, tasks: List[str], processing_key: str):
+def retrieveByTaskInformation(path: str, type: str, tasks: List[str], information_key: str, callback):
     information = []
-    subjects_dirs = os.listdir(recordings_path)
+    subjects_dirs = os.listdir(path)
     number_of_subjects = len(subjects_dirs)
 
-    printProgressBar(0, number_of_subjects, prefix = 'Processing \'' + processing_key + '\' duration:', suffix = 'Complete', length = 50)
+    printProgressBar(0, number_of_subjects, prefix = 'Processing \'' + type + '\' '+ information_key + ':', suffix = 'Complete', length = 50)
     for index_value, current_subject in enumerate(subjects_dirs):
 
-        current_subject_path = os.path.join(recordings_path, current_subject)
-        current_subject_id = current_subject.split('_')[1]
+        current_subject_path = os.path.join(path, current_subject)
 
         for current_subject_task in os.listdir(current_subject_path):
 
@@ -85,67 +84,58 @@ def retrieveDurationInformation(recordings_path: str, df_info, type: str, tasks:
             current_task = tasks[current_task_index]
             current_task_subject_path = os.path.join(current_subject_path, current_subject_task)
 
-            entry = { 'id': current_subject, 'type': type, 'task': current_task }
-
-            audio_files = os.listdir(current_task_subject_path)
-            if len(audio_files) == 0: continue
-
-            total_time = 0
-            for file in audio_files:
-
-                audio_path = os.path.join(current_task_subject_path, file)
-                audio = AudioSegment.from_file(audio_path)
-                total_time = total_time + audio.duration_seconds
-
-            entry['duration'] = total_time / len(audio_files)
-            # Append to entry information from xlsx
-            for row, info in zip(df_info.columns, df_info.loc[current_subject_id]):
-                entry[row.lower()] = info
+            files_path = list( map(lambda file: os.path.join(current_task_subject_path, file), os.listdir(current_task_subject_path)))
+            value = callback(files_path)
+            entry = { 'id': current_subject, 'type': type, 'task': current_task, information_key: value }
             information.append(entry)
         
-        printProgressBar(index_value + 1, number_of_subjects, prefix = 'Processing \'' + processing_key + '\' duration:', suffix = 'Complete', length = 50)
+        printProgressBar(index_value + 1, number_of_subjects, prefix = 'Processing \'' + type + '\' '+ information_key + ':', suffix = 'Complete', length = 50)
 
     return information
 
-def retrieveWordLengthInformation(transcriptions_path: str, df_info, type: str, tasks: List[str], processing_key: str):
-    information = []
-    subjects_dirs = os.listdir(transcriptions_path)
-    number_of_subjects = len(subjects_dirs)
+def callbackDuration(paths):
 
-    printProgressBar(0, number_of_subjects, prefix = 'Processing \'' + processing_key + '\' word length:', suffix = 'Complete', length = 50)
-    for index_value, current_subject in enumerate(subjects_dirs):
+    if len(paths) == 0: return 0
 
-        current_subject_path = os.path.join(transcriptions_path, current_subject)
-        current_subject_id = current_subject.split('_')[1]
+    total_time = 0
+    for file in paths:
+        audio = AudioSegment.from_file(file)
+        total_time = total_time + audio.duration_seconds
 
-        for current_subject_task in os.listdir(current_subject_path):
+    return total_time / len(paths)
 
-            current_task_index = int(current_subject_task.replace(current_subject + '_', '')) - 1
-            current_task = tasks[current_task_index]
-            current_task_subject_path = os.path.join(current_subject_path, current_subject_task)
+def callbackWordLength(paths):
 
-            entry = { 'id': current_subject, 'type': type, 'task': current_task }
+    if len(paths) == 0: return 0
 
-            transcription_files = os.listdir(current_task_subject_path)
-            if len(transcription_files) == 0: continue
+    total_words = 0
+    for file_path in paths:
+        file = open(file_path, 'r')
+        total_words = total_words + len(file.read().split())
+        file.close()
 
-            total_words = 0
-            for filename in transcription_files:
+    return total_words / len(paths)
 
-                transcription_path = os.path.join(current_task_subject_path, filename)
-                file = open(transcription_path, 'r')
-                total_words = total_words + len(file.read().split())
-                file.close()
+def mergeTasksInformation(info_df, type: str, tasks: List[str], infos, infos_columns):
 
-            entry['words'] = total_words / len(transcription_files)
-            # Append to entry information from xlsx
-            for row, info in zip(df_info.columns, df_info.loc[current_subject_id]):
-                entry[row.lower()] = info
-            information.append(entry)
-        
-        printProgressBar(index_value + 1, number_of_subjects, prefix = 'Processing \'' + processing_key + '\' word length:', suffix = 'Complete', length = 50)
+    information = {}
+    columns = info_df.columns
 
-    return information
+    # Append to entry information from xlsx
+    for index, row in info_df.iterrows():
+        for task in tasks:
+            entry = { 'id': index, 'type': type }
+            for column in columns: entry[column.lower()] = row[column]
+            entry['task'] = task
+            information[entry['id'] + '_' + entry['task']] = entry
+
+    # Append each infos
+    for info_column, info in zip(infos_columns, infos):
+        for info_line in info:
+            code = info_line['id'].split('_')[1] + '_' + info_line['task']
+            if code in information: information[code][info_column] = info_line[info_column]
+
+    return list(information.values())
 
 # =================================== MAIN EXECUTION ===================================
 
@@ -156,50 +146,42 @@ TASKS = [ "Task 1", "Task 2", "Task 3", "Task 4", "Task 5", "Task 6", "Task 7" ]
 # Retrieve Control Data
 worksheet_name = args.controls_data.split('/')[-1].replace('.xlsx', '')
 dataframe_control = pd.read_excel(args.controls_data, sheet_name = worksheet_name, index_col = 0)
+controls_duration_information = retrieveByTaskInformation(args.controls_rec, "Control", TASKS, 'duration', callbackDuration)
+controls_word_count_information = retrieveByTaskInformation(args.controls_trans, "Control", TASKS, 'word count', callbackWordLength)
+controls_info = mergeTasksInformation(dataframe_control, 'Control', TASKS, [controls_duration_information, controls_word_count_information], ['duration', 'word count'])
 # Retrieve Psychosis Data
 worksheet_name = args.psychosis_data.split('/')[-1].replace('.xlsx', '')
 dataframe_psychosis = pd.read_excel(args.psychosis_data, sheet_name = worksheet_name, index_col = 0)
-
-# ================================================================== DURATION ==================================================================
-# Retrieve Control Duration
-controls_duration_information = retrieveDurationInformation(args.controls_rec, dataframe_control, "Controls", TASKS, 'Controls')
-# Retrieve Psychosis Duration
-psychosis_duration_information = retrieveDurationInformation(args.psychosis_rec, dataframe_psychosis, "Psychosis", TASKS, 'Psychosis')
+psychosis_duration_information = retrieveByTaskInformation(args.psychosis_rec, "Psychosis", TASKS, 'duration', callbackDuration)
+psychosis_word_count_information = retrieveByTaskInformation(args.psychosis_trans, "Psychosis", TASKS, 'word count', callbackWordLength)
+psychosis_info = mergeTasksInformation(dataframe_psychosis, 'Psychosis', TASKS, [psychosis_duration_information, psychosis_word_count_information], ['duration', 'word count'])
 
 # Merge information into dataframe
-duration_information = controls_duration_information + psychosis_duration_information
-task_duration_df = pd.DataFrame(duration_information)
-task_duration_df.set_index('id') 
+full_task_information = controls_info + psychosis_info
+task_df = pd.DataFrame(full_task_information)
+task_df.set_index('id') 
 #print(task_df)
+
+# ================================================================== DURATION ==================================================================
 
 sns.set_theme(palette="deep")
 
 plt.clf()
-sns.displot(data=task_duration_df, x="duration", col="task", hue='type', multiple='dodge', kde=True, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
+sns.displot(data=task_df, x="duration", col="task", hue='type', multiple='dodge', kde=True, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
 plt.savefig(args.save + ' - task duration by type.png')
 
 plt.clf()
-sns.displot(data=task_duration_df, x="duration", row="gender", col="task", hue='type', multiple='dodge', kde=True, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
+sns.displot(data=task_df, x="duration", row="gender", col="task", hue='type', multiple='dodge', kde=True, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
 plt.savefig(args.save + ' - task duration by gender.png')
 
 plt.clf()
-sns.displot(data=task_duration_df, x="duration", row="schooling", col="task", hue='type', multiple='dodge', kde=True, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
+sns.displot(data=task_df, x="duration", row="schooling", col="task", hue='type', multiple='dodge', kde=True, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
 plt.savefig(args.save + ' - task duration by schooling.png')
 
 # ================================================================== WORD COUNT ==================================================================
-# Retrieve Control Duration
-controls_word_count_information = retrieveWordLengthInformation(args.controls_trans, dataframe_control, "Controls", TASKS, 'Controls')
-# Retrieve Psychosis Duration
-psychosis_word_count_information = retrieveWordLengthInformation(args.psychosis_trans, dataframe_psychosis, "Psychosis", TASKS, 'Psychosis')
-
-# Merge information into dataframe
-word_count_information = controls_word_count_information + psychosis_word_count_information
-task_word_count_df = pd.DataFrame(word_count_information)
-task_word_count_df.set_index('id') 
-#print(task_df)
 
 sns.set_theme(palette="deep")
 
 plt.clf()
-sns.displot(data=task_word_count_df, x="words", col="task", hue='type', multiple='dodge', kde=True, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
+sns.displot(data=task_df, x="word count", col="task", hue='type', multiple='dodge', kde=True, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
 plt.savefig(args.save + ' - word count by type.png')
