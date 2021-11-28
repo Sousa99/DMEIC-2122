@@ -85,10 +85,6 @@ def grouped_bar_plot(data, grouped_collumn, categories_collumn, categories, file
 
 # =================================== MAIN EXECUTION ===================================
 
-SAVE_PATH = "./records/"
-DATA_PATH = "../data/"
-EXCEL_EXT = ".xlsx"
-
 AGES_CATEGORIES = {
     'type': 'equals',
     'labels': ['18 - 29', '30 - 39', '40 - 49', '50 - 59', '60 - 69', '70 - 79', '>= 80'],
@@ -132,12 +128,13 @@ YEARS_SINCE_DIAGNOSIS_CATEGORIES = {
 
 # ======================================================================================
 
-dataframe = pd.read_excel(DATA_PATH + args.data + EXCEL_EXT, sheet_name = args.data, index_col = 0)
+worksheet_name = args.data.split('/')[-1].replace('.xlsx', '')
+dataframe = pd.read_excel(args.data, sheet_name = worksheet_name, index_col = 0)
 
-grouped_bar_plot(dataframe, 'Gender', 'Age', AGES_CATEGORIES, SAVE_PATH + args.save + ' - age by gender.png')
-grouped_bar_plot(dataframe, 'Gender', 'Schooling', SCHOOLINGS_CATEGORIES, SAVE_PATH + args.save + ' - schooling by gender.png')
+grouped_bar_plot(dataframe, 'Gender', 'Age', AGES_CATEGORIES, args.save + ' - age by gender.png')
+grouped_bar_plot(dataframe, 'Gender', 'Schooling', SCHOOLINGS_CATEGORIES, args.save + ' - schooling by gender.png')
 
 if args.psychosis:
-    grouped_bar_plot(dataframe, 'Gender', 'Diagnosis', DIAGNOSIS_CATEGORIES, SAVE_PATH + args.save + ' - diagnosis by gender.png')
-    grouped_bar_plot(dataframe, 'Gender', 'BPRS', BPRS_CATEGORIES, SAVE_PATH + args.save + ' - BPRS since diagnosis by gender.png')
-    grouped_bar_plot(dataframe, 'Gender', 'Years Since Diagnosis', YEARS_SINCE_DIAGNOSIS_CATEGORIES, SAVE_PATH + args.save + ' - years since diagnosis by gender.png')
+    grouped_bar_plot(dataframe, 'Gender', 'Diagnosis', DIAGNOSIS_CATEGORIES, args.save + ' - diagnosis by gender.png')
+    grouped_bar_plot(dataframe, 'Gender', 'BPRS', BPRS_CATEGORIES, args.save + ' - BPRS since diagnosis by gender.png')
+    grouped_bar_plot(dataframe, 'Gender', 'Years Since Diagnosis', YEARS_SINCE_DIAGNOSIS_CATEGORIES, args.save + ' - years since diagnosis by gender.png')
