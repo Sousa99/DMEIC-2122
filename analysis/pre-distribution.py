@@ -116,6 +116,28 @@ def callbackWordLength(paths):
 
     return total_words / len(paths)
 
+def callbackWordFrequency(paths):
+
+    STOP_WORDS = []
+
+    word_frequencies = {}
+    for file_path in paths:
+        file = open(file_path, 'r')
+        text = file.read()
+        file.close()
+
+        # Pre processing done to the text
+        text = text.lower()
+
+        # Add to dict
+        for word in text.split():
+            if word in STOP_WORDS: continue
+
+            if word not in word_frequencies: word_frequencies[word] = 1
+            else: word_frequencies[word] = word_frequencies[word] + 1
+
+    return word_frequencies
+
 def mergeTasksInformation(info_df, type: str, tasks: List[str], infos, infos_columns):
 
     information = {}
@@ -140,21 +162,31 @@ def mergeTasksInformation(info_df, type: str, tasks: List[str], infos, infos_col
 # =================================== MAIN EXECUTION ===================================
 
 TASKS = [ "Task 1", "Task 2", "Task 3", "Task 4", "Task 5", "Task 6", "Task 7" ]
+TYPE_CONTROL = 'Control'
+TYPE_PSYCHOSIS = 'Psychosis'
+TYPES = [TYPE_CONTROL, TYPE_PSYCHOSIS]
+WORD_FREQUENCIES_LARGEST = 10
 
 # ======================================================================================
 
 # Retrieve Control Data
 worksheet_name = args.controls_data.split('/')[-1].replace('.xlsx', '')
 dataframe_control = pd.read_excel(args.controls_data, sheet_name = worksheet_name, index_col = 0)
-controls_duration_information = retrieveByTaskInformation(args.controls_rec, "Control", TASKS, 'duration', callbackDuration)
-controls_word_count_information = retrieveByTaskInformation(args.controls_trans, "Control", TASKS, 'word count', callbackWordLength)
-controls_info = mergeTasksInformation(dataframe_control, 'Control', TASKS, [controls_duration_information, controls_word_count_information], ['duration', 'word count'])
+controls_duration_information = retrieveByTaskInformation(args.controls_rec, TYPE_CONTROL, TASKS, 'duration', callbackDuration)
+controls_word_count_information = retrieveByTaskInformation(args.controls_trans, TYPE_CONTROL, TASKS, 'word count', callbackWordLength)
+controls_word_freq_information = retrieveByTaskInformation(args.controls_trans, TYPE_CONTROL, TASKS, 'word frequencies', callbackWordFrequency)
+controls_info = mergeTasksInformation(dataframe_control, TYPE_CONTROL, TASKS,
+    [controls_duration_information, controls_word_count_information, controls_word_freq_information],
+    ['duration', 'word count', 'word frequencies'])
 # Retrieve Psychosis Data
 worksheet_name = args.psychosis_data.split('/')[-1].replace('.xlsx', '')
 dataframe_psychosis = pd.read_excel(args.psychosis_data, sheet_name = worksheet_name, index_col = 0)
-psychosis_duration_information = retrieveByTaskInformation(args.psychosis_rec, "Psychosis", TASKS, 'duration', callbackDuration)
-psychosis_word_count_information = retrieveByTaskInformation(args.psychosis_trans, "Psychosis", TASKS, 'word count', callbackWordLength)
-psychosis_info = mergeTasksInformation(dataframe_psychosis, 'Psychosis', TASKS, [psychosis_duration_information, psychosis_word_count_information], ['duration', 'word count'])
+psychosis_duration_information = retrieveByTaskInformation(args.psychosis_rec, TYPE_PSYCHOSIS, TASKS, 'duration', callbackDuration)
+psychosis_word_count_information = retrieveByTaskInformation(args.psychosis_trans, TYPE_PSYCHOSIS, TASKS, 'word count', callbackWordLength)
+psychosis_word_freq_information = retrieveByTaskInformation(args.psychosis_trans, TYPE_PSYCHOSIS, TASKS, 'word frequencies', callbackWordFrequency)
+psychosis_info = mergeTasksInformation(dataframe_psychosis, TYPE_PSYCHOSIS, TASKS,
+    [psychosis_duration_information, psychosis_word_count_information, psychosis_word_freq_information],
+    ['duration', 'word count', 'word frequencies'])
 
 # Merge information into dataframe
 full_task_information = controls_info + psychosis_info
@@ -162,8 +194,11 @@ task_df = pd.DataFrame(full_task_information)
 task_df.set_index('id') 
 #print(task_df)
 
+print()
+
 # ================================================================== DURATION ==================================================================
 
+print("Exporting 'duration' plots ...")
 sns.set_theme(palette="deep")
 
 plt.clf()
@@ -180,8 +215,45 @@ plt.savefig(args.save + ' - task duration by schooling.png')
 
 # ================================================================== WORD COUNT ==================================================================
 
+print("Exporting 'word count' plots ...")
 sns.set_theme(palette="deep")
 
 plt.clf()
 sns.displot(data=task_df, x="word count", col="task", hue='type', multiple='dodge', kde=True, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
 plt.savefig(args.save + ' - word count by type.png')
+
+# ================================================================== WORD FREQUENCIES ==================================================================
+
+merged_word_freq_info = {}
+for _, row in task_df.iterrows():
+    if not isinstance(row['word frequencies'], dict): continue
+
+    for word, count in row['word frequencies'].items():
+        key = '_'.join([row['type'], row['task'], word])
+        if key in merged_word_freq_info: merged_word_freq_info[key]['count'] += count
+        else: merged_word_freq_info[key] = {'type': row['type'], 'task': row['task'], 'word': word, 'count': count }
+
+word_frequencies_df = pd.DataFrame(list(merged_word_freq_info.values()))
+#print(word_frequencies_df)
+nlargest_word_frequencies_df = pd.DataFrame()
+for type in TYPES:
+    for task in TASKS:
+        sub_df = word_frequencies_df[(word_frequencies_df['type'] == type) & (word_frequencies_df['task'] == task)]
+        sub_df = sub_df.nlargest(WORD_FREQUENCIES_LARGEST, 'count')
+
+        nlargest_word_frequencies_df = pd.concat([nlargest_word_frequencies_df, sub_df])
+
+print("Exporting 'word frequency' plots ...")
+sns.set_theme(palette="deep")
+
+plt.clf()
+fig, axes = plt.subplots(len(TYPES), len(TASKS), figsize=(4 * len(TASKS) + 8, 3 * len(TYPES) + 8))
+for row_axes, type in zip(axes, TYPES):
+    for axis, task in zip(row_axes, TASKS):
+        sub_task_df = nlargest_word_frequencies_df[(nlargest_word_frequencies_df['type'] == type) & (nlargest_word_frequencies_df['task'] == task)]
+        
+        axis.title.set_text('type = ' + type + ' | task = ' + task)
+        subplot = sns.barplot(data=sub_task_df, ax=axis, x="word", y="count")
+        for item in subplot.get_xticklabels(): item.set_rotation(37.5)
+fig.tight_layout(pad=3.0)
+plt.savefig(args.save + ' - word frequencies by task and type.png')
