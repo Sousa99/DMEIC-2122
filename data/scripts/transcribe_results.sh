@@ -9,7 +9,8 @@ PSYCHOSIS_TRANSCRIPTIONS_RESULTS_PATH="../recordings_transcribed_results/psychos
 # Other important consts
 TRIBUS_EXPORT_PATH="exp_tribus/"
 TRIBUS_RESULT_PATH="result/transcription.trs"
-
+TRIBUS_RESULT_CTM="/ctm"
+TRIBUS_RESULT_PCTM="/pctm"
 
 if [ -d "${TRANSCRIPTIONS_RESULTS_PATH}" ]; then rm -rf "${TRANSCRIPTIONS_RESULTS_PATH}"; fi
 
@@ -17,7 +18,9 @@ echo "Extracting results from Controls ..."
 for taskFolder in `ls ${CONTROL_TRANSCRIPTIONS_PATH}${TRIBUS_EXPORT_PATH}`; do
 	
 	task_path="${CONTROL_TRANSCRIPTIONS_PATH}${TRIBUS_EXPORT_PATH}${taskFolder}/"
-	file_in_path=${task_path}${TRIBUS_RESULT_PATH}
+	file_in_trans_path=${task_path}${TRIBUS_RESULT_PATH}
+	file_in_ctm_path=${task_path}${taskFolder}${TRIBUS_RESULT_CTM}
+	file_in_pctm_path=${task_path}${taskFolder}${TRIBUS_RESULT_PCTM}
 	
 	#echo "Task Folder: ${taskFolder}"
 	#echo "Task Path: ${task_path}"
@@ -31,10 +34,11 @@ for taskFolder in `ls ${CONTROL_TRANSCRIPTIONS_PATH}${TRIBUS_EXPORT_PATH}`; do
 
 	subject_folder="${code}_${subject}"
 	task_folder="${code}_${subject}_${task_number}"
-	filename="${taskFolder}.trs"
 
 	dir_out_path="${CONTROL_TRANSCRIPTIONS_RESULTS_PATH}${subject_folder}/${task_folder}/"
-	file_out_path="${dir_out_path}${filename}"
+	file_out_trans_path="${dir_out_path}${taskFolder}.trs"
+	file_out_ctm_path="${dir_out_path}${taskFolder}.ctm"
+	file_out_pctm_path="${dir_out_path}${taskFolder}.pctm"
 
 	#echo
 	#echo "Subject Path: ${subject_folder}"
@@ -43,14 +47,18 @@ for taskFolder in `ls ${CONTROL_TRANSCRIPTIONS_PATH}${TRIBUS_EXPORT_PATH}`; do
         #echo "Filename: ${filename}"
 
 	if [ ! -d "${dir_out_path}" ]; then mkdir -p "${dir_out_path}"; fi
-	cp ${file_in_path} ${file_out_path}
+	cp ${file_in_trans_path} ${file_out_trans_path}
+	cp ${file_in_ctm_path} ${file_out_ctm_path}
+	cp ${file_in_pctm_path} ${file_out_pctm_path}
 done
 
 echo "Extracting results from Psychosis ..."
 for taskFolder in `ls ${PSYCHOSIS_TRANSCRIPTIONS_PATH}${TRIBUS_EXPORT_PATH}`; do
 
         task_path="${PSYCHOSIS_TRANSCRIPTIONS_PATH}${TRIBUS_EXPORT_PATH}${taskFolder}/"
-        file_in_path=${task_path}${TRIBUS_RESULT_PATH}
+        file_in_trans_path=${task_path}${TRIBUS_RESULT_PATH}
+        file_in_ctm_path=${task_path}${taskFolder}${TRIBUS_RESULT_CTM}
+        file_in_pctm_path=${task_path}${taskFolder}${TRIBUS_RESULT_PCTM}
 
         #echo "Task Folder: ${taskFolder}"
         #echo "Task Path: ${task_path}"
@@ -64,10 +72,11 @@ for taskFolder in `ls ${PSYCHOSIS_TRANSCRIPTIONS_PATH}${TRIBUS_EXPORT_PATH}`; do
 
         subject_folder="${code}_${subject}"
         task_folder="${code}_${subject}_${task_number}"
-        filename="${taskFolder}.trs"
 
         dir_out_path="${PSYCHOSIS_TRANSCRIPTIONS_RESULTS_PATH}${subject_folder}/${task_folder}/"
-        file_out_path="${dir_out_path}${filename}"
+        file_out_trans_path="${dir_out_path}${taskFolder}.trs"
+        file_out_ctm_path="${dir_out_path}${taskFolder}.ctm"
+        file_out_pctm_path="${dir_out_path}${taskFolder}.pctm"
 
         #echo
         #echo "Subject Path: ${subject_folder}"
@@ -76,5 +85,7 @@ for taskFolder in `ls ${PSYCHOSIS_TRANSCRIPTIONS_PATH}${TRIBUS_EXPORT_PATH}`; do
         #echo "Filename: ${filename}"
 
         if [ ! -d "${dir_out_path}" ]; then mkdir -p "${dir_out_path}"; fi
-        cp ${file_in_path} ${file_out_path}
+        cp ${file_in_trans_path} ${file_out_trans_path}
+        cp ${file_in_ctm_path} ${file_out_ctm_path}
+        cp ${file_in_pctm_path} ${file_out_pctm_path}
 done
