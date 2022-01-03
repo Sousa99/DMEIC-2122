@@ -22,3 +22,9 @@ echo "📊 Pre Distribution Analysis"
 OUTPUT_FILE="$DIR${NOW} - pre-distribution"
 python3 ./pre-distribution.py -controls_data "${CONTROL}" -psychosis_data "${PSYCHOSIS}" -controls_rec "${CONTROL_RECORDS}" -psychosis_rec "${PSYCHOSIS_RECORDS}" -controls_trans "${CONTROL_TRANSCRIPTIONS}" -psychosis_trans "${PSYCHOSIS_TRANSCRIPTIONS}" -save "${OUTPUT_FILE}"
 echo
+
+# run microphone and fix analysis
+echo "📊 Microphone and Fix Analysis"
+OUTPUT_FILE="$DIR${NOW} - microphone and fix"
+python3 ./microphone_differences.py -controls_trans "${CONTROL_TRANSCRIPTIONS}" -psychosis_trans "${PSYCHOSIS_TRANSCRIPTIONS}" -save "${OUTPUT_FILE}"
+echo
