@@ -122,6 +122,7 @@ current_input_line_index = 0
 current_start_time = 0
 current_time = 0
 end_time = len(audio)
+end_time_ts = convert_milliseconds_to_time(end_time)
 
 # ===================================================== MENU POSSIBILITIES =====================================================
 REPEAT_ID = 0
@@ -174,7 +175,7 @@ while current_start_time != end_time and current_input_line_index < len(transcri
     to_ts = convert_milliseconds_to_time(stop_time)
 
     # Display Menu
-    action_menu = SelectionMenu(MENU, "👂 You heard '{0}' ({1:.2f} → {2:.2f}) ...".format(heard_display, from_ts, to_ts))
+    action_menu = SelectionMenu(MENU, "👂 You heard '{0}' ({1:.2f} → {2:.2f} out of {3:.2f}) ...".format(heard_display, from_ts, to_ts, end_time_ts))
     format_menu(action_menu)
     action_menu.show()
     action_menu.join()
