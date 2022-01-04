@@ -88,6 +88,8 @@ OUTPUT_SUFFIX = 'Fix'
 
 NOTHING_HEARD_DISPLAY = 'NOTHING'
 
+INTERVAL_EXTRA = convert_time_to_milliseconds(0.1)
+
 # =================================== MAIN EXECUTION ===================================
 
 file_possibilities = os.listdir(args.trans)
@@ -162,7 +164,10 @@ while current_start_time != end_time and current_input_line_index < len(transcri
         stop_time = current_input_line['start'] + current_input_line['duration']
         next_line_index = current_input_line_index + 1
 
-    play(audio[current_start_time : stop_time])
+    play_start_time = max(current_start_time - INTERVAL_EXTRA, 0)
+    play_stop_time = min(stop_time + INTERVAL_EXTRA, end_time)
+    play(audio[play_start_time : play_stop_time])
+
     heard_display = NOTHING_HEARD_DISPLAY
     if len(heard) != 0: heard_display = ' + '.join(heard)
     from_ts = convert_milliseconds_to_time(current_start_time)
