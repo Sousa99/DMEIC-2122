@@ -2,6 +2,7 @@ import os
 import math
 import argparse
 import warnings
+from consolemenu.format.menu_borders import MenuBorderStyle
 
 import numpy                as np
 import pandas               as pd
@@ -11,8 +12,9 @@ import matplotlib.pyplot    as plt
 from copy                   import deepcopy
 from pydub                  import AudioSegment
 from typing                 import List
-from consolemenu            import SelectionMenu
+from consolemenu            import SelectionMenu, MenuFormatBuilder
 from pydub.playback         import play
+from consolemenu.format     import MenuBorderStyle
 from nltk.metrics.distance  import edit_distance
 
 # =================================== IGNORE CERTAIN ERRORS ===================================
@@ -70,6 +72,13 @@ def map_lines_to_info(lines: List[str]):
     lines_mapped = map(lambda line: map_line(line), lines)
     return { 'file': file, 'source': source, 'lines': list(lines_mapped) }
 
+def format_menu(menu):
+
+    menu_format = MenuFormatBuilder()
+    menu.formatter = menu_format
+
+    return menu
+
 # =================================== MAIN EXECUTION ===================================
 
 SPLIT_SYMBOL = '_'
@@ -82,8 +91,8 @@ NOTHING_HEARD_DISPLAY = 'NOTHING'
 # =================================== MAIN EXECUTION ===================================
 
 file_possibilities = os.listdir(args.trans)
-file_selection_menu = SelectionMenu(file_possibilities, "📄  Select one file as the main template:")
-
+file_selection_menu = SelectionMenu(file_possibilities, "📄  Select one file as the main template: ")
+file_selection_menu = format_menu(file_selection_menu)
 file_selection_menu.show()
 file_selection_menu.join()
 selected_file_index = file_selection_menu.selected_option
@@ -122,8 +131,10 @@ GO_BACK = '◀️\t Go Back to Previous State'
 CHANGE_ID = 3
 CHANGE = '✏️\t Change Word Associated'
 JOIN_NEXT_ID = 4
-JOIN_NEXT = '🙏\t Join with next timestep'
-MENU = [ REPEAT, NEXT, GO_BACK, CHANGE, JOIN_NEXT ]
+JOIN_NEXT = '🙏\t Join with next Track'
+SPLIT_ID = 5
+SPLIT = '✂️\t Split this Track'
+MENU = [ REPEAT, NEXT, GO_BACK, CHANGE, JOIN_NEXT, SPLIT ]
 # ===================================================== MENU POSSIBILITIES =====================================================
 
 memory = []
@@ -159,6 +170,7 @@ while current_start_time != end_time and current_input_line_index < len(transcri
 
     # Display Menu
     action_menu = SelectionMenu(MENU, "👂 You heard '{0}' ({1:.2f} → {2:.2f}) ...".format(heard_display, from_ts, to_ts))
+    format_menu(action_menu)
     action_menu.show()
     action_menu.join()
     selected_action_index = action_menu.selected_option
@@ -184,6 +196,22 @@ while current_start_time != end_time and current_input_line_index < len(transcri
 
     elif selected_action_index == JOIN_NEXT_ID:
         current_time = stop_time
+        current_input_line_index = next_line_index
+
+    elif selected_action_index == SPLIT_ID:
+        print("✂️  You are about to split time ({0:.2f} → {1:.2f}) with word '{2}'".format(from_ts, to_ts, heard_display))
+        number_splits = int(input("✂️\t How many words do you wish to insert? "))
+        for index in range(number_splits):
+            sub_start = convert_time_to_milliseconds(float(input("✂️\t {0}: What is the start time? ".format(str(index + 1).rjust(2)))))
+            sub_end = convert_time_to_milliseconds(float(input("✂️\t {0}: What is the end time? ".format(str(index + 1).rjust(2)))))
+            sub_word = str(input("✂️\t {0}: What is the word? ".format(str(index + 1).rjust(2))))
+
+            output_lines.append({ 'start': sub_start, 'duration': sub_end - sub_start, 'word': sub_word })
+
+        heard = []
+
+        current_start_time = stop_time
+        current_time = current_start_time
         current_input_line_index = next_line_index
 
     elif selected_action_index == GO_BACK_ID:
