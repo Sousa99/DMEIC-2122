@@ -2,11 +2,11 @@
 
 TRIBUS_LOC=/tmp/miamoto/tribus.sh
 
-RECORDINGS_CONTROLS_PATH=../recordings/controls_converted/
-TRANSCRIBE_CONTROLS_PATH=../recordings/controls_transcribed/
+RECORDINGS_CONTROLS_PATH=../recordings/controls/
+TRANSCRIBE_CONTROLS_PATH=../recordings_transcribed/controls_transcribed/
 
-RECORDINGS_PSYCHOSIS_PATH=../recordings/psychosis_converted/
-TRANSCRIBE_PSYCHOSIS_PATH=../recordings/psychosis_transcribed/
+RECORDINGS_PSYCHOSIS_PATH=../recordings/psychosis/
+TRANSCRIBE_PSYCHOSIS_PATH=../recordings_transcribed/psychosis_transcribed/
 
 prog() {
     local w=80 p=$1;  shift
