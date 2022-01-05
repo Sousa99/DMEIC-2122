@@ -221,7 +221,6 @@ while current_start_time != end_time and current_input_line_index < len(transcri
         current_input_line_index = next_line_index
 
     elif selected_action_index == GO_BACK_ID:
-
         if len(memory) < 2: continue
         # Remove just added
         memory.pop()
@@ -233,6 +232,9 @@ while current_start_time != end_time and current_input_line_index < len(transcri
         current_input_line_index = memory_item['current_input_line_index']
         heard = memory_item['heard']
         output_lines = memory_item['output_lines']
+
+    elif selected_action_index == REPEAT_ID:
+        if len(heard) > 0: heard.pop()
         
 # Write to Fix File
 file = open(PATH_TO_OUT_TRANS, 'w')
