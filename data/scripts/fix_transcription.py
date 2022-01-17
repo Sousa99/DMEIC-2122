@@ -143,7 +143,7 @@ MENU = [ REPEAT, NEXT, GO_BACK, CHANGE, JOIN_NEXT, SPLIT ]
 memory = []
 heard = []
 output_lines = []
-while current_start_time != end_time and current_input_line_index < len(transcription_info['lines']):
+while current_start_time != end_time:
 
     memory.append({
         'current_start_time': current_start_time, 'current_time': current_time,
@@ -152,12 +152,15 @@ while current_start_time != end_time and current_input_line_index < len(transcri
         'output_lines': deepcopy(output_lines),
     })
 
-    current_input_line = transcription_info['lines'][current_input_line_index]
+    current_input_line = None
+    if current_input_line_index < len(transcription_info['lines']):
+        current_input_line = transcription_info['lines'][current_input_line_index]
     stop_time, next_line_index = None, None
 
     # Nothing should be said here
-    if current_input_line['start'] > current_time:
-        stop_time = current_input_line['start']
+    if current_input_line == None or current_input_line['start'] > current_time:
+        if current_input_line == None: stop_time = end_time
+        else: stop_time = current_input_line['start']
         next_line_index = current_input_line_index
 
     elif current_input_line['start'] <= current_time:
