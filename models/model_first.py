@@ -1,9 +1,11 @@
 import argparse
 import warnings
 
+import pandas as pd
+
 # Local Modules
 import module_load
-import module_gemaps
+import module_sound_features
 
 # =================================== IGNORE CERTAIN ERRORS ===================================
 
@@ -43,20 +45,34 @@ TASKS = [ {'code': 1, 'name': 'Task 1'},  {'code': 2, 'name': 'Task 2'},  {'code
 CODE_CONTROL = { 'code': 'Control', 'file_system': 'c' }
 CODE_PSYCHOSIS = { 'code': 'Psychosis', 'file_system': 'p' }
 
+PREFERENCE_AUDIO_TRACKS = ['Tr1', 'Tr2', 'Tr3', 'Tr4', 'LR']
+
 # =================================== MAIN EXECUTION ===================================
 
+# Load Datasets and Paths
 control_load = module_load.load_dataset(CODE_CONTROL['file_system'],
     args.info_controls, args.audio_controls, args.trans_controls, TASKS)
-control_info = control_load['info']
-control_paths = control_load['paths']
-
-print(control_info)
-print(control_paths)
-
 psychosis_load = module_load.load_dataset(CODE_PSYCHOSIS['file_system'],
     args.info_psychosis, args.audio_psychosis, args.trans_psychosis, TASKS)
+
+# Control Info
+control_info = control_load['info']
+control_info_columns = list(control_info.columns.values)
+control_info['Type'] = CODE_CONTROL['code']
+control_info = control_info[['Type'] + control_info_columns]
+control_paths = control_load['paths']
+# Psychosis Info
 psychosis_info = psychosis_load['info']
+psychosis_info_columns = list(psychosis_info.columns.values)
+psychosis_info['Type'] = CODE_PSYCHOSIS['code']
+psychosis_info = psychosis_info[['Type'] + psychosis_info_columns]
 psychosis_paths = psychosis_load['paths']
 
-print(psychosis_info)
-print(psychosis_paths)
+# Concat Information
+subject_info = pd.concat([control_info, psychosis_info])
+subject_paths = pd.concat([control_paths, psychosis_paths])
+
+# Get Features
+sound_features_df = module_sound_features.sound_analysis(subject_paths, PREFERENCE_AUDIO_TRACKS)
+
+print(sound_features_df)

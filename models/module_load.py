@@ -4,25 +4,25 @@ import pandas as pd
 
 # =================================== PRIVATE METHODS ===================================
 
-def load_info_subjects(info_file):
+def load_info_subjects(info_file, subjects_code_file_system, delimiter):
     worksheet_name = info_file.split('/')[-1].replace('.xlsx', '')
     dataframe = pd.read_excel(info_file, sheet_name = worksheet_name, index_col = 0)
+    dataframe.index = subjects_code_file_system + delimiter + dataframe.index
     return dataframe
 
-def subdivide_info_for_task(info, subjects_code_file_system, audio_path, trans_path, tasks, delimiter):
+def subdivide_info_for_task(info, audio_path, trans_path, tasks, delimiter):
     info_by_task_dict = {}
 
     for subject, _ in info.iterrows():
         for task in tasks:
 
-            subject_id = delimiter.join([subjects_code_file_system, subject])
-            task_id = delimiter.join([subjects_code_file_system, subject, str(task['code'])])
+            task_id = delimiter.join([subject, str(task['code'])])
             # Add Information
             row_dict = {}
             row_dict['Subject'] = subject
             row_dict['Task'] = task['name']
-            row_dict['Audio Path'] = os.path.join(audio_path, subject_id, task_id)
-            row_dict['Trans Path'] = os.path.join(trans_path, subject_id, task_id)
+            row_dict['Audio Path'] = os.path.join(audio_path, subject, task_id)
+            row_dict['Trans Path'] = os.path.join(trans_path, subject, task_id)
             # Add to Info
             info_by_task_dict[task_id] = row_dict
 
@@ -40,8 +40,8 @@ def filter_path_exists(row):
 # =================================== PUBLIC METHODS ===================================
 
 def load_dataset(subjects_code_file_system, info_file, audio_path, trans_path, tasks, delimiter = '_'):
-    info_subjects = load_info_subjects(info_file)
-    subject_by_task_paths = subdivide_info_for_task(info_subjects, subjects_code_file_system, audio_path, trans_path, tasks, delimiter)
+    info_subjects = load_info_subjects(info_file, subjects_code_file_system, delimiter)
+    subject_by_task_paths = subdivide_info_for_task(info_subjects, audio_path, trans_path, tasks, delimiter)
     
     valid_paths = subject_by_task_paths.apply(filter_path_exists, axis=1)
     subject_by_task_paths = subject_by_task_paths[valid_paths]

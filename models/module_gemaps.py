@@ -8,18 +8,24 @@ import audb
 import audiofile
 import opensmile
 
-from enum import Enum
+from enum import Enum, auto
 
 # =================================== CLASS GEMAPS ANALYZER ===================================
 
 class FeatureSet(Enum):
-    eGeMAPSv02 = opensmile.FeatureSet.eGeMAPSv02
+    eGeMAPSv02 = auto(),
 
 class GeMAPSAnalyzer():
 
-    def __init__(self, featureSet: FeatureSet) -> None:
+    def __init__(self, feature_set_enum: FeatureSet) -> None:
+
+        feature_set = None
+        if feature_set_enum == FeatureSet.eGeMAPSv02: feature_set = opensmile.FeatureSet.eGeMAPSv02
+
+        if feature_set == None: exit("🚨  You should have specified a valid FeatureSet")
+
         self.smile = opensmile.Smile(
-            feature_set=opensmile.FeatureSet.eGeMAPSv02,
+            feature_set=feature_set,
             feature_level=opensmile.FeatureLevel.Functionals,
         )
 
