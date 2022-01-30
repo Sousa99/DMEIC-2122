@@ -3,3 +3,6 @@
 /analysis/records/*
 # Scripts are exception
 !/data/scripts
+
+# PyCache should not be sent
+__pycache__
