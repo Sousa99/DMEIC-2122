@@ -17,6 +17,7 @@ def compute_file_paths(trans_path, extension_preference_order, extension):
         verifies_condition = list(filter(lambda file_info: file_info[1].endswith(prefered_extension), files))
         if len(verifies_condition) > 0: return verifies_condition[0][0]
 
+    if len(files) == 0: return None
     return files[0][0]
 
 def compute_number_of_words(file_path):
@@ -57,6 +58,7 @@ def speech_analysis(paths_df, preference_audio_tracks, preference_trans, trans_e
     speech_df['Audio File Path'] = list(map(lambda items: os.path.join(items[0], items[1]), list(zip(speech_df['Audio Path'], speech_df['Audio File']))))
     # Choose trans files from dictionary
     speech_df['Trans File'] = speech_df['Trans Path'].apply(compute_file_paths, args=(preference_trans, trans_extension))
+    speech_df = speech_df.drop(speech_df[speech_df['Trans File'].isnull()].index)
     speech_df['Trans File Path'] = list(map(lambda items: os.path.join(items[0], items[1]), list(zip(speech_df['Trans Path'], speech_df['Trans File']))))
     
     # Speaking Rate
