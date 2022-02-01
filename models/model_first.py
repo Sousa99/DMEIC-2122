@@ -6,6 +6,7 @@ import pandas as pd
 # Local Modules
 import module_load
 import module_sound_features
+import module_speech_features
 
 # =================================== IGNORE CERTAIN ERRORS ===================================
 
@@ -46,6 +47,8 @@ CODE_CONTROL = { 'code': 'Control', 'file_system': 'c' }
 CODE_PSYCHOSIS = { 'code': 'Psychosis', 'file_system': 'p' }
 
 PREFERENCE_AUDIO_TRACKS = ['Tr1', 'Tr2', 'Tr3', 'Tr4', 'LR']
+PREFERENCE_TRANS = ['Fix', 'Tr1', 'Tr2', 'Tr3', 'Tr4', 'LR']
+EXTENSION_TRANS = '.ctm'
 
 # =================================== MAIN EXECUTION ===================================
 
@@ -74,5 +77,7 @@ subject_paths = pd.concat([control_paths, psychosis_paths])
 
 # Get Features
 sound_features_df = module_sound_features.sound_analysis(subject_paths, PREFERENCE_AUDIO_TRACKS)
+speech_features_df = module_speech_features.speech_analysis(subject_paths, PREFERENCE_AUDIO_TRACKS, PREFERENCE_TRANS, EXTENSION_TRANS)
 
 print(sound_features_df)
+print(speech_features_df)

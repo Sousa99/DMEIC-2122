@@ -22,7 +22,7 @@ def compute_file_paths(audio_path, extension_preference_order):
 
 def sound_analysis(paths_df, preference_audio_tracks):
 
-    # Datframe to stode sound features
+    # Dataframe to study sound features
     sound_df = paths_df.copy(deep=True)[['Subject', 'Task', 'Audio Path']]
     # Choose audio files from dictionary
     sound_df['Audio File'] = sound_df['Audio Path'].apply(compute_file_paths, args=(preference_audio_tracks,))
