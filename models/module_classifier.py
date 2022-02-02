@@ -2,6 +2,7 @@ import abc
 import pandas as pd
 from sklearn import tree
 
+from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import LeaveOneOut
 
@@ -24,6 +25,18 @@ class DecisionTree(Classifier):
         tree_classifier.fit(train_X, train_Y)
 
         prd_Y = tree_classifier.predict(test_X)
+        return prd_Y
+
+class SupportVectorMachine(Classifier):
+
+    def __init__(self):
+        pass
+
+    def make_prediction(self, train_X, train_Y, test_X):
+        svm_classifier = SVC(C=1, kernel='linear')
+        svm_classifier.fit(train_X, train_Y)
+
+        prd_Y = svm_classifier.predict(test_X)
         return prd_Y
 
 # =================================== PUBLIC METHODS ===================================

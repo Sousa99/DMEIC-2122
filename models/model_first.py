@@ -1,6 +1,7 @@
 import argparse
 import warnings
 
+import numpy as np
 import pandas as pd
 
 # Local Modules
@@ -9,6 +10,9 @@ import module_sound_features
 import module_speech_features
 import module_classifier
 import module_scorer
+import module_aux
+
+from sklearn.impute import SimpleImputer
 
 # =================================== IGNORE CERTAIN ERRORS ===================================
 
@@ -85,16 +89,32 @@ speech_features_df = module_speech_features.speech_analysis(subject_paths, PREFE
 # All Features
 #all_features = pd.merge(sound_features_df, speech_features_df, left_index=True, right_index=True, how='outer')
 
+# ===================================== CHOOSE TASKS =====================================
+ACTIVE_TASKS = ['Task 5', 'Task 6', 'Task 7']
+
 # ===================================== DROP FEATURES =====================================
-speech_drop_columns = ['Subject', 'Task', 'Audio Path', 'Audio File', 'Audio File Path', 'Trans Path', 'Trans File', 'Trans File Path']
+general_drop_columns = ['Subject', 'Task']
+speech_drop_columns = ['Audio Path', 'Audio File', 'Audio File Path', 'Trans Path', 'Trans File', 'Trans File Path']
+
+# ===================================== FEATURES =====================================
+speech_features = [column for column in speech_features_df.columns.values if column not in speech_drop_columns + general_drop_columns]
 
 # ===================================== ONLY SPEECH FEATURES =====================================
-speech_features_X = speech_features_df.drop(speech_drop_columns, axis=1)
-speech_features_Y = speech_features_df['Subject'].apply(lambda subject: subject_info.loc[subject]['Target'])
+speech_features_df = speech_features_df[speech_features_df['Task'].isin(ACTIVE_TASKS)]
+speech_features_df = speech_features_df.drop(speech_drop_columns, axis=1)
+speech_features_pivot = module_aux.pivot_on_column(speech_features_df, ['Subject'], 'Task', speech_features, 'on')
+speech_features_X = speech_features_pivot
+speech_features_Y = speech_features_pivot.reset_index()['Subject'].apply(lambda subject: subject_info.loc[subject]['Target'])
+speech_features_Y.index = speech_features_pivot.index
+
+# ===== FIXME: MOVE TO ANOTHER MODULE =====
+imp = SimpleImputer(strategy='mean', missing_values=np.nan, copy=True)
+speech_features_X = pd.DataFrame(imp.fit_transform(speech_features_X), columns=speech_features_X.columns.values)
+# ===== FIXME: MOVE TO ANOTHER MODULE =====
 
 speech_splits = module_classifier.leave_one_out(speech_features_X)
 scorer = module_scorer.Scorer()
-for train_index, test_index in speech_splits:
+for index, (train_index, test_index) in enumerate(speech_splits):
     X_train, X_test = speech_features_X.iloc[train_index], speech_features_X.iloc[test_index]
     y_train, y_test = speech_features_Y.iloc[train_index], speech_features_Y.iloc[test_index]
 
@@ -103,4 +123,3 @@ for train_index, test_index in speech_splits:
     scorer.add_points(y_test, y_prd)
 
 print(scorer.export_results())
-    

@@ -22,6 +22,7 @@ def compute_file_paths(trans_path, extension_preference_order, extension):
 
 def compute_number_of_words(file_path):
     
+    # FIXME: Take into account file structure
     file = open(file_path, 'r')
     words_per_line = map(lambda line: len(line.split()), file.readlines())
     file.close()
