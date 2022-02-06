@@ -1,3 +1,7 @@
+import numpy as np
+
+# Local Modules
+import module_exporter
 
 # =================================== PRIVATE CLASS DEFINITIONS ===================================
 
@@ -6,7 +10,9 @@
 # Assuming False as Negative Class and True as Positive Class
 class Scorer():
 
-    def __init__(self):
+    def __init__(self, categories):
+        self.categories = categories
+        # Scores
         self.true_positives = 0
         self.true_negatives = 0
         self.false_positives = 0
@@ -30,8 +36,39 @@ class Scorer():
         number_points = number_points + self.true_negatives
         return number_points
 
-    def export_results(self):
+    # ============================================= METRICS RETRIEVAL =============================================
+    def calculate_accuracy(self): return (self.true_positives + self.true_negatives) / self.number_points()
+    def calculate_precision(self): return self.true_positives / (self.true_positives + self.false_positives)
+    def calculate_recall(self): return self.true_positives / (self.true_positives + self.false_negatives)
+    def calculate_sensitivity(self): return self.true_positives / (self.true_positives + self.false_negatives)
+    def calculate_specificity(self): return self.true_negatives / (self.false_positives + self.true_negatives)
+    def calculate_f1_measure(self):
+        precision = self.calculate_precision()
+        recall = self.calculate_recall()
+        return (2 * precision * recall) / (precision + recall)
+    def calculate_unweighted_average_recall(self): return self.calculate_sensitivity() * 0.5 + self.calculate_specificity()
+    # ============================================= METRICS RETRIEVAL =============================================
+
+    def compute_confusion_matrix(self):
+        confusion_matrix = [[self.true_positives, self.false_negatives],
+            [self.false_positives, self.true_negatives]]
+
+        return np.array(confusion_matrix)
+
+    def export_metrics(self):
+        metrics = [
+            { 'name': 'Accuracy', 'score': self.calculate_accuracy() },
+            { 'name': 'F1-Measure', 'score': self.calculate_f1_measure() },
+            { 'name': 'Unweighted Average Recall', 'score': self.calculate_unweighted_average_recall() },
+        ]
+
+        return metrics
+
+    def export_results(self, filename = 'temp.png'):
+
+        confusion_matrix = self.compute_confusion_matrix()
+        metrics = self.export_metrics()
+        module_exporter.export_confusion_matrix(confusion_matrix, self.categories, filename)
         
-        return { 'accuracy': (self.true_positives + self.true_negatives) / self.number_points() }
 
 # =================================== PUBLIC METHODS ===================================

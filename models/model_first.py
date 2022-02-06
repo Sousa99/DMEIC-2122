@@ -113,7 +113,7 @@ speech_features_X = pd.DataFrame(imp.fit_transform(speech_features_X), columns=s
 # ===== FIXME: MOVE TO ANOTHER MODULE =====
 
 speech_splits = module_classifier.leave_one_out(speech_features_X)
-scorer = module_scorer.Scorer()
+scorer = module_scorer.Scorer(['Psychosis', 'Control'])
 for index, (train_index, test_index) in enumerate(speech_splits):
     X_train, X_test = speech_features_X.iloc[train_index], speech_features_X.iloc[test_index]
     y_train, y_test = speech_features_Y.iloc[train_index], speech_features_Y.iloc[test_index]
@@ -122,4 +122,4 @@ for index, (train_index, test_index) in enumerate(speech_splits):
     y_prd = classifier.make_prediction(X_train, y_train, X_test)
     scorer.add_points(y_test, y_prd)
 
-print(scorer.export_results())
+scorer.export_results('only so far.png')

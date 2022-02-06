@@ -4,5 +4,8 @@
 # Scripts are exception
 !/data/scripts
 
+# Results (at least so far) not pertinent
+/results/*
+
 # PyCache should not be sent
 __pycache__
