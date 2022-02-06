@@ -4,6 +4,8 @@ import warnings
 import numpy as np
 import pandas as pd
 
+from alive_progress import alive_bar
+
 # Local Modules
 import module_load
 import module_sound_features
@@ -11,6 +13,7 @@ import module_speech_features
 import module_classifier
 import module_scorer
 import module_aux
+import module_exporter
 
 from sklearn.impute import SimpleImputer
 
@@ -84,42 +87,61 @@ subject_info = pd.concat([control_info, psychosis_info])
 subject_paths = pd.concat([control_paths, psychosis_paths])
 
 # Get Features
-#sound_features_df = module_sound_features.sound_analysis(subject_paths, PREFERENCE_AUDIO_TRACKS)
+sound_features_df = module_sound_features.sound_analysis(subject_paths, PREFERENCE_AUDIO_TRACKS)
 speech_features_df = module_speech_features.speech_analysis(subject_paths, PREFERENCE_AUDIO_TRACKS, PREFERENCE_TRANS, EXTENSION_TRANS)
 # All Features
-#all_features = pd.merge(sound_features_df, speech_features_df, left_index=True, right_index=True, how='outer')
+all_features_df = pd.merge(sound_features_df, speech_features_df, left_index=True, right_index=True, how='outer', suffixes=('', '_duplicate'))
+all_features_df = all_features_df.drop(all_features_df.filter(regex='_duplicate$').columns.tolist(), axis=1)
 
 # ===================================== CHOOSE TASKS =====================================
-ACTIVE_TASKS = ['Task 5', 'Task 6', 'Task 7']
+ACTIVE_TASKS = ['Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7']
 
 # ===================================== DROP FEATURES =====================================
 general_drop_columns = ['Subject', 'Task']
+sound_drop_columns = ['Audio Path', 'Audio File', 'Audio File Path', 'Trans Path']
 speech_drop_columns = ['Audio Path', 'Audio File', 'Audio File Path', 'Trans Path', 'Trans File', 'Trans File Path']
+all_features_drop_columns = ['Audio Path', 'Audio File', 'Audio File Path', 'Trans Path', 'Trans File', 'Trans File Path']
 
 # ===================================== FEATURES =====================================
+sound_features = [column for column in sound_features_df.columns.values if column not in sound_drop_columns + general_drop_columns]
 speech_features = [column for column in speech_features_df.columns.values if column not in speech_drop_columns + general_drop_columns]
+all_features = [column for column in all_features_df.columns.values if column not in all_features_drop_columns + general_drop_columns]
 
-# ===================================== ONLY SPEECH FEATURES =====================================
-speech_features_df = speech_features_df[speech_features_df['Task'].isin(ACTIVE_TASKS)]
-speech_features_df = speech_features_df.drop(speech_drop_columns, axis=1)
-speech_features_pivot = module_aux.pivot_on_column(speech_features_df, ['Subject'], 'Task', speech_features, 'on')
-speech_features_X = speech_features_pivot
-speech_features_Y = speech_features_pivot.reset_index()['Subject'].apply(lambda subject: subject_info.loc[subject]['Target'])
-speech_features_Y.index = speech_features_pivot.index
+# ===================================== DATAFRAME TO USE =====================================
+dataframe = all_features_df
+dataframe_drop_columns = all_features_drop_columns
+dataframe_features = all_features
+
+# Drop unwanted columns and pivot on tasks
+dataframe = dataframe[dataframe['Task'].isin(ACTIVE_TASKS)]
+dataframe = dataframe.drop(dataframe_drop_columns, axis=1)
+dataframe_pivot = module_aux.pivot_on_column(dataframe, ['Subject'], 'Task', dataframe_features, 'on')
+
+# Export dataframe to use
+module_exporter.export_csv(dataframe_pivot, 'dataset')
+
+# Sepparate features and target class
+dataframe_X = dataframe_pivot
+dataframe_Y = dataframe_pivot.reset_index()['Subject'].apply(lambda subject: subject_info.loc[subject]['Target'])
+dataframe_Y.index = dataframe_pivot.index
 
 # ===== FIXME: MOVE TO ANOTHER MODULE =====
 imp = SimpleImputer(strategy='mean', missing_values=np.nan, copy=True)
-speech_features_X = pd.DataFrame(imp.fit_transform(speech_features_X), columns=speech_features_X.columns.values)
+dataframe_X = pd.DataFrame(imp.fit_transform(dataframe_X), columns=dataframe_X.columns.values)
 # ===== FIXME: MOVE TO ANOTHER MODULE =====
 
-speech_splits = module_classifier.leave_one_out(speech_features_X)
+speech_splits = list(module_classifier.leave_one_out(dataframe_X))
 scorer = module_scorer.Scorer(['Psychosis', 'Control'])
-for index, (train_index, test_index) in enumerate(speech_splits):
-    X_train, X_test = speech_features_X.iloc[train_index], speech_features_X.iloc[test_index]
-    y_train, y_test = speech_features_Y.iloc[train_index], speech_features_Y.iloc[test_index]
+with alive_bar(len(speech_splits)) as bar:
+    for (train_index, test_index) in speech_splits:
+        X_train, X_test = dataframe_X.iloc[train_index], dataframe_X.iloc[test_index]
+        y_train, y_test = dataframe_Y.iloc[train_index], dataframe_Y.iloc[test_index]
 
-    classifier = module_classifier.DecisionTree()
-    y_prd = classifier.make_prediction(X_train, y_train, X_test)
-    scorer.add_points(y_test, y_prd)
+        classifier = module_classifier.SupportVectorMachine()
+        y_prd = classifier.make_prediction(X_train, y_train, X_test)
+        scorer.add_points(y_test, y_prd)
 
-scorer.export_results('only so far.png')
+        # Update Progress Bar
+        bar()
+
+scorer.export_results('results')

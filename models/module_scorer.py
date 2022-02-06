@@ -46,7 +46,7 @@ class Scorer():
         precision = self.calculate_precision()
         recall = self.calculate_recall()
         return (2 * precision * recall) / (precision + recall)
-    def calculate_unweighted_average_recall(self): return self.calculate_sensitivity() * 0.5 + self.calculate_specificity()
+    def calculate_unweighted_average_recall(self): return (self.calculate_sensitivity() + self.calculate_specificity()) * 0.5
     # ============================================= METRICS RETRIEVAL =============================================
 
     def compute_confusion_matrix(self):
@@ -58,17 +58,22 @@ class Scorer():
     def export_metrics(self):
         metrics = [
             { 'name': 'Accuracy', 'score': self.calculate_accuracy() },
+            { 'name': 'Precision', 'score': self.calculate_precision() },
+            { 'name': 'Recall', 'score': self.calculate_recall() },
+            { 'name': 'Sensitivity', 'score': self.calculate_sensitivity() },
+            { 'name': 'Specificity', 'score': self.calculate_specificity() },
             { 'name': 'F1-Measure', 'score': self.calculate_f1_measure() },
-            { 'name': 'Unweighted Average Recall', 'score': self.calculate_unweighted_average_recall() },
+            { 'name': 'UAR', 'score': self.calculate_unweighted_average_recall() },
         ]
 
         return metrics
 
-    def export_results(self, filename = 'temp.png'):
+    def export_results(self, filename = 'temp'):
 
         confusion_matrix = self.compute_confusion_matrix()
         metrics = self.export_metrics()
-        module_exporter.export_confusion_matrix(confusion_matrix, self.categories, filename)
+        module_exporter.export_confusion_matrix(confusion_matrix, self.categories, filename + ' - confusion matrix')
+        module_exporter.export_metrics_bar_graph(metrics, filename + ' - scores')
         
 
 # =================================== PUBLIC METHODS ===================================
