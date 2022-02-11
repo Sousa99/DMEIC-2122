@@ -99,8 +99,8 @@ ACTIVE_TASKS = ['Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Tas
 # ===================================== DROP FEATURES =====================================
 general_drop_columns = ['Subject', 'Task']
 sound_drop_columns = ['Audio Path', 'Audio File', 'Audio File Path', 'Trans Path']
-speech_drop_columns = ['Audio Path', 'Audio File', 'Audio File Path', 'Trans Path', 'Trans File', 'Trans File Path']
-all_features_drop_columns = ['Audio Path', 'Audio File', 'Audio File Path', 'Trans Path', 'Trans File', 'Trans File Path']
+speech_drop_columns = ['Audio Path', 'Audio File', 'Audio File Path', 'Trans Path', 'Trans File', 'Trans File Path', 'Trans Info']
+all_features_drop_columns = ['Audio Path', 'Audio File', 'Audio File Path', 'Trans Path', 'Trans File', 'Trans File Path', 'Trans Info']
 
 # ===================================== FEATURES =====================================
 sound_features = [column for column in sound_features_df.columns.values if column not in sound_drop_columns + general_drop_columns]
