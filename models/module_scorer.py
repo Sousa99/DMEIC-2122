@@ -1,4 +1,7 @@
 import numpy as np
+import pandas as pd
+
+from typing import List, TypedDict
 
 # Local Modules
 import module_exporter
@@ -7,10 +10,11 @@ import module_exporter
 
 # =================================== PUBLIC CLASS DEFINITIONS ===================================
 
+ExportMetric = TypedDict("ExportMetric", { 'name': str, 'score': float } )
 # Assuming False as Negative Class and True as Positive Class
 class Scorer():
 
-    def __init__(self, categories):
+    def __init__(self, categories: List[str]):
         self.categories = categories
         # Scores
         self.true_positives = 0
@@ -18,7 +22,7 @@ class Scorer():
         self.false_positives = 0
         self.false_negatives = 0
 
-    def add_points(self, test_Y, pred_Y):
+    def add_points(self, test_Y: pd.Series, pred_Y: pd.Series):
         
         for (test_y_elem, pred_Y_elem) in zip(test_Y, pred_Y):
             
@@ -27,7 +31,7 @@ class Scorer():
             elif test_y_elem and not pred_Y_elem: self.false_negatives += 1
             elif not test_y_elem and not pred_Y_elem: self.true_negatives += 1
 
-    def number_points(self):
+    def number_points(self) -> int:
 
         number_points = 0
         number_points = number_points + self.true_positives
@@ -37,25 +41,25 @@ class Scorer():
         return number_points
 
     # ============================================= METRICS RETRIEVAL =============================================
-    def calculate_accuracy(self): return (self.true_positives + self.true_negatives) / self.number_points()
-    def calculate_precision(self): return self.true_positives / (self.true_positives + self.false_positives)
-    def calculate_recall(self): return self.true_positives / (self.true_positives + self.false_negatives)
-    def calculate_sensitivity(self): return self.true_positives / (self.true_positives + self.false_negatives)
-    def calculate_specificity(self): return self.true_negatives / (self.false_positives + self.true_negatives)
-    def calculate_f1_measure(self):
+    def calculate_accuracy(self) -> float: return (self.true_positives + self.true_negatives) / self.number_points()
+    def calculate_precision(self) -> float: return self.true_positives / (self.true_positives + self.false_positives)
+    def calculate_recall(self) -> float: return self.true_positives / (self.true_positives + self.false_negatives)
+    def calculate_sensitivity(self) -> float: return self.true_positives / (self.true_positives + self.false_negatives)
+    def calculate_specificity(self) -> float: return self.true_negatives / (self.false_positives + self.true_negatives)
+    def calculate_f1_measure(self) -> float:
         precision = self.calculate_precision()
         recall = self.calculate_recall()
         return (2 * precision * recall) / (precision + recall)
-    def calculate_unweighted_average_recall(self): return (self.calculate_sensitivity() + self.calculate_specificity()) * 0.5
+    def calculate_unweighted_average_recall(self) -> float: return (self.calculate_sensitivity() + self.calculate_specificity()) * 0.5
     # ============================================= METRICS RETRIEVAL =============================================
 
-    def compute_confusion_matrix(self):
+    def compute_confusion_matrix(self) -> np.ndarray:
         confusion_matrix = [[self.true_positives, self.false_negatives],
             [self.false_positives, self.true_negatives]]
 
         return np.array(confusion_matrix)
 
-    def export_metrics(self):
+    def export_metrics(self) -> List[ExportMetric]:
         metrics = [
             { 'name': 'Accuracy', 'score': self.calculate_accuracy() },
             { 'name': 'Precision', 'score': self.calculate_precision() },
@@ -68,7 +72,7 @@ class Scorer():
 
         return metrics
 
-    def export_results(self, filename = 'temp'):
+    def export_results(self, filename: str = 'temp'):
 
         confusion_matrix = self.compute_confusion_matrix()
         metrics = self.export_metrics()

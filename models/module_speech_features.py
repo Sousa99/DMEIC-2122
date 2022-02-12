@@ -1,9 +1,10 @@
 import os
-from numpy import number
 import pyphen
 
 import pandas as pd
 
+from typing import List
+from numpy import number
 from pydub import AudioSegment
 
 # Local Modules
@@ -11,7 +12,7 @@ import module_load
 
 # =================================== PRIVATE METHODS ===================================
 
-def compute_file_paths(trans_path, extension_preference_order, extension):
+def compute_file_paths(trans_path: str, extension_preference_order: List[str], extension: str) -> str:
 
     _, _, files_full = list(os.walk(trans_path))[0]
     if extension != None: files_full = filter(lambda file: os.path.splitext(file)[1] == extension, files_full)
@@ -45,14 +46,14 @@ def compute_number_of_syllables(trans_info: module_load.TranscriptionInfo) -> in
 
     return syllables
 
-def compute_duration_track(audio_path):
+def compute_duration_track(audio_path: str) -> float:
 
     audio = AudioSegment.from_file(audio_path)
     return audio.duration_seconds
 
 # =================================== PUBLIC METHODS ===================================
 
-def speech_analysis(paths_df, preference_audio_tracks, preference_trans, trans_extension):
+def speech_analysis(paths_df: pd.DataFrame, preference_audio_tracks: List[str], preference_trans: List[str], trans_extension: str) -> pd.DataFrame:
 
     # Dataframe to study speech features
     speech_df = paths_df.copy(deep=True)[['Subject', 'Task', 'Trans Path', 'Audio Path']]

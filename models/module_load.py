@@ -2,17 +2,17 @@ import os
 
 import pandas as pd
 
-from typing import List
+from typing import List, Dict, TypedDict
 
 # =================================== PRIVATE METHODS ===================================
 
-def load_info_subjects(info_file, subjects_code_file_system, delimiter):
+def load_info_subjects(info_file: str, subjects_code_file_system: str, delimiter: str) -> pd.DataFrame:
     worksheet_name = info_file.split('/')[-1].replace('.xlsx', '')
     dataframe = pd.read_excel(info_file, sheet_name = worksheet_name, index_col = 0)
     dataframe.index = subjects_code_file_system + delimiter + dataframe.index
     return dataframe
 
-def subdivide_info_for_task(info, audio_path, trans_path, tasks, delimiter):
+def subdivide_info_for_task(info: pd.DataFrame, audio_path: str, trans_path: str, tasks: List[str], delimiter: str) -> pd.DataFrame:
     info_by_task_dict = {}
 
     for subject, _ in info.iterrows():
@@ -31,7 +31,7 @@ def subdivide_info_for_task(info, audio_path, trans_path, tasks, delimiter):
     dataframe_by_task = pd.DataFrame.from_dict(info_by_task_dict, orient='index')
     return dataframe_by_task
 
-def filter_path_exists(row):
+def filter_path_exists(row: pd.Series) -> bool:
     columns = ['Audio Path', 'Trans Path']
     exists = True
     for column in columns:
@@ -53,7 +53,7 @@ class TranscriptionInfoItem():
         self.end = info_end
         self.words = info_words
 
-    def get_words(self): self.words
+    def get_words(self) -> List[str]: self.words
 
 # =================================== PUBLIC CLASS DEFINITIONS ===================================
 
@@ -71,7 +71,8 @@ class TranscriptionInfo():
 
 # =================================== PUBLIC METHODS ===================================
 
-def load_dataset(subjects_code_file_system, info_file, audio_path, trans_path, tasks, delimiter = '_'):
+LoadedDataset = TypedDict('LoadedDataset', { 'info': pd.DataFrame, 'paths': pd.DataFrame })
+def load_dataset(subjects_code_file_system: str, info_file: str, audio_path: str, trans_path: str, tasks: List[str], delimiter: str = '_') -> LoadedDataset:
     info_subjects = load_info_subjects(info_file, subjects_code_file_system, delimiter)
     subject_by_task_paths = subdivide_info_for_task(info_subjects, audio_path, trans_path, tasks, delimiter)
     

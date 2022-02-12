@@ -2,12 +2,14 @@ import os
 
 import pandas as pd
 
+from typing import List
+
 # Local Modules
 import module_gemaps
 
 # =================================== PRIVATE METHODS ===================================
 
-def compute_file_paths(audio_path, extension_preference_order):
+def compute_file_paths(audio_path: str, extension_preference_order: List[str]):
 
     _, _, files_full = list(os.walk(audio_path))[0]
     files = list(map(lambda file: (file, os.path.splitext(file)[0]), files_full))
@@ -20,7 +22,7 @@ def compute_file_paths(audio_path, extension_preference_order):
 
 # =================================== PUBLIC METHODS ===================================
 
-def sound_analysis(paths_df, preference_audio_tracks):
+def sound_analysis(paths_df: pd.DataFrame, preference_audio_tracks: List[str]):
 
     # Dataframe to study sound features
     sound_df = paths_df.copy(deep=True)[['Subject', 'Task', 'Audio Path']]
