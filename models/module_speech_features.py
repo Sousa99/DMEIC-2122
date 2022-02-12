@@ -1,9 +1,13 @@
 import os
+from numpy import number
 import pyphen
 
 import pandas as pd
 
 from pydub import AudioSegment
+
+# Local Modules
+import module_load
 
 # =================================== PRIVATE METHODS ===================================
 
@@ -20,38 +24,21 @@ def compute_file_paths(trans_path, extension_preference_order, extension):
     if len(files) == 0: return None
     return files[0][0]
 
-# TODO: Move to another module
-def process_transcription_file(file_path):
-
-    transcription_info = []
-    file = open(file_path, 'r')
-
-    for line in file.readlines():
-        line_split = line.split()
-        info_words = " ".join(line_split[3: ])
-        info_start = float(line_split[1])
-        info_end = float(line_split[2])
-        transcription_info.append({ 'text': info_words, 'start': info_start, 'end': info_end })
-
-    file.close()
-
-    return transcription_info
-
-def compute_number_of_words(trans_info):
+def compute_number_of_words(trans_info: module_load.TranscriptionInfo) -> int:
     
     word_count = 0
-    for trans_info_item in trans_info:
-        word_count = word_count + len(trans_info_item['text'].split())
+    for trans_info_item in trans_info.get_info_items():
+        word_count = word_count + len(trans_info_item.get_words().split())
 
     return word_count
 
-def compute_number_of_syllables(trans_info):
+def compute_number_of_syllables(trans_info: module_load.TranscriptionInfo) -> int:
 
     dic = pyphen.Pyphen(lang='pt_PT')
     syllables = 0
 
-    for trans_info_item in trans_info:
-        for word in trans_info_item['text'].split():
+    for trans_info_item in trans_info.get_info_items():
+        for word in trans_info_item.get_words().split():
             word_hyphenated = dic.inserted(word)
             word_syllables = len(word_hyphenated.split('-'))
             syllables = syllables + word_syllables
@@ -77,7 +64,7 @@ def speech_analysis(paths_df, preference_audio_tracks, preference_trans, trans_e
     speech_df = speech_df.drop(speech_df[speech_df['Trans File'].isnull()].index)
     speech_df['Trans File Path'] = list(map(lambda items: os.path.join(items[0], items[1]), list(zip(speech_df['Trans Path'], speech_df['Trans File']))))
     # Process Transcriptions
-    speech_df['Trans Info'] = speech_df['Trans File Path'].apply(process_transcription_file)
+    speech_df['Trans Info'] = speech_df['Trans File Path'].apply(lambda file_path: module_load.TranscriptionInfo(file_path))
 
     # Speaking Rate
     speech_df['Number Words'] = speech_df['Trans Info'].apply(compute_number_of_words)

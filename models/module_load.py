@@ -2,6 +2,8 @@ import os
 
 import pandas as pd
 
+from typing import List
+
 # =================================== PRIVATE METHODS ===================================
 
 def load_info_subjects(info_file, subjects_code_file_system, delimiter):
@@ -36,6 +38,36 @@ def filter_path_exists(row):
         if not os.path.exists(row[column]): exists = False
 
     return exists
+
+# =================================== PRIVATE CLASS DEFINITIONS ===================================
+
+class TranscriptionInfoItem():
+
+    def __init__(self, info_line: str):
+        line_split = info_line.split()
+        info_words = " ".join(line_split[3: ])
+        info_start = float(line_split[1])
+        info_end = float(line_split[2])
+
+        self.start = info_start
+        self.end = info_end
+        self.words = info_words
+
+    def get_words(self): self.words
+
+# =================================== PUBLIC CLASS DEFINITIONS ===================================
+
+class TranscriptionInfo():
+
+    def __init__(self, file_path: str):
+        self.transcription_info = []
+
+        file = open(file_path, 'r')
+        for line in file.readlines():
+            self.transcription_info.append(TranscriptionInfoItem(line))
+        file.close()
+
+    def get_info_items(self) -> List[TranscriptionInfoItem]: self.transcription_info   
 
 # =================================== PUBLIC METHODS ===================================
 

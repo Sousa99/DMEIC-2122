@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 
 from alive_progress import alive_bar
+from sklearn.impute import SimpleImputer
 
 # Local Modules
 import module_load
@@ -14,8 +15,6 @@ import module_classifier
 import module_scorer
 import module_aux
 import module_exporter
-
-from sklearn.impute import SimpleImputer
 
 # =================================== IGNORE CERTAIN ERRORS ===================================
 
