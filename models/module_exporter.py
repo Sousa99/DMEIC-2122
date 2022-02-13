@@ -12,23 +12,33 @@ EXECUTION_TIMESTAMP = datetime.now()
 EXPORT_CSV_EXTENSION = '.csv'
 EXPORT_IMAGE_EXTENSION = '.png'
 
+CURRENT_MODEL_DIRECTORY = 'TEMP MODEL'
+
 # =================================== PRIVATE FUNCTIONS ===================================
 
-def calculate_file_prefix() -> str:
+def compute_path(filename: str, extension: str) -> str:
 
     timestampStr = EXECUTION_TIMESTAMP.strftime("%Y.%m.%d %H.%M.%S")
-    return timestampStr + ' - '
+    directory_path = os.path.join(EXPORT_DIRECTORY, timestampStr, CURRENT_MODEL_DIRECTORY)
+    filename_full = filename + extension
+
+    if not os.path.exists(directory_path): os.makedirs(directory_path)
+    return os.path.join(directory_path, filename_full)
 
 # =================================== PUBLIC FUNCTIONS ===================================
 
+def change_current_model_directory(model_directory: str):
+    global CURRENT_MODEL_DIRECTORY
+    CURRENT_MODEL_DIRECTORY = model_directory
+
 def export_csv(dataframe: pd.DataFrame, filename: str = 'temp'):
 
-    complete_path = os.path.join(EXPORT_DIRECTORY, calculate_file_prefix() + filename + EXPORT_CSV_EXTENSION)
+    complete_path = compute_path(filename, EXPORT_CSV_EXTENSION)
     dataframe.to_csv(complete_path)
 
 def export_confusion_matrix(confusion_matrix: np.ndarray, categories: List[str], filename: str = 'temp'):
 
-    complete_path = os.path.join(EXPORT_DIRECTORY, calculate_file_prefix() + filename + EXPORT_IMAGE_EXTENSION)
+    complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
     y_label = 'True Label'
     x_label = 'Predicted Label'
 
@@ -41,7 +51,7 @@ def export_confusion_matrix(confusion_matrix: np.ndarray, categories: List[str],
 ExportMetric = TypedDict("ExportMetric", { 'name': str, 'score': float } )
 def export_metrics_bar_graph(metrics: List[ExportMetric], filename: str = 'temp'):
 
-    complete_path = os.path.join(EXPORT_DIRECTORY, calculate_file_prefix() + filename + EXPORT_IMAGE_EXTENSION)
+    complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
     y_label = 'Score'
     x_label = 'Metrics'
 
