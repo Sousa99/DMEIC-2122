@@ -1,14 +1,11 @@
 import os
-from typing import List
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
 from datetime import datetime
-
-# Local Modules
-from module_scorer import ExportMetric
+from typing import List, TypedDict
 
 EXPORT_DIRECTORY = '../results/'
 EXECUTION_TIMESTAMP = datetime.now()
@@ -24,7 +21,7 @@ def calculate_file_prefix() -> str:
 
 # =================================== PUBLIC FUNCTIONS ===================================
 
-def export_csv(dataframe: pd.Dataframe, filename: str = 'temp'):
+def export_csv(dataframe: pd.DataFrame, filename: str = 'temp'):
 
     complete_path = os.path.join(EXPORT_DIRECTORY, calculate_file_prefix() + filename + EXPORT_CSV_EXTENSION)
     dataframe.to_csv(complete_path)
@@ -41,6 +38,7 @@ def export_confusion_matrix(confusion_matrix: np.ndarray, categories: List[str],
     plt.xlabel(x_label)
     plt.savefig(complete_path)
 
+ExportMetric = TypedDict("ExportMetric", { 'name': str, 'score': float } )
 def export_metrics_bar_graph(metrics: List[ExportMetric], filename: str = 'temp'):
 
     complete_path = os.path.join(EXPORT_DIRECTORY, calculate_file_prefix() + filename + EXPORT_IMAGE_EXTENSION)

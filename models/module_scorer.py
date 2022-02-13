@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from typing import List, TypedDict
+from typing import List
 
 # Local Modules
 import module_exporter
@@ -10,7 +10,6 @@ import module_exporter
 
 # =================================== PUBLIC CLASS DEFINITIONS ===================================
 
-ExportMetric = TypedDict("ExportMetric", { 'name': str, 'score': float } )
 # Assuming False as Negative Class and True as Positive Class
 class Scorer():
 
@@ -59,7 +58,7 @@ class Scorer():
 
         return np.array(confusion_matrix)
 
-    def export_metrics(self) -> List[ExportMetric]:
+    def export_metrics(self) -> List[module_exporter.ExportMetric]:
         metrics = [
             { 'name': 'Accuracy', 'score': self.calculate_accuracy() },
             { 'name': 'Precision', 'score': self.calculate_precision() },

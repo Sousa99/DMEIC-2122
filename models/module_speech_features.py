@@ -54,6 +54,7 @@ def compute_duration_track(audio_path: str) -> float:
 # =================================== PUBLIC METHODS ===================================
 
 def speech_analysis(paths_df: pd.DataFrame, preference_audio_tracks: List[str], preference_trans: List[str], trans_extension: str) -> pd.DataFrame:
+    print("🚀 Processing 'speech' analysis ...")
 
     # Dataframe to study speech features
     speech_df = paths_df.copy(deep=True)[['Subject', 'Task', 'Trans Path', 'Audio Path']]
@@ -68,10 +69,11 @@ def speech_analysis(paths_df: pd.DataFrame, preference_audio_tracks: List[str], 
     speech_df['Trans Info'] = speech_df['Trans File Path'].apply(lambda file_path: module_load.TranscriptionInfo(file_path))
 
     # Speaking Rate
-    speech_df['Number Words'] = speech_df['Trans Info'].apply(compute_number_of_words)
-    speech_df['Number Syllables'] = speech_df['Trans Info'].apply(compute_number_of_syllables)
-    speech_df['Audio Duration (s)'] = speech_df['Audio File Path'].apply(compute_duration_track)
+    speech_df['Number Words'] = speech_df['Trans Info'].progress_apply(compute_number_of_words)
+    speech_df['Number Syllables'] = speech_df['Trans Info'].progress_apply(compute_number_of_syllables)
+    speech_df['Audio Duration (s)'] = speech_df['Audio File Path'].progress_apply(compute_duration_track)
     speech_df['Speaking Rate (words / s)'] = speech_df['Number Words'] / (speech_df['Audio Duration (s)'])
     speech_df['Articulation Rate (syllables / s)'] = speech_df['Number Syllables'] / (speech_df['Audio Duration (s)'])
 
+    print("✅ Finished processing 'speech' analysis!")
     return speech_df

@@ -4,6 +4,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
+from tqdm import tqdm
 from alive_progress import alive_bar
 from sklearn.impute import SimpleImputer
 
@@ -16,9 +17,11 @@ import module_scorer
 import module_aux
 import module_exporter
 
-# =================================== IGNORE CERTAIN ERRORS ===================================
+# =================================== PACKAGES PARAMETERS ===================================
 
+tqdm.pandas(desc='🐼 Pandas DataFrame apply', mininterval=0.1, maxinterval=10.0, leave=False)
 warnings.filterwarnings('ignore', category = UserWarning, module = 'openpyxl')
+warnings.filterwarnings('ignore', category = UserWarning, module = 'opensmile')
 
 # =================================== FLAGS PARSING ===================================
 
@@ -46,6 +49,10 @@ if ( any(not req['arg'] for req in requirements) ):
         print('\t\'{}\': {}'.format(requirement['key'], requirement['help']))
     exit(1)
 
+# =================================== DEBUG CONSTANTS ===================================
+
+DATASET_SAMPLE = 0.1
+
 # =================================== EXECUTION CONSTANTS ===================================
 
 TASKS = [ {'code': 1, 'name': 'Task 1'},  {'code': 2, 'name': 'Task 2'},  {'code': 3, 'name': 'Task 3'}, 
@@ -72,14 +79,14 @@ control_info_columns = list(control_info.columns.values)
 control_info['Type'] = CODE_CONTROL['code']
 control_info['Target'] = CODE_CONTROL['target']
 control_info = control_info[['Type', 'Target'] + control_info_columns]
-control_paths = control_load['paths']
+control_paths = control_load['paths'].sample(frac=DATASET_SAMPLE)
 # Psychosis Info
 psychosis_info = psychosis_load['info']
 psychosis_info_columns = list(psychosis_info.columns.values)
 psychosis_info['Type'] = CODE_PSYCHOSIS['code']
 psychosis_info['Target'] = CODE_PSYCHOSIS['target']
 psychosis_info = psychosis_info[['Type', 'Target'] + psychosis_info_columns]
-psychosis_paths = psychosis_load['paths']
+psychosis_paths = psychosis_load['paths'].sample(frac=DATASET_SAMPLE)
 
 # Concat Information
 subject_info = pd.concat([control_info, psychosis_info])

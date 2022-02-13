@@ -23,6 +23,7 @@ def compute_file_paths(audio_path: str, extension_preference_order: List[str]):
 # =================================== PUBLIC METHODS ===================================
 
 def sound_analysis(paths_df: pd.DataFrame, preference_audio_tracks: List[str]):
+    print("🚀 Processing 'sound' analysis ...")
 
     # Dataframe to study sound features
     sound_df = paths_df.copy(deep=True)[['Subject', 'Task', 'Audio Path']]
@@ -32,6 +33,7 @@ def sound_analysis(paths_df: pd.DataFrame, preference_audio_tracks: List[str]):
     
     # GeMAPS features
     gemaps_extractor = module_gemaps.GeMAPSAnalyzer(module_gemaps.FeatureSet.eGeMAPSv02)
-    sound_df = sound_df.merge(sound_df['Audio File Path'].apply(lambda file: gemaps_extractor.process_file(file)), left_index=True, right_index=True)
+    sound_df = sound_df.merge(sound_df['Audio File Path'].progress_apply(lambda file: gemaps_extractor.process_file(file)), left_index=True, right_index=True)
     
+    print("✅ Finished processing 'sound' analysis!")
     return sound_df

@@ -53,7 +53,7 @@ class TranscriptionInfoItem():
         self.end = info_end
         self.words = info_words
 
-    def get_words(self) -> List[str]: self.words
+    def get_words(self) -> List[str]: return self.words
 
 # =================================== PUBLIC CLASS DEFINITIONS ===================================
 
@@ -67,7 +67,7 @@ class TranscriptionInfo():
             self.transcription_info.append(TranscriptionInfoItem(line))
         file.close()
 
-    def get_info_items(self) -> List[TranscriptionInfoItem]: self.transcription_info   
+    def get_info_items(self) -> List[TranscriptionInfoItem]: return self.transcription_info   
 
 # =================================== PUBLIC METHODS ===================================
 
