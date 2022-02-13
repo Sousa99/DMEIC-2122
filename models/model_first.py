@@ -155,7 +155,7 @@ for variation in variations_to_test:
 
     speech_splits = list(module_classifier.leave_one_out(dataframe_X))
     scorer = module_scorer.Scorer(['Psychosis', 'Control'])
-    with alive_bar(len(speech_splits), title='👉 Running model in ' + variation['key']) as bar:
+    with alive_bar(len(speech_splits), title="👉 Running classifier in \'" + variation['key'] + "\'") as bar:
         for (train_index, test_index) in speech_splits:
             X_train, X_test = dataframe_X.iloc[train_index], dataframe_X.iloc[test_index]
             y_train, y_test = dataframe_Y.iloc[train_index], dataframe_Y.iloc[test_index]
