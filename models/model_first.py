@@ -112,16 +112,17 @@ all_features = [column for column in all_features_df.columns.values if column no
 
 # ===================================== DATAFRAME TO USE =====================================
 print()
+variations_results = []
 variations_to_test = [
     { 'key': 'SVM - Speech Features - All Tasks', 'dataframe': speech_features_df.copy(deep=True), 
-        'drop_columns': speech_drop_columns, 'feature_columns': speech_features,
-        'tasks': ['Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7'],
-        'classifier': module_classifier.SupportVectorMachine,
+        'drop_columns': speech_drop_columns, 'feature_columns': speech_features, 'feature_key': 'Speech',
+        'tasks': ['Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7'], 'tasks_key': 'All',
+        'classifier': module_classifier.SupportVectorMachine, 'classifier_key': 'Support Vector Machine',
         },
-    { 'key': 'SVM - All Features - All Tasks', 'dataframe': all_features_df.copy(deep=True), 
-        'drop_columns': all_features_drop_columns, 'feature_columns': all_features,
-        'tasks': ['Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7'],
-        'classifier': module_classifier.SupportVectorMachine,
+    { 'key': 'SVM - All Features - All Tasks', 'dataframe': all_features_df.copy(deep=True),
+        'drop_columns': all_features_drop_columns, 'feature_columns': all_features, 'feature_key': 'Speech + Sound',
+        'tasks': ['Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7'], 'tasks_key': 'All',
+        'classifier': module_classifier.SupportVectorMachine, 'classifier_key': 'Support Vector Machine',
         },
 ]
 
@@ -168,3 +169,15 @@ for variation in variations_to_test:
             bar()
 
     scorer.export_results('results')
+
+    # Update General Scores
+    variation_summary = { 'Key': variation['key'], 'Classifier': variation['classifier_key'],
+        'Features': variation['feature_key'], 'Tasks': variation['tasks_key']}
+    for score in scorer.export_metrics(): variation_summary[score['name']] = score['score']
+    variations_results.append(variation_summary)
+
+
+module_exporter.change_to_main_directory()
+# Summary of All Variations
+variations_results_df = pd.DataFrame(variations_results)
+module_exporter.export_csv(variations_results_df, 'results', False)

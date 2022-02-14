@@ -12,6 +12,7 @@ EXECUTION_TIMESTAMP = datetime.now()
 EXPORT_CSV_EXTENSION = '.csv'
 EXPORT_IMAGE_EXTENSION = '.png'
 
+MAIN_DIR = False
 CURRENT_MODEL_DIRECTORY = 'TEMP MODEL'
 
 # =================================== PRIVATE FUNCTIONS ===================================
@@ -19,7 +20,8 @@ CURRENT_MODEL_DIRECTORY = 'TEMP MODEL'
 def compute_path(filename: str, extension: str) -> str:
 
     timestampStr = EXECUTION_TIMESTAMP.strftime("%Y.%m.%d %H.%M.%S")
-    directory_path = os.path.join(EXPORT_DIRECTORY, timestampStr, CURRENT_MODEL_DIRECTORY)
+    if MAIN_DIR: directory_path = os.path.join(EXPORT_DIRECTORY, timestampStr)
+    else: directory_path = os.path.join(EXPORT_DIRECTORY, timestampStr, CURRENT_MODEL_DIRECTORY)
     filename_full = filename + extension
 
     if not os.path.exists(directory_path): os.makedirs(directory_path)
@@ -28,13 +30,18 @@ def compute_path(filename: str, extension: str) -> str:
 # =================================== PUBLIC FUNCTIONS ===================================
 
 def change_current_model_directory(model_directory: str):
-    global CURRENT_MODEL_DIRECTORY
+    global CURRENT_MODEL_DIRECTORY, MAIN_DIR
     CURRENT_MODEL_DIRECTORY = model_directory
+    MAIN_DIR = False
 
-def export_csv(dataframe: pd.DataFrame, filename: str = 'temp'):
+def change_to_main_directory():
+    global MAIN_DIR
+    MAIN_DIR = True
+
+def export_csv(dataframe: pd.DataFrame, filename: str = 'temp', index = True):
 
     complete_path = compute_path(filename, EXPORT_CSV_EXTENSION)
-    dataframe.to_csv(complete_path)
+    dataframe.to_csv(complete_path, index=index)
 
 def export_confusion_matrix(confusion_matrix: np.ndarray, categories: List[str], filename: str = 'temp'):
 
