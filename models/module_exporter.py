@@ -54,6 +54,7 @@ def export_confusion_matrix(confusion_matrix: np.ndarray, categories: List[str],
     plt.ylabel(y_label)
     plt.xlabel(x_label)
     plt.savefig(complete_path)
+    plt.close('all')
 
 ExportMetric = TypedDict("ExportMetric", { 'name': str, 'score': float } )
 def export_metrics_bar_graph(metrics: List[ExportMetric], filename: str = 'temp'):
@@ -75,3 +76,4 @@ def export_metrics_bar_graph(metrics: List[ExportMetric], filename: str = 'temp'
     plt.xlabel(x_label)
     plt.ylim(0, 1)
     plt.savefig(complete_path)
+    plt.close('all')
