@@ -1,7 +1,7 @@
 import abc
 import pandas as pd
 
-from typing import Generator
+from typing import Generator, Optional, Tuple, Type
 
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
@@ -41,6 +41,12 @@ class SupportVectorMachine(Classifier):
         return prd_Y
 
 # =================================== PUBLIC METHODS ===================================
+
+def convert_key_to_classifier(key: str) -> Optional[Tuple[str, Type[Classifier]]]:
+
+    if key == 'Decision Tree': return ('DT', DecisionTree)
+    elif key == 'Support Vector Machine': return ('SVM', SupportVectorMachine)
+    else: return None
 
 def leave_one_out(data: pd.DataFrame) -> Generator[tuple, None, None]:
 

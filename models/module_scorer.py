@@ -48,6 +48,7 @@ class Scorer():
     def calculate_f1_measure(self) -> float:
         precision = self.calculate_precision()
         recall = self.calculate_recall()
+        if precision == 0 and recall == 0: return 0
         return (2 * precision * recall) / (precision + recall)
     def calculate_unweighted_average_recall(self) -> float: return (self.calculate_sensitivity() + self.calculate_specificity()) * 0.5
     # ============================================= METRICS RETRIEVAL =============================================

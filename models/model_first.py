@@ -111,148 +111,97 @@ sound_features = [column for column in sound_features_df.columns.values if colum
 speech_features = [column for column in speech_features_df.columns.values if column not in speech_drop_columns + general_drop_columns]
 all_features = [column for column in all_features_df.columns.values if column not in all_features_drop_columns + general_drop_columns]
 
+sound_features_info = { 'features': sound_features_df, 'drop_columns': sound_drop_columns, 'feature_columns': sound_features }
+speech_features_info = { 'features': speech_features_df, 'drop_columns': speech_drop_columns, 'feature_columns': speech_features }
+all_features_info = { 'features': all_features_df, 'drop_columns': all_features_drop_columns, 'feature_columns': all_features }
+
+features_info = { 'Sound': sound_features_info, 'Speech': speech_features_info, 'Sound + Speech': all_features_info }
 # ===================================== DATAFRAME TO USE =====================================
 print()
 variations_results = []
 variations_to_test = [
-    # ========================== Verbal Fluency Tasks ==========================
-    { 'key': 'SVM - Sound Features - Verbal Fluency', 'dataframe': sound_features_df.copy(deep=True), 
-        'drop_columns': sound_drop_columns, 'feature_columns': sound_features, 'feature_key': 'Sound',
-        'tasks': ['Task 1', 'Task 2'], 'tasks_key': 'Verbal Fluency',
-        'classifier': module_classifier.SupportVectorMachine, 'classifier_key': 'Support Vector Machine',
-        },
-    { 'key': 'SVM - Speech Features - Verbal Fluency', 'dataframe': speech_features_df.copy(deep=True), 
-        'drop_columns': speech_drop_columns, 'feature_columns': speech_features, 'feature_key': 'Speech',
-        'tasks': ['Task 1', 'Task 2'], 'tasks_key': 'Verbal Fluency',
-        'classifier': module_classifier.SupportVectorMachine, 'classifier_key': 'Support Vector Machine',
-        },
-    { 'key': 'SVM - All Features - Verbal Fluency', 'dataframe': all_features_df.copy(deep=True),
-        'drop_columns': all_features_drop_columns, 'feature_columns': all_features, 'feature_key': 'Speech + Sound',
-        'tasks': ['Task 1', 'Task 2'], 'tasks_key': 'Verbal Fluency',
-        'classifier': module_classifier.SupportVectorMachine, 'classifier_key': 'Support Vector Machine',
-        },
-    { 'key': 'DT - Sound Features - Verbal Fluency', 'dataframe': sound_features_df.copy(deep=True), 
-        'drop_columns': sound_drop_columns, 'feature_columns': sound_features, 'feature_key': 'Sound',
-        'tasks': ['Task 1', 'Task 2'], 'tasks_key': 'Verbal Fluency',
-        'classifier': module_classifier.DecisionTree, 'classifier_key': 'Decision Tree',
-        },
-    { 'key': 'DT - Speech Features - Verbal Fluency', 'dataframe': speech_features_df.copy(deep=True), 
-        'drop_columns': speech_drop_columns, 'feature_columns': speech_features, 'feature_key': 'Speech',
-        'tasks': ['Task 1', 'Task 2'], 'tasks_key': 'Verbal Fluency',
-        'classifier': module_classifier.DecisionTree, 'classifier_key': 'Decision Tree',
-        },
-    { 'key': 'DT - All Features - Verbal Fluency', 'dataframe': all_features_df.copy(deep=True),
-        'drop_columns': all_features_drop_columns, 'feature_columns': all_features, 'feature_key': 'Speech + Sound',
-        'tasks': ['Task 1', 'Task 2'], 'tasks_key': 'Verbal Fluency',
-        'classifier': module_classifier.DecisionTree, 'classifier_key': 'Decision Tree',
-        },
-    # ========================== Reading and Retelling Tasks ==========================
-    { 'key': 'SVM - Sound Features - Reading and Retelling', 'dataframe': sound_features_df.copy(deep=True), 
-        'drop_columns': sound_drop_columns, 'feature_columns': sound_features, 'feature_key': 'Sound',
-        'tasks': ['Task 3', 'Task 4'], 'tasks_key': 'Reading + Retelling',
-        'classifier': module_classifier.SupportVectorMachine, 'classifier_key': 'Support Vector Machine',
-        },
-    { 'key': 'SVM - Speech Features - Reading and Retelling', 'dataframe': speech_features_df.copy(deep=True), 
-        'drop_columns': speech_drop_columns, 'feature_columns': speech_features, 'feature_key': 'Speech',
-        'tasks': ['Task 3', 'Task 4'], 'tasks_key': 'Reading + Retelling',
-        'classifier': module_classifier.SupportVectorMachine, 'classifier_key': 'Support Vector Machine',
-        },
-    { 'key': 'SVM - All Features - Reading and Retelling', 'dataframe': all_features_df.copy(deep=True),
-        'drop_columns': all_features_drop_columns, 'feature_columns': all_features, 'feature_key': 'Speech + Sound',
-        'tasks': ['Task 3', 'Task 4'], 'tasks_key': 'Reading + Retelling',
-        'classifier': module_classifier.SupportVectorMachine, 'classifier_key': 'Support Vector Machine',
-        },
-    { 'key': 'DT - Sound Features - Reading and Retelling', 'dataframe': sound_features_df.copy(deep=True), 
-        'drop_columns': sound_drop_columns, 'feature_columns': sound_features, 'feature_key': 'Sound',
-        'tasks': ['Task 3', 'Task 4'], 'tasks_key': 'Reading + Retelling',
-        'classifier': module_classifier.DecisionTree, 'classifier_key': 'Decision Tree',
-        },
-    { 'key': 'DT - Speech Features - Reading and Retelling', 'dataframe': speech_features_df.copy(deep=True), 
-        'drop_columns': speech_drop_columns, 'feature_columns': speech_features, 'feature_key': 'Speech',
-        'tasks': ['Task 3', 'Task 4'], 'tasks_key': 'Reading + Retelling',
-        'classifier': module_classifier.DecisionTree, 'classifier_key': 'Decision Tree',
-        },
-    { 'key': 'DT - All Features - Reading and Retelling', 'dataframe': all_features_df.copy(deep=True),
-        'drop_columns': all_features_drop_columns, 'feature_columns': all_features, 'feature_key': 'Speech + Sound',
-        'tasks': ['Task 3', 'Task 4'], 'tasks_key': 'Reading + Retelling',
-        'classifier': module_classifier.DecisionTree, 'classifier_key': 'Decision Tree',
-        },
-    # ========================== Affective Images Tasks ==========================
-    { 'key': 'SVM - Sound Features - Affective Images', 'dataframe': sound_features_df.copy(deep=True), 
-        'drop_columns': sound_drop_columns, 'feature_columns': sound_features, 'feature_key': 'Sound',
-        'tasks': ['Task 3', 'Task 4'], 'tasks_key': 'Affective Images',
-        'classifier': module_classifier.SupportVectorMachine, 'classifier_key': 'Support Vector Machine',
-        },
-    { 'key': 'SVM - Speech Features - Affective Images', 'dataframe': speech_features_df.copy(deep=True), 
-        'drop_columns': speech_drop_columns, 'feature_columns': speech_features, 'feature_key': 'Speech',
-        'tasks': ['Task 3', 'Task 4'], 'tasks_key': 'Affective Images',
-        'classifier': module_classifier.SupportVectorMachine, 'classifier_key': 'Support Vector Machine',
-        },
-    { 'key': 'SVM - All Features - Affective Images', 'dataframe': all_features_df.copy(deep=True),
-        'drop_columns': all_features_drop_columns, 'feature_columns': all_features, 'feature_key': 'Speech + Sound',
-        'tasks': ['Task 3', 'Task 4'], 'tasks_key': 'Affective Images',
-        'classifier': module_classifier.SupportVectorMachine, 'classifier_key': 'Support Vector Machine',
-        },
-    { 'key': 'DT - Sound Features - Affective Images', 'dataframe': sound_features_df.copy(deep=True), 
-        'drop_columns': sound_drop_columns, 'feature_columns': sound_features, 'feature_key': 'Sound',
-        'tasks': ['Task 3', 'Task 4'], 'tasks_key': 'Affective Images',
-        'classifier': module_classifier.DecisionTree, 'classifier_key': 'Decision Tree',
-        },
-    { 'key': 'DT - Speech Features - Affective Images', 'dataframe': speech_features_df.copy(deep=True), 
-        'drop_columns': speech_drop_columns, 'feature_columns': speech_features, 'feature_key': 'Speech',
-        'tasks': ['Task 3', 'Task 4'], 'tasks_key': 'Affective Images',
-        'classifier': module_classifier.DecisionTree, 'classifier_key': 'Decision Tree',
-        },
-    { 'key': 'DT - All Features - Affective Images', 'dataframe': all_features_df.copy(deep=True),
-        'drop_columns': all_features_drop_columns, 'feature_columns': all_features, 'feature_key': 'Speech + Sound',
-        'tasks': ['Task 3', 'Task 4'], 'tasks_key': 'Affective Images',
-        'classifier': module_classifier.DecisionTree, 'classifier_key': 'Decision Tree',
-        },
-    # ========================== All Tasks ==========================
-    { 'key': 'SVM - Sound Features - All Tasks', 'dataframe': sound_features_df.copy(deep=True), 
-        'drop_columns': sound_drop_columns, 'feature_columns': sound_features, 'feature_key': 'Sound',
-        'tasks': ['Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7'], 'tasks_key': 'All',
-        'classifier': module_classifier.SupportVectorMachine, 'classifier_key': 'Support Vector Machine',
-        },
-    { 'key': 'SVM - Speech Features - All Tasks', 'dataframe': speech_features_df.copy(deep=True), 
-        'drop_columns': speech_drop_columns, 'feature_columns': speech_features, 'feature_key': 'Speech',
-        'tasks': ['Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7'], 'tasks_key': 'All',
-        'classifier': module_classifier.SupportVectorMachine, 'classifier_key': 'Support Vector Machine',
-        },
-    { 'key': 'SVM - All Features - All Tasks', 'dataframe': all_features_df.copy(deep=True),
-        'drop_columns': all_features_drop_columns, 'feature_columns': all_features, 'feature_key': 'Speech + Sound',
-        'tasks': ['Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7'], 'tasks_key': 'All',
-        'classifier': module_classifier.SupportVectorMachine, 'classifier_key': 'Support Vector Machine',
-        },
-    { 'key': 'DT - Sound Features - All Tasks', 'dataframe': sound_features_df.copy(deep=True), 
-        'drop_columns': sound_drop_columns, 'feature_columns': sound_features, 'feature_key': 'Sound',
-        'tasks': ['Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7'], 'tasks_key': 'All',
-        'classifier': module_classifier.DecisionTree, 'classifier_key': 'Decision Tree',
-        },
-    { 'key': 'DT - Speech Features - All Tasks', 'dataframe': speech_features_df.copy(deep=True), 
-        'drop_columns': speech_drop_columns, 'feature_columns': speech_features, 'feature_key': 'Speech',
-        'tasks': ['Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7'], 'tasks_key': 'All',
-        'classifier': module_classifier.DecisionTree, 'classifier_key': 'Decision Tree',
-        },
-    { 'key': 'DT - All Features - All Tasks', 'dataframe': all_features_df.copy(deep=True),
-        'drop_columns': all_features_drop_columns, 'feature_columns': all_features, 'feature_key': 'Speech + Sound',
-        'tasks': ['Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7'], 'tasks_key': 'All',
-        'classifier': module_classifier.DecisionTree, 'classifier_key': 'Decision Tree',
-        },
+    # ============================================= SVM - SOUND FEATURES =============================================
+    { 'tasks': 'Task 1',                        'features': 'Sound',            'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Task 2',                        'features': 'Sound',            'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Task 3',                        'features': 'Sound',            'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Task 4',                        'features': 'Sound',            'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Task 5',                        'features': 'Sound',            'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Task 6',                        'features': 'Sound',            'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Task 7',                        'features': 'Sound',            'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Verbal Fluency',                'features': 'Sound',            'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Reading + Retelling',           'features': 'Sound',            'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Description Affective Images',  'features': 'Sound',            'classifier': 'Support Vector Machine' },
+    # ============================================= SVM - SPEECH FEATURES =============================================
+    { 'tasks': 'Task 1',                        'features': 'Speech',           'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Task 2',                        'features': 'Speech',           'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Task 3',                        'features': 'Speech',           'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Task 4',                        'features': 'Speech',           'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Task 5',                        'features': 'Speech',           'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Task 6',                        'features': 'Speech',           'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Task 7',                        'features': 'Speech',           'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Verbal Fluency',                'features': 'Speech',           'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Reading + Retelling',           'features': 'Speech',           'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Description Affective Images',  'features': 'Speech',           'classifier': 'Support Vector Machine' },
+    # ============================================= SVM - SOUND + SPEECH FEATURES =============================================
+    { 'tasks': 'Task 1',                        'features': 'Sound + Speech',   'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Task 2',                        'features': 'Sound + Speech',   'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Task 3',                        'features': 'Sound + Speech',   'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Task 4',                        'features': 'Sound + Speech',   'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Task 5',                        'features': 'Sound + Speech',   'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Task 6',                        'features': 'Sound + Speech',   'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Task 7',                        'features': 'Sound + Speech',   'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Verbal Fluency',                'features': 'Sound + Speech',   'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Reading + Retelling',           'features': 'Sound + Speech',   'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Description Affective Images',  'features': 'Sound + Speech',   'classifier': 'Support Vector Machine' },
+    # ============================================= DT - SOUND FEATURES =============================================
+    { 'tasks': 'Task 1',                        'features': 'Sound',            'classifier': 'Decision Tree' },
+    { 'tasks': 'Task 2',                        'features': 'Sound',            'classifier': 'Decision Tree' },
+    { 'tasks': 'Task 3',                        'features': 'Sound',            'classifier': 'Decision Tree' },
+    { 'tasks': 'Task 4',                        'features': 'Sound',            'classifier': 'Decision Tree' },
+    { 'tasks': 'Task 5',                        'features': 'Sound',            'classifier': 'Decision Tree' },
+    { 'tasks': 'Task 6',                        'features': 'Sound',            'classifier': 'Decision Tree' },
+    { 'tasks': 'Task 7',                        'features': 'Sound',            'classifier': 'Decision Tree' },
+    { 'tasks': 'Verbal Fluency',                'features': 'Sound',            'classifier': 'Decision Tree' },
+    { 'tasks': 'Reading + Retelling',           'features': 'Sound',            'classifier': 'Decision Tree' },
+    { 'tasks': 'Description Affective Images',  'features': 'Sound',            'classifier': 'Decision Tree' },
+    # ============================================= DT - SPEECH FEATURES =============================================
+    { 'tasks': 'Task 1',                        'features': 'Speech',           'classifier': 'Decision Tree' },
+    { 'tasks': 'Task 2',                        'features': 'Speech',           'classifier': 'Decision Tree' },
+    { 'tasks': 'Task 3',                        'features': 'Speech',           'classifier': 'Decision Tree' },
+    { 'tasks': 'Task 4',                        'features': 'Speech',           'classifier': 'Decision Tree' },
+    { 'tasks': 'Task 5',                        'features': 'Speech',           'classifier': 'Decision Tree' },
+    { 'tasks': 'Task 6',                        'features': 'Speech',           'classifier': 'Decision Tree' },
+    { 'tasks': 'Task 7',                        'features': 'Speech',           'classifier': 'Decision Tree' },
+    { 'tasks': 'Verbal Fluency',                'features': 'Speech',           'classifier': 'Decision Tree' },
+    { 'tasks': 'Reading + Retelling',           'features': 'Speech',           'classifier': 'Decision Tree' },
+    { 'tasks': 'Description Affective Images',  'features': 'Speech',           'classifier': 'Decision Tree' },
+    # ============================================= DT - SOUND + SPEECH FEATURES =============================================
+    { 'tasks': 'Task 1',                        'features': 'Sound + Speech',   'classifier': 'Decision Tree' },
+    { 'tasks': 'Task 2',                        'features': 'Sound + Speech',   'classifier': 'Decision Tree' },
+    { 'tasks': 'Task 3',                        'features': 'Sound + Speech',   'classifier': 'Decision Tree' },
+    { 'tasks': 'Task 4',                        'features': 'Sound + Speech',   'classifier': 'Decision Tree' },
+    { 'tasks': 'Task 5',                        'features': 'Sound + Speech',   'classifier': 'Decision Tree' },
+    { 'tasks': 'Task 6',                        'features': 'Sound + Speech',   'classifier': 'Decision Tree' },
+    { 'tasks': 'Task 7',                        'features': 'Sound + Speech',   'classifier': 'Decision Tree' },
+    { 'tasks': 'Verbal Fluency',                'features': 'Sound + Speech',   'classifier': 'Decision Tree' },
+    { 'tasks': 'Reading + Retelling',           'features': 'Sound + Speech',   'classifier': 'Decision Tree' },
+    { 'tasks': 'Description Affective Images',  'features': 'Sound + Speech',   'classifier': 'Decision Tree' },
 ]
 
 print("🚀 Running solution variations ...")
-for variation in variations_to_test:
+for variation_info in variations_to_test:
 
-    print("🚀 Running '{0}'".format(variation['key']))
-    module_exporter.change_current_model_directory(variation['key'])
+    variation = module_load.Variation(variation_info, features_info)
 
-    dataframe = variation['dataframe']
-    dataframe_drop_columns = variation['drop_columns']
-    dataframe_features = variation['feature_columns']
+    print("🚀 Running '{0}'".format(variation.generate_code()))
+    module_exporter.change_current_model_directory(variation.generate_code())
+
+    dataframe = variation.features
+    dataframe_drop_columns = variation.drop_columns
+    dataframe_features = variation.feature_columns
 
     # Drop unwanted columns and pivot on tasks
-    dataframe = dataframe[dataframe['Task'].isin(variation['tasks'])]
+    dataframe = dataframe[dataframe['Task'].isin(variation.tasks)]
     dataframe = dataframe.drop(dataframe_drop_columns, axis=1)
     if PIVOT_ON_TASKS: dataframe = module_aux.pivot_on_column(dataframe, ['Subject'], 'Task', dataframe_features, 'on')
 
@@ -270,14 +219,14 @@ for variation in variations_to_test:
     dataframe_X = pd.DataFrame(imp.fit_transform(dataframe_X), columns=dataframe_X.columns.values)
     # ===== FIXME: MOVE TO ANOTHER MODULE =====
 
-    speech_splits = list(module_classifier.leave_one_out(dataframe_X))
+    data_splits = list(module_classifier.leave_one_out(dataframe_X))
     scorer = module_scorer.Scorer(['Psychosis', 'Control'])
-    with alive_bar(len(speech_splits), title="👉 Running classifier in \'" + variation['key'] + "\'") as bar:
-        for (train_index, test_index) in speech_splits:
+    with alive_bar(len(data_splits), title="👉 Running classifier in \'" + variation.generate_code() + "\'") as bar:
+        for (train_index, test_index) in data_splits:
             X_train, X_test = dataframe_X.iloc[train_index], dataframe_X.iloc[test_index]
             y_train, y_test = dataframe_Y.iloc[train_index], dataframe_Y.iloc[test_index]
 
-            classifier = variation['classifier']()
+            classifier = variation.classifier()
             y_prd = classifier.make_prediction(X_train, y_train, X_test)
             scorer.add_points(y_test, y_prd)
 
@@ -287,8 +236,7 @@ for variation in variations_to_test:
     scorer.export_results('results')
 
     # Update General Scores
-    variation_summary = { 'Key': variation['key'], 'Classifier': variation['classifier_key'],
-        'Features': variation['feature_key'], 'Tasks': variation['tasks_key']}
+    variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 'Features': variation.features_code, 'Tasks': variation.tasks_code }
     for score in scorer.export_metrics(): variation_summary[score['name']] = score['score']
     variations_results.append(variation_summary)
 
