@@ -52,6 +52,7 @@ if ( any(not req['arg'] for req in requirements) ):
 # =================================== DEBUG CONSTANTS ===================================
 
 DATASET_SAMPLE = 1.0
+PIVOT_ON_TASKS = False
 
 # =================================== EXECUTION CONSTANTS ===================================
 
@@ -253,15 +254,16 @@ for variation in variations_to_test:
     # Drop unwanted columns and pivot on tasks
     dataframe = dataframe[dataframe['Task'].isin(variation['tasks'])]
     dataframe = dataframe.drop(dataframe_drop_columns, axis=1)
-    dataframe_pivot = module_aux.pivot_on_column(dataframe, ['Subject'], 'Task', dataframe_features, 'on')
+    if PIVOT_ON_TASKS: dataframe = module_aux.pivot_on_column(dataframe, ['Subject'], 'Task', dataframe_features, 'on')
 
     # Export dataframe to use
-    module_exporter.export_csv(dataframe_pivot, 'dataset')
+    module_exporter.export_csv(dataframe, 'dataset')
 
     # Sepparate features and target class
-    dataframe_X = dataframe_pivot
-    dataframe_Y = dataframe_pivot.reset_index()['Subject'].apply(lambda subject: subject_info.loc[subject]['Target'])
-    dataframe_Y.index = dataframe_pivot.index
+    if PIVOT_ON_TASKS: dataframe_X = dataframe
+    else: dataframe_X = dataframe.drop(general_drop_columns, axis=1)
+    dataframe_Y = dataframe.reset_index()['Subject'].apply(lambda subject: subject_info.loc[subject]['Target'])
+    dataframe_Y.index = dataframe.index
 
     # ===== FIXME: MOVE TO ANOTHER MODULE =====
     imp = SimpleImputer(strategy='mean', missing_values=np.nan, copy=True)
