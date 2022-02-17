@@ -124,8 +124,10 @@ print("🚀 Running datasets profiling ...")
 for dataset_key in features_info:
 
     print("🚀 Running profiling of '{0}' dataset".format(dataset_key))
+    module_exporter.change_current_directory(['Data Profiling', dataset_key])
     feature_info = features_info[dataset_key]
-    profiler = module_profiling.DatasetProfiling(dataset_key, feature_info, general_drop_columns)
+    profiler = module_profiling.DatasetProfiling(feature_info['features'], feature_info['drop_columns'],
+        feature_info['feature_columns'], general_drop_columns)
     profiler.make_profiling()
 
 # ================================================= VARIATIONS TO STUDY =================================================
@@ -206,22 +208,26 @@ for variation_info in variations_to_test:
 
     variation = module_load.Variation(variation_info, features_info)
 
-    print("🚀 Running '{0}'".format(variation.generate_code()))
-    module_exporter.change_current_sub_directory(variation.generate_code())
-
     dataframe = variation.features
     dataframe_drop_columns = variation.drop_columns
     dataframe_features = variation.feature_columns
 
-    # Drop unwanted columns and pivot on tasks
+    # Filter dataframe by task
     dataframe = dataframe[dataframe['Task'].isin(variation.tasks)]
+
+    # Do profiling of current dataset
+    module_exporter.change_current_directory([variation.generate_code(), 'Data Profiling'])
+    print("🚀 Running profiling on '{0}'".format(variation.generate_code()))
+    profiler = module_profiling.DatasetProfiling(dataframe, variation.drop_columns, variation.feature_columns, general_drop_columns)
+    profiler.make_profiling()
+
+    # Drop unwanted columns and pivot on tasks
+    print("🚀 Running model on '{0}'".format(variation.generate_code()))
+    module_exporter.change_current_directory([variation.generate_code(), 'Classifier'])
     dataframe = dataframe.drop(dataframe_drop_columns, axis=1)
     if PIVOT_ON_TASKS: dataframe = module_aux.pivot_on_column(dataframe, ['Subject'], 'Task', dataframe_features, 'on')
 
-    # Export dataframe to use
-    module_exporter.export_csv(dataframe, 'dataset')
-
-    # Sepparate features and target class
+    # Separate features and target class
     if PIVOT_ON_TASKS: dataframe_X = dataframe
     else: dataframe_X = dataframe.drop(general_drop_columns, axis=1)
     dataframe_Y = dataframe.reset_index()['Subject'].apply(lambda subject: subject_info.loc[subject]['Target'])
@@ -253,7 +259,7 @@ for variation_info in variations_to_test:
     for score in scorer.export_metrics(): variation_summary[score['name']] = score['score']
     variations_results.append(variation_summary)
 
-module_exporter.change_to_main_directory()
+module_exporter.change_current_directory()
 # Summary of All Variations
 variations_results_df = pd.DataFrame(variations_results)
 module_exporter.export_csv(variations_results_df, 'results', False)

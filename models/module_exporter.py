@@ -5,23 +5,21 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from datetime import datetime
-from typing import List, Optional, Tuple, TypedDict
+from typing import Dict, List, Optional, Tuple, TypedDict
 
 EXPORT_DIRECTORY = '../results/'
 EXECUTION_TIMESTAMP = datetime.now()
 EXPORT_CSV_EXTENSION = '.csv'
 EXPORT_IMAGE_EXTENSION = '.png'
 
-MAIN_DIR = False
-CURRENT_MODEL_DIRECTORY = 'TEMP MODEL'
+CURRENT_DIRECTORIES = []
 
 # =================================== PRIVATE FUNCTIONS ===================================
 
 def compute_path(filename: str, extension: str) -> str:
 
     timestampStr = EXECUTION_TIMESTAMP.strftime("%Y.%m.%d %H.%M.%S")
-    if MAIN_DIR: directory_path = os.path.join(EXPORT_DIRECTORY, timestampStr)
-    else: directory_path = os.path.join(EXPORT_DIRECTORY, timestampStr, CURRENT_MODEL_DIRECTORY)
+    directory_path = os.path.join(EXPORT_DIRECTORY, timestampStr, *CURRENT_DIRECTORIES)
     filename_full = filename + extension
 
     if not os.path.exists(directory_path): os.makedirs(directory_path)
@@ -29,14 +27,9 @@ def compute_path(filename: str, extension: str) -> str:
 
 # =================================== PUBLIC FUNCTIONS - CHANGE GLOBAL PARAMETERS ===================================
 
-def change_current_sub_directory(model_directory: str):
-    global CURRENT_MODEL_DIRECTORY, MAIN_DIR
-    CURRENT_MODEL_DIRECTORY = model_directory
-    MAIN_DIR = False
-
-def change_to_main_directory():
-    global MAIN_DIR
-    MAIN_DIR = True
+def change_current_directory(current_directories: List[str] = []):
+    global CURRENT_DIRECTORIES
+    CURRENT_DIRECTORIES = current_directories
 
 # =================================== PUBLIC FUNCTIONS - SPECIFIC PARAMETERS ===================================
 
@@ -73,6 +66,7 @@ def export_metrics_bar_graph(metrics: List[ExportMetric], filename: str = 'temp'
 
 def bar_chart(filename: str, x_values: List[str], y_values: List[int], figsize: Tuple[int] = (10, 4),
     label_bars: bool = True, x_label: Optional[str] = None, y_label: Optional[str] = None,
+    x_rot: Optional[float] = None, y_rot: Optional[float] = None, margins: Optional[Dict[str, Optional[float]]] = None,
     x_lim: Optional[Tuple[float, float]] = None, y_lim: Optional[Tuple[float, float]] = None) -> None:
 
     complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
@@ -84,8 +78,15 @@ def bar_chart(filename: str, x_values: List[str], y_values: List[int], figsize: 
 
     if x_label: plt.xlabel(x_label)
     if y_label: plt.ylabel(y_label)
+    
     if x_lim: plt.xlim(x_lim[0], x_lim[1])
     if y_lim: plt.ylim(y_lim[0], y_lim[1])
+
+    if x_rot: plt.xticks(rotation=x_rot)
+    if y_rot: plt.yticks(rotation=y_rot)
+
+    if margins: plt.subplots_adjust(bottom=margins['bottom'], left=margins['left'],
+        top=margins['top'], right=margins['right'])
 
     plt.savefig(complete_path)
     plt.close('all')
