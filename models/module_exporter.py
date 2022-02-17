@@ -5,7 +5,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from datetime import datetime
-from typing import List, TypedDict
+from typing import List, Optional, Tuple, TypedDict
 
 EXPORT_DIRECTORY = '../results/'
 EXECUTION_TIMESTAMP = datetime.now()
@@ -27,9 +27,9 @@ def compute_path(filename: str, extension: str) -> str:
     if not os.path.exists(directory_path): os.makedirs(directory_path)
     return os.path.join(directory_path, filename_full)
 
-# =================================== PUBLIC FUNCTIONS ===================================
+# =================================== PUBLIC FUNCTIONS - CHANGE GLOBAL PARAMETERS ===================================
 
-def change_current_model_directory(model_directory: str):
+def change_current_sub_directory(model_directory: str):
     global CURRENT_MODEL_DIRECTORY, MAIN_DIR
     CURRENT_MODEL_DIRECTORY = model_directory
     MAIN_DIR = False
@@ -37,6 +37,8 @@ def change_current_model_directory(model_directory: str):
 def change_to_main_directory():
     global MAIN_DIR
     MAIN_DIR = True
+
+# =================================== PUBLIC FUNCTIONS - SPECIFIC PARAMETERS ===================================
 
 def export_csv(dataframe: pd.DataFrame, filename: str = 'temp', index = True):
 
@@ -57,11 +59,7 @@ def export_confusion_matrix(confusion_matrix: np.ndarray, categories: List[str],
     plt.close('all')
 
 ExportMetric = TypedDict("ExportMetric", { 'name': str, 'score': float } )
-def export_metrics_bar_graph(metrics: List[ExportMetric], filename: str = 'temp'):
-
-    complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
-    y_label = 'Score'
-    x_label = 'Metrics'
+def export_metrics_bar_graph(metrics: List[ExportMetric], filename: str = 'temp') -> None:
 
     x_values = []
     y_values = []
@@ -69,11 +67,25 @@ def export_metrics_bar_graph(metrics: List[ExportMetric], filename: str = 'temp'
         x_values.append(stat['name'])
         y_values.append(stat['score'])
 
-    plt.figure(figsize=(10, 4))
+    bar_chart(filename, x_values, y_values, x_label='Metrics', y_label='Score', y_lim=(0, 1))
+
+# =================================== PUBLIC FUNCTIONS - GENERAL METHODS ===================================
+
+def bar_chart(filename: str, x_values: List[str], y_values: List[int], figsize: Tuple[int] = (10, 4),
+    label_bars: bool = True, x_label: Optional[str] = None, y_label: Optional[str] = None,
+    x_lim: Optional[Tuple[float, float]] = None, y_lim: Optional[Tuple[float, float]] = None) -> None:
+
+    complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
+
+    plt.figure(figsize=figsize)
     bars = sns.barplot(x=x_values, y=y_values)
-    bars.bar_label(bars.containers[0], fmt='%.2f')
-    plt.ylabel(y_label)
-    plt.xlabel(x_label)
-    plt.ylim(0, 1)
+    
+    if label_bars: bars.bar_label(bars.containers[0], fmt='%.2f')
+
+    if x_label: plt.xlabel(x_label)
+    if y_label: plt.ylabel(y_label)
+    if x_lim: plt.xlim(x_lim[0], x_lim[1])
+    if y_lim: plt.ylim(y_lim[0], y_lim[1])
+
     plt.savefig(complete_path)
     plt.close('all')

@@ -41,10 +41,18 @@ class Scorer():
 
     # ============================================= METRICS RETRIEVAL =============================================
     def calculate_accuracy(self) -> float: return (self.true_positives + self.true_negatives) / self.number_points()
-    def calculate_precision(self) -> float: return self.true_positives / (self.true_positives + self.false_positives)
-    def calculate_recall(self) -> float: return self.true_positives / (self.true_positives + self.false_negatives)
-    def calculate_sensitivity(self) -> float: return self.true_positives / (self.true_positives + self.false_negatives)
-    def calculate_specificity(self) -> float: return self.true_negatives / (self.false_positives + self.true_negatives)
+    def calculate_precision(self) -> float:
+        if self.true_positives == 0 and self.false_positives == 0: return 0
+        return self.true_positives / (self.true_positives + self.false_positives)
+    def calculate_recall(self) -> float:
+        if self.true_positives == 0 and self.false_negatives == 0: return 0
+        return self.true_positives / (self.true_positives + self.false_negatives)
+    def calculate_sensitivity(self) -> float:
+        if self.true_positives == 0 and self.false_negatives == 0: return 0
+        return self.true_positives / (self.true_positives + self.false_negatives)
+    def calculate_specificity(self) -> float:
+        if self.false_positives == 0 and self.true_negatives == 0: return 0
+        return self.true_negatives / (self.false_positives + self.true_negatives)
     def calculate_f1_measure(self) -> float:
         precision = self.calculate_precision()
         recall = self.calculate_recall()

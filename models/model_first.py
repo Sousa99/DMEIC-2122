@@ -16,6 +16,7 @@ import module_classifier
 import module_scorer
 import module_aux
 import module_exporter
+import module_profiling
 
 # =================================== PACKAGES PARAMETERS ===================================
 
@@ -106,7 +107,7 @@ sound_drop_columns = ['Audio Path', 'Audio File', 'Audio File Path']
 speech_drop_columns = ['Audio Path', 'Audio File', 'Audio File Path', 'Trans Path', 'Trans File', 'Trans File Path', 'Trans Info']
 all_features_drop_columns = ['Audio Path', 'Audio File', 'Audio File Path', 'Trans Path', 'Trans File', 'Trans File Path', 'Trans Info']
 
-# ===================================== FEATURES =====================================
+# ============================================ FEATURE SETS ============================================
 sound_features = [column for column in sound_features_df.columns.values if column not in sound_drop_columns + general_drop_columns]
 speech_features = [column for column in speech_features_df.columns.values if column not in speech_drop_columns + general_drop_columns]
 all_features = [column for column in all_features_df.columns.values if column not in all_features_drop_columns + general_drop_columns]
@@ -116,8 +117,18 @@ speech_features_info = { 'features': speech_features_df, 'drop_columns': speech_
 all_features_info = { 'features': all_features_df, 'drop_columns': all_features_drop_columns, 'feature_columns': all_features }
 
 features_info = { 'Sound': sound_features_info, 'Speech': speech_features_info, 'Sound + Speech': all_features_info }
-# ===================================== DATAFRAME TO USE =====================================
+
+# ============================================ STUDY FEATURE SETS ============================================
 print()
+print("🚀 Running datasets profiling ...")
+for dataset_key in features_info:
+
+    print("🚀 Running profiling of '{0}' dataset".format(dataset_key))
+    feature_info = features_info[dataset_key]
+    profiler = module_profiling.DatasetProfiling(dataset_key, feature_info, general_drop_columns)
+    profiler.make_profiling()
+
+# ================================================= VARIATIONS TO STUDY =================================================
 variations_results = []
 variations_to_test = [
     # ============================================= SVM - SOUND FEATURES =============================================
@@ -188,13 +199,15 @@ variations_to_test = [
     { 'tasks': 'Description Affective Images',  'features': 'Sound + Speech',   'classifier': 'Decision Tree' },
 ]
 
+# ================================================= STUDY VARIATIONS =================================================
+print()
 print("🚀 Running solution variations ...")
 for variation_info in variations_to_test:
 
     variation = module_load.Variation(variation_info, features_info)
 
     print("🚀 Running '{0}'".format(variation.generate_code()))
-    module_exporter.change_current_model_directory(variation.generate_code())
+    module_exporter.change_current_sub_directory(variation.generate_code())
 
     dataframe = variation.features
     dataframe_drop_columns = variation.drop_columns
@@ -239,7 +252,6 @@ for variation_info in variations_to_test:
     variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 'Features': variation.features_code, 'Tasks': variation.tasks_code }
     for score in scorer.export_metrics(): variation_summary[score['name']] = score['score']
     variations_results.append(variation_summary)
-
 
 module_exporter.change_to_main_directory()
 # Summary of All Variations
