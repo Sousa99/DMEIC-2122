@@ -54,6 +54,7 @@ if ( any(not req['arg'] for req in requirements) ):
 
 DATASET_SAMPLE = 1.0
 PIVOT_ON_TASKS = False
+RUN_VARIATIONS = True
 
 # =================================== EXECUTION CONSTANTS ===================================
 
@@ -202,6 +203,7 @@ variations_to_test = [
 ]
 
 # ================================================= STUDY VARIATIONS =================================================
+if not RUN_VARIATIONS: variations_to_test = []
 print()
 print("🚀 Running solution variations ...")
 for variation_info in variations_to_test:

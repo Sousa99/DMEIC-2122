@@ -6,7 +6,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple, TypedDict
+from typing import Any, Dict, List, Optional, Tuple, TypedDict
 
 EXPORT_DIRECTORY = '../results/'
 EXECUTION_TIMESTAMP = datetime.now()
@@ -26,7 +26,7 @@ def compute_path(filename: str, extension: str) -> str:
     if not os.path.exists(directory_path): os.makedirs(directory_path)
     return os.path.join(directory_path, filename_full)
 
-def square_grid(number: int) -> Tuple[int, int]:
+def optimal_grid(number: int) -> Tuple[int, int]:
 
     square_root = math.sqrt(number)
     square_root_floor = math.floor(square_root)
@@ -107,7 +107,7 @@ def boxplot_for_each(filename: str, values: Dict[str, List[float]]) -> None:
 
     complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
 
-    rows, cols = square_grid(len(values))
+    rows, cols = optimal_grid(len(values))
     fig, axs = plt.subplots(rows, cols, figsize=(cols * 5, rows * 5), squeeze=False)
 
     for values_index, values_key in enumerate(values):
@@ -125,7 +125,7 @@ def histogram_for_each_numeric(filename: str, values: Dict[str, List[float]], kd
 
     complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
 
-    rows, cols = square_grid(len(values))
+    rows, cols = optimal_grid(len(values))
     fig, axs = plt.subplots(rows, cols, figsize=(cols * 5, rows * 5), squeeze=False)
 
     for values_index, values_key in enumerate(values):
@@ -134,7 +134,7 @@ def histogram_for_each_numeric(filename: str, values: Dict[str, List[float]], kd
         row_index = values_index // cols
 
         sns.histplot(data=values[values_key], kde=kde, ax=axs[row_index, col_index])
-        axs[row_index, col_index].set_title("Histogram for '{0}'".format(values_key))
+        axs[row_index, col_index].set_title("'{0}'".format(values_key))
 
     plt.savefig(complete_path)
     plt.close('all')
@@ -143,7 +143,7 @@ def histogram_for_each_symbolic(filename: str, values: Dict[str, Dict[str, int]]
 
     complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
 
-    rows, cols = square_grid(len(values))
+    rows, cols = optimal_grid(len(values))
     fig, axs = plt.subplots(rows, cols, figsize=(cols * 5, rows * 5), squeeze=False)
 
     for values_index, values_key in enumerate(values):
@@ -152,7 +152,45 @@ def histogram_for_each_symbolic(filename: str, values: Dict[str, Dict[str, int]]
         col_index = values_index % cols
 
         sns.barplot(x=list(values[values_key].keys()), y=list(values[values_key].values()), ax=axs[row_index, col_index])
-        axs[row_index, col_index].set_title("Histogram for '{0}'".format(values_key))
+        axs[row_index, col_index].set_title("'{0}'".format(values_key))
 
+    plt.savefig(complete_path)
+    plt.close('all')
+
+def dataframe_all_variables_sparsity(filename: str, dataframe: pd.DataFrame, variables: List[str]) -> None:
+
+    complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
+    
+    number_variables = len(variables)
+    rows, cols = number_variables - 1, number_variables - 1
+    fig, axs = plt.subplots(rows, cols, figsize=(cols * 2.6, rows * 2.6))
+
+    for var1_index in range(number_variables):
+        var1 = variables[var1_index]
+
+        for var2_index in range(var1_index + 1, number_variables):
+            var2 = variables[var2_index]
+
+            sns.scatterplot(x=dataframe[var1], y=dataframe[var2], ax=axs[var1_index, var2_index])
+            axs[var1_index, var2_index].set_title("%s x %s"%(var1, var2))
+            axs[var1_index, var2_index].set_xlabel(var1)
+            axs[var1_index, var2_index].set_ylabel(var2)
+
+    plt.tight_layout()
+    plt.savefig(complete_path)
+    plt.close('all')
+
+def heatmap(filename: str, dataframe: pd.DataFrame, figsize: Tuple[int] = (6, 6),
+    annot: bool = True, cmap: str = 'Blues', margins: Optional[Dict[str, Optional[float]]] = None,
+    x_ticklabels: Optional[List[str]] = False, y_ticklabels: Optional[List[str]] = False) -> None:
+
+    complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
+
+    plt.figure(figsize=(figsize[0] + dataframe.shape[0] * 0.5, figsize[1] + dataframe.shape[1] * 0.5))
+    sns.heatmap(abs(dataframe), xticklabels=x_ticklabels, yticklabels=y_ticklabels, annot=annot, cmap=cmap)
+
+    if margins: plt.subplots_adjust(bottom=margins['bottom'], left=margins['left'],
+        top=margins['top'], right=margins['right'])
+    
     plt.savefig(complete_path)
     plt.close('all')

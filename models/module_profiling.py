@@ -56,6 +56,7 @@ class DatasetProfiling():
         self.profile_dimensionality()
         self.profile_missing_values()
         self.profile_distribution()
+        self.profile_sparsity()
 
     def profile_dimensionality(self) -> None:
         # Run Dimensionality Profiling
@@ -74,7 +75,7 @@ class DatasetProfiling():
                 figsize=(5 + len(bar_plots) / 3, 4), x_rot=25, margins={ 'bottom': 0.35, 'left': None, 'top': None, 'right': None })
 
     def profile_distribution(self) -> None:
-        
+
         dataset_types = profile_for_types(self.features)
 
         # Run Distribution - Boxplots Profiling
@@ -93,6 +94,17 @@ class DatasetProfiling():
             values[symbolic_feature] = self.features[symbolic_feature].dropna().value_counts().to_dict()
         if len(values) != 0: module_exporter.histogram_for_each_symbolic('histogram - symbolic', values)
 
+    def profile_sparsity(self) -> None:
 
+        dataset_types = profile_for_types(self.features)
+
+        # Run Sparsity Plots
+        variables = dataset_types['Binary'] + dataset_types['Numeric'] + dataset_types['Symbolic']
+        # FIXME: Needs to be executed
+        #module_exporter.dataframe_all_variables_sparsity('sparsity - plots', self.features, variables)
+        # Run Confusion Matrix
+        correlation_matrix = abs(self.features.corr())
+        module_exporter.heatmap('sparcity - correlation', correlation_matrix, x_ticklabels=correlation_matrix.columns,
+        y_ticklabels=correlation_matrix.columns, margins={ 'bottom': 0.15, 'left': 0.17, 'top': 0.90, 'right': 0.95 })
 
 # =================================== PUBLIC METHODS ===================================
