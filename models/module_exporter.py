@@ -1,4 +1,5 @@
 import os
+import math
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -24,6 +25,17 @@ def compute_path(filename: str, extension: str) -> str:
 
     if not os.path.exists(directory_path): os.makedirs(directory_path)
     return os.path.join(directory_path, filename_full)
+
+def square_grid(number: int) -> Tuple[int, int]:
+
+    square_root = math.sqrt(number)
+    square_root_floor = math.floor(square_root)
+
+    rows = square_root_floor - 1
+    if rows <= 0: rows = 1
+
+    columns = math.ceil(number / rows)
+    return (rows, columns)
 
 # =================================== PUBLIC FUNCTIONS - CHANGE GLOBAL PARAMETERS ===================================
 
@@ -87,6 +99,60 @@ def bar_chart(filename: str, x_values: List[str], y_values: List[int], figsize: 
 
     if margins: plt.subplots_adjust(bottom=margins['bottom'], left=margins['left'],
         top=margins['top'], right=margins['right'])
+
+    plt.savefig(complete_path)
+    plt.close('all')
+
+def boxplot_for_each(filename: str, values: Dict[str, List[float]]) -> None:
+
+    complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
+
+    rows, cols = square_grid(len(values))
+    fig, axs = plt.subplots(rows, cols, figsize=(cols * 5, rows * 5), squeeze=False)
+
+    for values_index, values_key in enumerate(values):
+
+        col_index = values_index % cols
+        row_index = values_index // cols
+
+        sns.boxplot(data=values[values_key], ax=axs[row_index, col_index])
+        axs[row_index, col_index].set_title("Boxplot for '{0}'".format(values_key))
+
+    plt.savefig(complete_path)
+    plt.close('all')
+
+def histogram_for_each_numeric(filename: str, values: Dict[str, List[float]], kde: bool = True) -> None:
+
+    complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
+
+    rows, cols = square_grid(len(values))
+    fig, axs = plt.subplots(rows, cols, figsize=(cols * 5, rows * 5), squeeze=False)
+
+    for values_index, values_key in enumerate(values):
+
+        col_index = values_index % cols
+        row_index = values_index // cols
+
+        sns.histplot(data=values[values_key], kde=kde, ax=axs[row_index, col_index])
+        axs[row_index, col_index].set_title("Histogram for '{0}'".format(values_key))
+
+    plt.savefig(complete_path)
+    plt.close('all')
+
+def histogram_for_each_symbolic(filename: str, values: Dict[str, Dict[str, int]], kde: bool = True) -> None:
+
+    complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
+
+    rows, cols = square_grid(len(values))
+    fig, axs = plt.subplots(rows, cols, figsize=(cols * 5, rows * 5), squeeze=False)
+
+    for values_index, values_key in enumerate(values):
+
+        row_index = values_index // cols
+        col_index = values_index % cols
+
+        sns.barplot(x=list(values[values_key].keys()), y=list(values[values_key].values()), ax=axs[row_index, col_index])
+        axs[row_index, col_index].set_title("Histogram for '{0}'".format(values_key))
 
     plt.savefig(complete_path)
     plt.close('all')
