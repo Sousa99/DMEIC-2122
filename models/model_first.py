@@ -135,71 +135,71 @@ for dataset_key in features_info:
 variations_results = []
 variations_to_test = [
     # ============================================= SVM - SOUND FEATURES =============================================
-    { 'tasks': 'Task 1',                        'features': 'Sound',            'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Task 2',                        'features': 'Sound',            'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Task 3',                        'features': 'Sound',            'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Task 4',                        'features': 'Sound',            'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Task 5',                        'features': 'Sound',            'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Task 6',                        'features': 'Sound',            'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Task 7',                        'features': 'Sound',            'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Verbal Fluency',                'features': 'Sound',            'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Reading + Retelling',           'features': 'Sound',            'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Description Affective Images',  'features': 'Sound',            'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Task 1',                        'features': 'Sound',            'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 2',                        'features': 'Sound',            'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 3',                        'features': 'Sound',            'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 4',                        'features': 'Sound',            'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 5',                        'features': 'Sound',            'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 6',                        'features': 'Sound',            'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 7',                        'features': 'Sound',            'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Verbal Fluency',                'features': 'Sound',            'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Reading + Retelling',           'features': 'Sound',            'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Description Affective Images',  'features': 'Sound',            'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
     # ============================================= SVM - SPEECH FEATURES =============================================
-    { 'tasks': 'Task 1',                        'features': 'Speech',           'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Task 2',                        'features': 'Speech',           'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Task 3',                        'features': 'Speech',           'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Task 4',                        'features': 'Speech',           'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Task 5',                        'features': 'Speech',           'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Task 6',                        'features': 'Speech',           'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Task 7',                        'features': 'Speech',           'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Verbal Fluency',                'features': 'Speech',           'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Reading + Retelling',           'features': 'Speech',           'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Description Affective Images',  'features': 'Speech',           'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Task 1',                        'features': 'Speech',           'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 2',                        'features': 'Speech',           'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 3',                        'features': 'Speech',           'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 4',                        'features': 'Speech',           'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 5',                        'features': 'Speech',           'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 6',                        'features': 'Speech',           'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 7',                        'features': 'Speech',           'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Verbal Fluency',                'features': 'Speech',           'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Reading + Retelling',           'features': 'Speech',           'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Description Affective Images',  'features': 'Speech',           'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
     # ============================================= SVM - SOUND + SPEECH FEATURES =============================================
-    { 'tasks': 'Task 1',                        'features': 'Sound + Speech',   'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Task 2',                        'features': 'Sound + Speech',   'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Task 3',                        'features': 'Sound + Speech',   'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Task 4',                        'features': 'Sound + Speech',   'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Task 5',                        'features': 'Sound + Speech',   'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Task 6',                        'features': 'Sound + Speech',   'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Task 7',                        'features': 'Sound + Speech',   'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Verbal Fluency',                'features': 'Sound + Speech',   'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Reading + Retelling',           'features': 'Sound + Speech',   'classifier': 'Support Vector Machine' },
-    { 'tasks': 'Description Affective Images',  'features': 'Sound + Speech',   'classifier': 'Support Vector Machine' },
+    { 'tasks': 'Task 1',                        'features': 'Sound + Speech',   'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 2',                        'features': 'Sound + Speech',   'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 3',                        'features': 'Sound + Speech',   'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 4',                        'features': 'Sound + Speech',   'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 5',                        'features': 'Sound + Speech',   'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 6',                        'features': 'Sound + Speech',   'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 7',                        'features': 'Sound + Speech',   'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Verbal Fluency',                'features': 'Sound + Speech',   'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Reading + Retelling',           'features': 'Sound + Speech',   'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Description Affective Images',  'features': 'Sound + Speech',   'classifier': 'Support Vector Machine',  'preprocessing': [ 'DROP_ROWS_NAN' ]},
     # ============================================= DT - SOUND FEATURES =============================================
-    { 'tasks': 'Task 1',                        'features': 'Sound',            'classifier': 'Decision Tree' },
-    { 'tasks': 'Task 2',                        'features': 'Sound',            'classifier': 'Decision Tree' },
-    { 'tasks': 'Task 3',                        'features': 'Sound',            'classifier': 'Decision Tree' },
-    { 'tasks': 'Task 4',                        'features': 'Sound',            'classifier': 'Decision Tree' },
-    { 'tasks': 'Task 5',                        'features': 'Sound',            'classifier': 'Decision Tree' },
-    { 'tasks': 'Task 6',                        'features': 'Sound',            'classifier': 'Decision Tree' },
-    { 'tasks': 'Task 7',                        'features': 'Sound',            'classifier': 'Decision Tree' },
-    { 'tasks': 'Verbal Fluency',                'features': 'Sound',            'classifier': 'Decision Tree' },
-    { 'tasks': 'Reading + Retelling',           'features': 'Sound',            'classifier': 'Decision Tree' },
-    { 'tasks': 'Description Affective Images',  'features': 'Sound',            'classifier': 'Decision Tree' },
+    { 'tasks': 'Task 1',                        'features': 'Sound',            'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 2',                        'features': 'Sound',            'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 3',                        'features': 'Sound',            'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 4',                        'features': 'Sound',            'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 5',                        'features': 'Sound',            'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 6',                        'features': 'Sound',            'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 7',                        'features': 'Sound',            'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Verbal Fluency',                'features': 'Sound',            'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Reading + Retelling',           'features': 'Sound',            'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Description Affective Images',  'features': 'Sound',            'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
     # ============================================= DT - SPEECH FEATURES =============================================
-    { 'tasks': 'Task 1',                        'features': 'Speech',           'classifier': 'Decision Tree' },
-    { 'tasks': 'Task 2',                        'features': 'Speech',           'classifier': 'Decision Tree' },
-    { 'tasks': 'Task 3',                        'features': 'Speech',           'classifier': 'Decision Tree' },
-    { 'tasks': 'Task 4',                        'features': 'Speech',           'classifier': 'Decision Tree' },
-    { 'tasks': 'Task 5',                        'features': 'Speech',           'classifier': 'Decision Tree' },
-    { 'tasks': 'Task 6',                        'features': 'Speech',           'classifier': 'Decision Tree' },
-    { 'tasks': 'Task 7',                        'features': 'Speech',           'classifier': 'Decision Tree' },
-    { 'tasks': 'Verbal Fluency',                'features': 'Speech',           'classifier': 'Decision Tree' },
-    { 'tasks': 'Reading + Retelling',           'features': 'Speech',           'classifier': 'Decision Tree' },
-    { 'tasks': 'Description Affective Images',  'features': 'Speech',           'classifier': 'Decision Tree' },
+    { 'tasks': 'Task 1',                        'features': 'Speech',           'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 2',                        'features': 'Speech',           'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 3',                        'features': 'Speech',           'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 4',                        'features': 'Speech',           'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 5',                        'features': 'Speech',           'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 6',                        'features': 'Speech',           'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 7',                        'features': 'Speech',           'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Verbal Fluency',                'features': 'Speech',           'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Reading + Retelling',           'features': 'Speech',           'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Description Affective Images',  'features': 'Speech',           'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
     # ============================================= DT - SOUND + SPEECH FEATURES =============================================
-    { 'tasks': 'Task 1',                        'features': 'Sound + Speech',   'classifier': 'Decision Tree' },
-    { 'tasks': 'Task 2',                        'features': 'Sound + Speech',   'classifier': 'Decision Tree' },
-    { 'tasks': 'Task 3',                        'features': 'Sound + Speech',   'classifier': 'Decision Tree' },
-    { 'tasks': 'Task 4',                        'features': 'Sound + Speech',   'classifier': 'Decision Tree' },
-    { 'tasks': 'Task 5',                        'features': 'Sound + Speech',   'classifier': 'Decision Tree' },
-    { 'tasks': 'Task 6',                        'features': 'Sound + Speech',   'classifier': 'Decision Tree' },
-    { 'tasks': 'Task 7',                        'features': 'Sound + Speech',   'classifier': 'Decision Tree' },
-    { 'tasks': 'Verbal Fluency',                'features': 'Sound + Speech',   'classifier': 'Decision Tree' },
-    { 'tasks': 'Reading + Retelling',           'features': 'Sound + Speech',   'classifier': 'Decision Tree' },
-    { 'tasks': 'Description Affective Images',  'features': 'Sound + Speech',   'classifier': 'Decision Tree' },
+    { 'tasks': 'Task 1',                        'features': 'Sound + Speech',   'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 2',                        'features': 'Sound + Speech',   'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 3',                        'features': 'Sound + Speech',   'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 4',                        'features': 'Sound + Speech',   'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 5',                        'features': 'Sound + Speech',   'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 6',                        'features': 'Sound + Speech',   'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Task 7',                        'features': 'Sound + Speech',   'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Verbal Fluency',                'features': 'Sound + Speech',   'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Reading + Retelling',           'features': 'Sound + Speech',   'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
+    { 'tasks': 'Description Affective Images',  'features': 'Sound + Speech',   'classifier': 'Decision Tree',   'preprocessing': [ 'DROP_ROWS_NAN' ]},
 ]
 
 # ================================================= STUDY VARIATIONS =================================================
@@ -209,6 +209,7 @@ print("🚀 Running solution variations ...")
 for variation_info in variations_to_test:
 
     variation = module_load.Variation(variation_info, features_info)
+    print("🚀 Running variation on '{0}'".format(variation.generate_code()))
 
     dataframe = variation.features
     dataframe_drop_columns = variation.drop_columns
@@ -235,10 +236,8 @@ for variation_info in variations_to_test:
     dataframe_Y = dataframe.reset_index()['Subject'].apply(lambda subject: subject_info.loc[subject]['Target'])
     dataframe_Y.index = dataframe.index
 
-    # ===== FIXME: MOVE TO ANOTHER MODULE =====
-    imp = SimpleImputer(strategy='mean', missing_values=np.nan, copy=True)
-    dataframe_X = pd.DataFrame(imp.fit_transform(dataframe_X), columns=dataframe_X.columns.values)
-    # ===== FIXME: MOVE TO ANOTHER MODULE =====
+    # Preprocessing
+    dataframe_X = variation.preprocesser.preprocess(dataframe_X)
 
     data_splits = list(module_classifier.leave_one_out(dataframe_X))
     scorer = module_scorer.Scorer(['Psychosis', 'Control'])

@@ -6,6 +6,7 @@ from typing import Any, List, Dict, TypedDict
 
 # Local Modules
 import module_classifier
+import module_preprocessing
 
 # =================================== PRIVATE METHODS ===================================
 
@@ -78,6 +79,7 @@ class Variation():
         self.load_features(variation_info['features'], datasets_infos)
         self.load_tasks(variation_info['tasks'])
         self.load_classifier(variation_info['classifier'])
+        self.load_preprocessing(variation_info['preprocessing'])
 
     def load_features(self, key_features: str, dataset_infos: Dict[str, Dict[str, Any]]) -> None:
 
@@ -113,6 +115,10 @@ class Variation():
         self.classifier_code = key_classifier
         self.classifier_code_small = temp_classifier[0]
         self.classifier = temp_classifier[1]
+
+    def load_preprocessing(self, keys_preprocessing: str) -> None:
+
+        self.preprocesser = module_preprocessing.Preprocesser(keys_preprocessing)
 
     def generate_code(self) -> str:
         return ' - '.join([self.classifier_code_small, self.features_code, self.tasks_code])

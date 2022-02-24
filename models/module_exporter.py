@@ -1,5 +1,7 @@
 import os
 import math
+import matplotlib
+
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -14,6 +16,8 @@ EXPORT_CSV_EXTENSION = '.csv'
 EXPORT_IMAGE_EXTENSION = '.png'
 
 CURRENT_DIRECTORIES = []
+
+matplotlib.use('Agg')
 
 # =================================== PRIVATE FUNCTIONS ===================================
 
