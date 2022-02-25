@@ -61,21 +61,24 @@ class Variation():
     def generate_code(self) -> str:
         return ' - '.join([self.classifier_code_small, self.features_code, self.tasks_code])
 
-    def get_treated_dataset(self, general_drop_columns: List[str], subject_info: pd.DataFrame, pivot_on_task: bool = False) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    def get_treated_dataset(self, general_drop_columns: List[str], subject_info: pd.DataFrame, pivot_on_task: bool = False) -> Tuple[pd.DataFrame, pd.Series]:
 
         dataframe_filtered = self.features.copy(deep=True)
-        # Filter dataframe by task
+        # Filter Dataframe by task
         dataframe_filtered = dataframe_filtered[dataframe_filtered['Task'].isin(self.tasks)]
 
         # Get final feature set (Dataframe X)
-        dataframe_filtered = dataframe_filtered.drop(self.drop_columns, axis=1)
-        if pivot_on_task: dataframe_X = module_aux.pivot_on_column(dataframe_filtered, ['Subject'], 'Task', self.feature_columns, 'on')
-        else: dataframe_X = dataframe_filtered.drop(general_drop_columns, axis=1)
+        dataframe_X = dataframe_filtered
+        dataframe_X = dataframe_X.drop(self.drop_columns, axis=1)
+        if pivot_on_task: dataframe_X = module_aux.pivot_on_column(dataframe_X, ['Subject'], 'Task', self.feature_columns, 'on')
         dataframe_X = self.preprocesser.preprocess(dataframe_X)
 
         # Get final target class (Dataframe Y)
-        dataframe_Y = dataframe_filtered.reset_index()['Subject'].apply(lambda subject: subject_info.loc[subject]['Target'])
-        dataframe_Y.index = dataframe_filtered.index
+        dataframe_Y = dataframe_X.reset_index()['Subject'].apply(lambda subject: subject_info.loc[subject]['Target'])
+        dataframe_Y.index = dataframe_X.index
+
+        # Remove General Columns from Dataframe X
+        if not pivot_on_task: dataframe_X = dataframe_X.drop(general_drop_columns, axis=1)
 
         return (dataframe_X, dataframe_Y)
 

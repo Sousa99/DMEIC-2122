@@ -8,7 +8,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple, TypedDict
+from typing import Dict, List, Optional, Tuple, TypedDict
 
 EXPORT_DIRECTORY = '../results/'
 EXECUTION_TIMESTAMP = datetime.now()
@@ -107,61 +107,59 @@ def bar_chart(filename: str, x_values: List[str], y_values: List[int], figsize: 
     plt.savefig(complete_path)
     plt.close('all')
 
-def boxplot_for_each(filename: str, values: Dict[str, List[float]]) -> None:
+def boxplot_for_each(filename: str, dataframe: pd.DataFrame, variables: List[str], hue: Optional[str] = None) -> None:
 
     complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
 
-    rows, cols = optimal_grid(len(values))
+    rows, cols = optimal_grid(len(variables))
     fig, axs = plt.subplots(rows, cols, figsize=(cols * 5, rows * 5), squeeze=False)
 
-    for values_index, values_key in enumerate(values):
+    for variable_index, variable_key in enumerate(variables):
 
-        col_index = values_index % cols
-        row_index = values_index // cols
+        col_index = variable_index % cols
+        row_index = variable_index // cols
 
-        sns.boxplot(data=values[values_key], ax=axs[row_index, col_index])
-        axs[row_index, col_index].set_title("Boxplot for '{0}'".format(values_key))
+        sns.boxplot(data=dataframe, x=hue, y=variable_key, ax=axs[row_index, col_index])
 
     plt.savefig(complete_path)
     plt.close('all')
 
-def histogram_for_each_numeric(filename: str, values: Dict[str, List[float]], kde: bool = True) -> None:
+def histogram_for_each_numeric(filename: str, dataframe: pd.DataFrame, variables: List[str], hue: Optional[str] = None, kde: bool = True) -> None:
 
     complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
 
-    rows, cols = optimal_grid(len(values))
+    rows, cols = optimal_grid(len(variables))
     fig, axs = plt.subplots(rows, cols, figsize=(cols * 5, rows * 5), squeeze=False)
 
-    for values_index, values_key in enumerate(values):
+    for variable_index, variable_key in enumerate(variables):
 
-        col_index = values_index % cols
-        row_index = values_index // cols
+        col_index = variable_index % cols
+        row_index = variable_index // cols
 
-        sns.histplot(data=values[values_key], kde=kde, ax=axs[row_index, col_index])
-        axs[row_index, col_index].set_title("'{0}'".format(values_key))
+        sns.histplot(data=dataframe, x=variable_key, hue=hue, kde=kde, ax=axs[row_index, col_index])
 
     plt.savefig(complete_path)
     plt.close('all')
 
-def histogram_for_each_symbolic(filename: str, values: Dict[str, Dict[str, int]], kde: bool = True) -> None:
+def histogram_for_each_symbolic(filename: str, dataframe: pd.DataFrame, variables: List[str], hue: Optional[str] = None, kde: bool = True) -> None:
 
     complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
 
-    rows, cols = optimal_grid(len(values))
+    rows, cols = optimal_grid(len(variables))
     fig, axs = plt.subplots(rows, cols, figsize=(cols * 5, rows * 5), squeeze=False)
 
-    for values_index, values_key in enumerate(values):
+    for variable_index, variable_key in enumerate(variables):
 
-        row_index = values_index // cols
-        col_index = values_index % cols
+        row_index = variable_index // cols
+        col_index = variable_index % cols
 
-        sns.barplot(x=list(values[values_key].keys()), y=list(values[values_key].values()), ax=axs[row_index, col_index])
-        axs[row_index, col_index].set_title("'{0}'".format(values_key))
+        sns.countplot(data=dataframe, x=variable_key, hue=hue, ax=axs[row_index, col_index])
+        axs[row_index, col_index].set_title("'{0}'".format(variable_key))
 
     plt.savefig(complete_path)
     plt.close('all')
 
-def dataframe_all_variables_sparsity(filename: str, dataframe: pd.DataFrame, variables: List[str]) -> None:
+def dataframe_all_variables_sparsity(filename: str, dataframe: pd.DataFrame, variables: List[str], hue: Optional[str] = None) -> None:
 
     complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
     
@@ -175,7 +173,7 @@ def dataframe_all_variables_sparsity(filename: str, dataframe: pd.DataFrame, var
         for var2_index in range(var1_index + 1, number_variables):
             var2 = variables[var2_index]
 
-            sns.scatterplot(x=dataframe[var1], y=dataframe[var2], ax=axs[var1_index, var2_index])
+            sns.scatterplot(data=dataframe, x=var1, y=var2, hue=hue, ax=axs[var1_index, var2_index])
             axs[var1_index, var2_index].set_title("%s x %s"%(var1, var2))
             axs[var1_index, var2_index].set_xlabel(var1)
             axs[var1_index, var2_index].set_ylabel(var2)

@@ -159,16 +159,16 @@ for variation in variations_to_test:
 
     # Do profiling of current dataset
     module_exporter.change_current_directory([variation.generate_code(), 'Data Profiling'])
-    print("🚀 Running profiling on '{0}'".format(variation.generate_code()))
+    print("🚀 Running profiling ...")
     profiler = module_profiling.DatasetProfiling(dataframe_X, dataframe_Y)
     profiler.make_profiling()
 
     # Running the classifier itself
     module_exporter.change_current_directory([variation.generate_code(), 'Classifier'])
-    print("🚀 Running model on '{0}'".format(variation.generate_code()))
+    print("🚀 Running model ...")
     data_splits = list(module_classifier.leave_one_out(dataframe_X))
     scorer = module_scorer.Scorer(['Psychosis', 'Control'])
-    for (train_index, test_index) in tqdm(data_splits, desc="👉 Running classifier in \'" + variation.generate_code() + "\'", leave=False):
+    for (train_index, test_index) in tqdm(data_splits, desc="👉 Running classifier:", leave=False):
         X_train, X_test = dataframe_X.iloc[train_index], dataframe_X.iloc[test_index]
         y_train, y_test = dataframe_Y.iloc[train_index], dataframe_Y.iloc[test_index]
 
@@ -177,7 +177,7 @@ for variation in variations_to_test:
         scorer.add_points(y_test, y_prd)
     scorer.export_results('results')
 
-    print("✅ Completed variation '{0}'".format(variation.generate_code()))
+    print("✅ Completed variation")
 
     # Update General Scores
     variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 'Features': variation.features_code, 'Tasks': variation.tasks_code }
