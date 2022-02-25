@@ -134,8 +134,10 @@ for dataset_key in features_info:
     print("🚀 Running profiling of '{0}' dataset".format(dataset_key))
     module_exporter.change_current_directory(['Data Profiling', dataset_key])
     feature_info = features_info[dataset_key]
-    profiler = module_profiling.DatasetProfiling(feature_info['features'], feature_info['drop_columns'],
-        feature_info['feature_columns'], general_drop_columns)
+
+    feature_set = feature_info['features'].drop(feature_info['drop_columns'] + general_drop_columns, axis=1)
+    target_set = feature_info['features'].reset_index()['Subject'].apply(lambda subject: subject_info.loc[subject]['Target'])
+    profiler = module_profiling.DatasetProfiling(feature_set, target_set)
     profiler.make_profiling()
 
 # ================================================= VARIATIONS TO STUDY =================================================
