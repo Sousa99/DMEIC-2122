@@ -1,10 +1,11 @@
 import pandas as pd
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 # Local Modules
 import module_classifier
 import module_preprocessing
+import module_aux
 
 # =================================== PRIVATE METHODS ===================================
 
@@ -59,6 +60,24 @@ class Variation():
 
     def generate_code(self) -> str:
         return ' - '.join([self.classifier_code_small, self.features_code, self.tasks_code])
+
+    def get_treated_dataset(self, general_drop_columns: List[str], subject_info: pd.DataFrame, pivot_on_task: bool = False) -> Tuple[pd.DataFrame, pd.DataFrame]:
+
+        dataframe_filtered = self.dataframe.copy(deep=True)
+        # Filter dataframe by task
+        dataframe_filtered = dataframe_filtered[dataframe_filtered['Task'].isin(self.tasks)]
+
+        # Get final feature set (Dataframe X)
+        dataframe_filtered = dataframe_filtered.drop(self.drop_columns, axis=1)
+        if pivot_on_task: dataframe_X = module_aux.pivot_on_column(dataframe_filtered, ['Subject'], 'Task', self.feature_columns, 'on')
+        else: dataframe_X = dataframe_filtered.drop(general_drop_columns, axis=1)
+        dataframe_X = self.preprocesser.preprocess(dataframe_X)
+
+        # Get final target class (Dataframe Y)
+        dataframe_Y = dataframe_filtered.reset_index()['Subject'].apply(lambda subject: subject_info.loc[subject]['Target'])
+        dataframe_Y.index = dataframe_filtered.index
+
+        return (dataframe_X, dataframe_Y)
 
 class VariationGenerator():
 

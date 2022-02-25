@@ -39,14 +39,10 @@ def profile_for_types(df: pd.DataFrame) -> Dict[str, List[str]]:
 
 class DatasetProfiling():
 
-    def __init__(self, dataset: pd.DataFrame, drop_columns: List[str], feature_columns: List[str], general_drop_columns: List[str]) -> None:
-        self.dataset = dataset
-        self.drop_columns = drop_columns
-        self.feature_columns = feature_columns
-        self.general_drop_columns : List[str] = general_drop_columns
+    def __init__(self, dataframe_X: pd.DataFrame, dataframe_Y: Optional[pd.DataFrame]) -> None:
         # Correct Dataframe for Study
-        self.features = self.dataset.copy(deep=True)
-        self.features = self.features.drop(self.drop_columns + self.general_drop_columns, axis=1)
+        self.features = dataframe_X.copy(deep=True)
+        self.target = dataframe_Y.copy(deep=True)
 
     def make_profiling(self) -> None:
 

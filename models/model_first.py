@@ -154,34 +154,17 @@ print("🚀 Running solution variations ...")
 for variation in variations_to_test:
 
     print("🚀 Running variation '{0}'".format(variation.generate_code()))
-    dataframe = variation.features
-    dataframe_drop_columns = variation.drop_columns
-    dataframe_features = variation.feature_columns
-
-    # Filter dataframe by task
-    dataframe = dataframe[dataframe['Task'].isin(variation.tasks)]
+    dataframe_X, dataframe_Y = variation.get_treated_dataset()
 
     # Do profiling of current dataset
     module_exporter.change_current_directory([variation.generate_code(), 'Data Profiling'])
     print("🚀 Running profiling on '{0}'".format(variation.generate_code()))
-    profiler = module_profiling.DatasetProfiling(dataframe, variation.drop_columns, variation.feature_columns, general_drop_columns)
+    profiler = module_profiling.DatasetProfiling(dataframe_X, dataframe_Y)
     profiler.make_profiling()
 
-    # Drop unwanted columns and pivot on tasks
-    print("🚀 Running model on '{0}'".format(variation.generate_code()))
+    # Running the classifier itself
     module_exporter.change_current_directory([variation.generate_code(), 'Classifier'])
-    dataframe = dataframe.drop(dataframe_drop_columns, axis=1)
-    if PIVOT_ON_TASKS: dataframe = module_aux.pivot_on_column(dataframe, ['Subject'], 'Task', dataframe_features, 'on')
-
-    # Separate features and target class
-    if PIVOT_ON_TASKS: dataframe_X = dataframe
-    else: dataframe_X = dataframe.drop(general_drop_columns, axis=1)
-    dataframe_Y = dataframe.reset_index()['Subject'].apply(lambda subject: subject_info.loc[subject]['Target'])
-    dataframe_Y.index = dataframe.index
-
-    # Preprocessing
-    dataframe_X = variation.preprocesser.preprocess(dataframe_X)
-
+    print("🚀 Running model on '{0}'".format(variation.generate_code()))
     data_splits = list(module_classifier.leave_one_out(dataframe_X))
     scorer = module_scorer.Scorer(['Psychosis', 'Control'])
     for (train_index, test_index) in tqdm(data_splits, desc="👉 Running classifier in \'" + variation.generate_code() + "\'", leave=False):
