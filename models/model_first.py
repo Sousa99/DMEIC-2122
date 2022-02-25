@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 
 from tqdm import tqdm
-from sklearn.impute import SimpleImputer
 
 # Local Modules
 import module_load
@@ -27,12 +26,15 @@ warnings.filterwarnings('ignore', category = UserWarning, module = 'opensmile')
 # =================================== FLAGS PARSING ===================================
 
 parser = argparse.ArgumentParser()
+# Required Arguments
 parser.add_argument("-info_controls",   help="path to info file from controls")
-parser.add_argument("-info_psychosis",   help="path to info file from psychosis")
-parser.add_argument("-audio_controls",   help="path to audio segments from controls")
-parser.add_argument("-audio_psychosis",   help="path to audio segments from psychosis")
-parser.add_argument("-trans_controls",   help="path to transcription files from controls")
-parser.add_argument("-trans_psychosis",   help="path to transcription files from psychosis")
+parser.add_argument("-info_psychosis",  help="path to info file from psychosis")
+parser.add_argument("-audio_controls",  help="path to audio segments from controls")
+parser.add_argument("-audio_psychosis", help="path to audio segments from psychosis")
+parser.add_argument("-trans_controls",  help="path to transcription files from controls")
+parser.add_argument("-trans_psychosis", help="path to transcription files from psychosis")
+# Optional Arguments
+parser.add_argument("-variations_key",  help="key for the generation of variations, by default all are created")
 args = parser.parse_args()
 
 requirements = [
@@ -139,7 +141,8 @@ for dataset_key in features_info:
 # ================================================= VARIATIONS TO STUDY =================================================
 
 variation_features = list(features_info.keys())
-variation_generator = module_variations.VariationGenerator(VARIATION_TASKS, variation_features, VARIATION_CLASSIFIERS, VARIATION_PREPROCESSING)
+variation_generator = module_variations.VariationGenerator(args.variations_key,
+    VARIATION_TASKS, variation_features, VARIATION_CLASSIFIERS, VARIATION_PREPROCESSING)
 
 variations_to_test = variation_generator.generate_variations(features_info)
 variations_results = []

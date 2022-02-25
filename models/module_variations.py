@@ -1,6 +1,6 @@
 import pandas as pd
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 # Local Modules
 import module_classifier
@@ -62,8 +62,10 @@ class Variation():
 
 class VariationGenerator():
 
-    def __init__(self, variation_tasks: List[str], variation_features: List[str],
+    def __init__(self, variations_key: Optional[str], variation_tasks: List[str], variation_features: List[str],
         variation_classifiers: List[str], variation_preprocessing: List[List[str]]) -> None:
+
+        self.key = variations_key 
 
         self.task_keys = variation_tasks
         self.feature_keys = variation_features
@@ -71,6 +73,13 @@ class VariationGenerator():
         self.preprocessing_pipeline_keys = variation_preprocessing
 
     def generate_variations(self, dataset_infos: Dict[str, Dict[str, Any]]) -> List[Variation]:
+
+        if not self.key: return self.generate_default_variations(dataset_infos)
+        # Add specific key for Generation of Variations
+        # ...
+        else: exit("🚨 Variation key '{0}' not recognized".format(self.key)) 
+    
+    def generate_default_variations(self, dataset_infos: Dict[str, Dict[str, Any]]) -> List[Variation]:
 
         variations : List[Variation] = []
         for classifier_key in self.classifier_keys:
