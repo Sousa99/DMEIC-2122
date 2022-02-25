@@ -12,7 +12,6 @@ import module_sound_features
 import module_speech_features
 import module_classifier
 import module_scorer
-import module_aux
 import module_exporter
 import module_profiling
 import module_variations
@@ -54,7 +53,7 @@ if ( any(not req['arg'] for req in requirements) ):
 
 # =================================== DEBUG CONSTANTS ===================================
 
-DATASET_SAMPLE = 1.0
+DATASET_SAMPLE = 0.07
 PIVOT_ON_TASKS = False
 RUN_VARIATIONS = True
 
@@ -156,7 +155,7 @@ print("🚀 Running solution variations ...")
 for variation in variations_to_test:
 
     print("🚀 Running variation '{0}'".format(variation.generate_code()))
-    dataframe_X, dataframe_Y = variation.get_treated_dataset()
+    dataframe_X, dataframe_Y = variation.get_treated_dataset(general_drop_columns, subject_info, PIVOT_ON_TASKS)
 
     # Do profiling of current dataset
     module_exporter.change_current_directory([variation.generate_code(), 'Data Profiling'])

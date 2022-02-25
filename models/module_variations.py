@@ -63,7 +63,7 @@ class Variation():
 
     def get_treated_dataset(self, general_drop_columns: List[str], subject_info: pd.DataFrame, pivot_on_task: bool = False) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
-        dataframe_filtered = self.dataframe.copy(deep=True)
+        dataframe_filtered = self.features.copy(deep=True)
         # Filter dataframe by task
         dataframe_filtered = dataframe_filtered[dataframe_filtered['Task'].isin(self.tasks)]
 
