@@ -53,7 +53,7 @@ if ( any(not req['arg'] for req in requirements) ):
 
 # =================================== DEBUG CONSTANTS ===================================
 
-DATASET_SAMPLE = 0.07
+DATASET_SAMPLE = 1.0
 PIVOT_ON_TASKS = False
 RUN_VARIATIONS = True
 
@@ -173,15 +173,15 @@ for variation in variations_to_test:
         y_train, y_test = dataframe_Y.iloc[train_index], dataframe_Y.iloc[test_index]
 
         classifier = variation.classifier()
-        y_prd = classifier.make_prediction(X_train, y_train, X_test)
-        scorer.add_points(y_test, y_prd)
+        y_train_pred, y_test_pred = classifier.make_prediction(X_train, y_train, X_test)
+        scorer.add_points(y_train, y_train_pred, y_test, y_test_pred)
     scorer.export_results('results')
 
     print("✅ Completed variation")
 
     # Update General Scores
     variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 'Features': variation.features_code, 'Tasks': variation.tasks_code }
-    for score in scorer.export_metrics(): variation_summary[score['name']] = score['score']
+    for score in scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
     variations_results.append(variation_summary)
 
 module_exporter.change_current_directory()
