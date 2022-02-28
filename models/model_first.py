@@ -74,6 +74,8 @@ VARIATION_TASKS = [ 'Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 
 VARIATION_CLASSIFIERS = [ 'Support Vector Machine', 'Decision Tree' ]
 VARIATION_PREPROCESSING = [ [ 'DROP_ROWS_NAN' ] ]
 
+TARGET_METRIC = 'F1-Measure'
+
 # =================================== MAIN EXECUTION ===================================
 
 # Load Datasets and Paths
@@ -173,13 +175,16 @@ for variation in variations_to_test:
         y_train, y_test = dataframe_Y.iloc[train_index], dataframe_Y.iloc[test_index]
 
         classifier.process_iteration(X_train, y_train, X_test, y_test)
-    classifier.get_scorer().export_results('results')
+    _, best_scorer = classifier.get_best_scorer(TARGET_METRIC)
+    best_scorer.export_results('results')
 
     print("✅ Completed variation")
 
     # Update General Scores
-    variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 'Features': variation.features_code, 'Tasks': variation.tasks_code }
-    for score in classifier.get_scorer().export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
+    best_scorer_key, best_scorer = classifier.get_best_scorer(TARGET_METRIC)
+    variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 'Classifier Variation': best_scorer_key,
+        'Features': variation.features_code, 'Tasks': variation.tasks_code }
+    for score in best_scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
     variations_results.append(variation_summary)
 
 module_exporter.change_current_directory()
