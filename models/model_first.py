@@ -167,21 +167,19 @@ for variation in variations_to_test:
     module_exporter.change_current_directory([variation.generate_code(), 'Classifier'])
     print("🚀 Running model ...")
     data_splits = list(module_classifier.leave_one_out(dataframe_X))
-    scorer = module_scorer.Scorer(['Psychosis', 'Control'])
+    classifier = variation.classifier(['Psychosis', 'Control'])
     for (train_index, test_index) in tqdm(data_splits, desc="👉 Running classifier:", leave=False):
         X_train, X_test = dataframe_X.iloc[train_index], dataframe_X.iloc[test_index]
         y_train, y_test = dataframe_Y.iloc[train_index], dataframe_Y.iloc[test_index]
 
-        classifier = variation.classifier()
-        y_train_pred, y_test_pred = classifier.make_prediction(X_train, y_train, X_test)
-        scorer.add_points(y_train, y_train_pred, y_test, y_test_pred)
-    scorer.export_results('results')
+        classifier.process_iteration(X_train, y_train, X_test, y_test)
+    classifier.get_scorer().export_results('results')
 
     print("✅ Completed variation")
 
     # Update General Scores
     variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 'Features': variation.features_code, 'Tasks': variation.tasks_code }
-    for score in scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
+    for score in classifier.get_scorer().export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
     variations_results.append(variation_summary)
 
 module_exporter.change_current_directory()
