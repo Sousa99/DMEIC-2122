@@ -42,11 +42,11 @@ DIAGNOSIS_CATEGORIES = ['Schizophrenic']
 
 # Retrieve Control Data
 worksheet_name = args.controls_data.split('/')[-1].replace('.xlsx', '')
-dataframe_control = pd.read_excel(args.controls_data, sheet_name = worksheet_name, index_col = 0)
+dataframe_control = pd.read_excel(args.controls_data, sheet_name = worksheet_name, index_col = 0, engine = 'openpyxl')
 dataframe_control["Type"] = 'Control'
 # Retrieve Psychosis Data
 worksheet_name = args.psychosis_data.split('/')[-1].replace('.xlsx', '')
-dataframe_psychosis = pd.read_excel(args.psychosis_data, sheet_name = worksheet_name, index_col = 0)
+dataframe_psychosis = pd.read_excel(args.psychosis_data, sheet_name = worksheet_name, index_col = 0, engine = 'openpyxl')
 dataframe_psychosis["Type"] = 'Psychosis'
 
 # Merge information into dataframe

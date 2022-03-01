@@ -11,7 +11,7 @@ else: from typing_extensions import TypedDict
 
 def load_info_subjects(info_file: str, subjects_code_file_system: str, delimiter: str) -> pd.DataFrame:
     worksheet_name = info_file.split('/')[-1].replace('.xlsx', '')
-    dataframe = pd.read_excel(info_file, sheet_name = worksheet_name, index_col = 0)
+    dataframe = pd.read_excel(info_file, sheet_name = worksheet_name, index_col = 0, engine = 'openpyxl')
     dataframe.index = subjects_code_file_system + delimiter + dataframe.index
     return dataframe
 

@@ -171,7 +171,7 @@ WORD_FREQUENCIES_LARGEST = 10
 
 # Retrieve Control Data
 worksheet_name = args.controls_data.split('/')[-1].replace('.xlsx', '')
-dataframe_control = pd.read_excel(args.controls_data, sheet_name = worksheet_name, index_col = 0)
+dataframe_control = pd.read_excel(args.controls_data, sheet_name = worksheet_name, index_col = 0, engine = 'openpyxl')
 controls_duration_information = retrieveByTaskInformation(args.controls_rec, TYPE_CONTROL, TASKS, 'duration', callbackDuration)
 controls_word_count_information = retrieveByTaskInformation(args.controls_trans, TYPE_CONTROL, TASKS, 'word count', callbackWordLength)
 controls_word_freq_information = retrieveByTaskInformation(args.controls_trans, TYPE_CONTROL, TASKS, 'word frequencies', callbackWordFrequency)
@@ -180,7 +180,7 @@ controls_info = mergeTasksInformation(dataframe_control, TYPE_CONTROL, TASKS,
     ['duration', 'word count', 'word frequencies'])
 # Retrieve Psychosis Data
 worksheet_name = args.psychosis_data.split('/')[-1].replace('.xlsx', '')
-dataframe_psychosis = pd.read_excel(args.psychosis_data, sheet_name = worksheet_name, index_col = 0)
+dataframe_psychosis = pd.read_excel(args.psychosis_data, sheet_name = worksheet_name, index_col = 0, engine = 'openpyxl')
 psychosis_duration_information = retrieveByTaskInformation(args.psychosis_rec, TYPE_PSYCHOSIS, TASKS, 'duration', callbackDuration)
 psychosis_word_count_information = retrieveByTaskInformation(args.psychosis_trans, TYPE_PSYCHOSIS, TASKS, 'word count', callbackWordLength)
 psychosis_word_freq_information = retrieveByTaskInformation(args.psychosis_trans, TYPE_PSYCHOSIS, TASKS, 'word frequencies', callbackWordFrequency)
