@@ -1,4 +1,5 @@
 import os
+import sys
 import math
 import matplotlib
 
@@ -8,7 +9,9 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple, TypedDict
+from typing import Dict, List, Optional, Tuple
+if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from typing import TypedDict
+else: from typing_extensions import TypedDict
 
 EXPORT_DIRECTORY = '../results/'
 EXECUTION_TIMESTAMP = datetime.now()

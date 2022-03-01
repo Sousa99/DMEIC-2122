@@ -1,12 +1,11 @@
 import os
+import sys
 
 import pandas as pd
 
-from typing import Any, List, Dict, TypedDict
-
-# Local Modules
-import module_classifier
-import module_preprocessing
+from typing import Any, List, TypedDict
+if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from typing import TypedDict
+else: from typing_extensions import TypedDict
 
 # =================================== PRIVATE METHODS ===================================
 
