@@ -178,7 +178,7 @@ for variation in variations_to_test:
     # Export Classifier Variations Results
     variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 
         'Features': variation.features_code, 'Tasks': variation.tasks_code }
-    classifier.export_variations_results(variation_summary)
+    classifier.export_variations_results(variation_summary, TARGET_METRIC)
     # Export Best Classifier Variation Results
     _, best_scorer = classifier.get_best_scorer(TARGET_METRIC)
     best_scorer.export_results('results')

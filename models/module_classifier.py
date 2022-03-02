@@ -47,8 +47,6 @@ def develop_parameters_variations(keys: List[str], values: List[List[Any]]) -> D
 
     return variations
 
-
-
 # =================================== PRIVATE CLASS DEFINITIONS ===================================
 
 class Classifier(metaclass=abc.ABCMeta):
@@ -66,6 +64,9 @@ class Classifier(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def make_prediction(self, params: Dict[str, Dict[str, Any]], train_X: pd.DataFrame, train_Y: pd.Series, test_X: pd.DataFrame) -> Tuple[pd.Series]:
         raise("🚨 Method 'make_prediction' not defined")
+    @abc.abstractmethod
+    def export_variations_results(self, variation_summary: pd.DataFrame, metric: str) -> None:
+        raise("🚨 Method 'export_variations_results' not defined")
 
     def process_iteration(self, train_X: pd.DataFrame, train_Y: pd.Series, test_X: pd.DataFrame, test_Y: pd.Series):
         for scorer_key in self.scorers:
@@ -88,8 +89,7 @@ class Classifier(metaclass=abc.ABCMeta):
                 current_max = (scorer_key, scorer, scorer_metric['score'])
         return (current_max[0], current_max[1])
 
-    def export_variations_results(self, variation_summary: Dict[str, Any]) -> None:
-
+    def get_variations_df(self, variation_summary: Dict[str, Any]) -> pd.DataFrame:
         summary = []
         for scorer_key in self.scorers:
             scorer = self.scorers[scorer_key]
@@ -107,7 +107,7 @@ class Classifier(metaclass=abc.ABCMeta):
                 summary.append(variation_summary_copy)
 
         summary_df = pd.DataFrame(summary)
-        module_exporter.export_csv(summary_df, 'results (variations)')
+        return summary_df
 
 # =================================== PUBLIC CLASS DEFINITIONS ===================================
 
@@ -133,6 +133,19 @@ class DecisionTree(Classifier):
         prd_test_Y = tree_classifier.predict(test_X)
         return (prd_train_Y, prd_test_Y)
 
+    def export_variations_results(self, variation_summary: Dict[str, Any], metric: str) -> None:
+        summary_df = self.get_variations_df(variation_summary)
+        # Standard Output of Variations
+        module_exporter.export_csv(summary_df, 'results (variations)')
+        # Specific graphs
+        module_exporter.multiple_lines_chart('complexity - maximum depth', summary_df, 'max_depth', metric, hue_key='max_features', style_key='Set', y_lim=(0, 1))
+        module_exporter.multiple_lines_chart('complexity - minimum impurity decrease', summary_df, 'min_impurity_decrease', metric, hue_key='max_features', style_key='Set', y_lim=(0, 1))
+        
+        tmp_df = summary_df[(summary_df['criterion'] == VARIATIONS_DT_CRITERION[0]) & (summary_df['min_impurity_decrease'] == VARIATIONS_MIN_IMPURITY_DECREASE[0])]
+        module_exporter.multiple_lines_chart('complexity - maximum depth (controlled)', tmp_df, 'max_depth', metric, hue_key='max_features', style_key='Set', y_lim=(0, 1))
+        tmp_df = summary_df[(summary_df['criterion'] == VARIATIONS_DT_CRITERION[0]) & (summary_df['max_depth'].isnull())]
+        module_exporter.multiple_lines_chart('complexity - minimum impurity decrease (controlled)', tmp_df, 'min_impurity_decrease', metric, hue_key='max_features', style_key='Set', y_lim=(0, 1))
+
 class SupportVectorMachine(Classifier):
 
     scorers = {}
@@ -154,6 +167,13 @@ class SupportVectorMachine(Classifier):
         prd_train_Y = svm_classifier.predict(train_X)
         prd_test_Y = svm_classifier.predict(test_X)
         return (prd_train_Y, prd_test_Y)
+
+    def export_variations_results(self, variation_summary: Dict[str, Any], metric: str) -> None:
+        summary_df = self.get_variations_df(variation_summary)
+        # Standard Output of Variations
+        module_exporter.export_csv(summary_df, 'results (variations)')
+        # Specific graphs
+        module_exporter.multiple_lines_chart('complexity - regularization', summary_df, 'C', metric, hue_key='kernel', style_key='Set', y_lim=(0, 1))
 
 # =================================== PUBLIC METHODS ===================================
 

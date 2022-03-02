@@ -98,7 +98,7 @@ def bar_chart(filename: str, x_values: List[str], y_values: List[int], figsize: 
         for rect, label in zip(rects, y_values):
             height = rect.get_height()
             label_formatted = "{:.2f}".format(label)
-            plot.text(rect.get_x() + rect.get_width() / 2, height + 4, label_formatted, ha="center", va="bottom")
+            plot.text(rect.get_x() + rect.get_width() / 2, height, label_formatted, ha="center", va="bottom")
 
     if x_label: plt.xlabel(x_label)
     if y_label: plt.ylabel(y_label)
@@ -202,5 +202,27 @@ def heatmap(filename: str, dataframe: pd.DataFrame, figsize: Tuple[int] = (6, 6)
     if margins: plt.subplots_adjust(bottom=margins['bottom'], left=margins['left'],
         top=margins['top'], right=margins['right'])
     
+    plt.savefig(complete_path)
+    plt.close('all')
+
+def multiple_lines_chart(filename: str, dataframe: pd.DataFrame, x_key: str, y_key: str,
+    figsize: Tuple[int] = (10, 4), hue_key: Optional[str] = None, style_key: Optional[str] = None,
+    x_rot: Optional[float] = None, y_rot: Optional[float] = None, margins: Optional[Dict[str, Optional[float]]] = None,
+    x_lim: Optional[Tuple[float, float]] = None, y_lim: Optional[Tuple[float, float]] = None) -> None:
+
+    complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
+
+    plt.figure(figsize=figsize)
+    plot = sns.lineplot(data=dataframe, x=x_key, y=y_key, hue=hue_key, style=style_key)
+
+    if x_lim: plt.xlim(x_lim[0], x_lim[1])
+    if y_lim: plt.ylim(y_lim[0], y_lim[1])
+
+    if x_rot: plt.xticks(rotation=x_rot)
+    if y_rot: plt.yticks(rotation=y_rot)
+
+    if margins: plt.subplots_adjust(bottom=margins['bottom'], left=margins['left'],
+        top=margins['top'], right=margins['right'])
+
     plt.savefig(complete_path)
     plt.close('all')
