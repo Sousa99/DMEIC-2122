@@ -93,7 +93,8 @@ def bar_chart(filename: str, x_values: List[str], y_values: List[int], figsize: 
     plt.figure(figsize=figsize)
     bars = sns.barplot(x=x_values, y=y_values)
     
-    if label_bars: bars.bar_label(bars.containers[0], fmt='%.2f')
+    # FIXME: Find backwards compatible way of calling this (python 3.6)
+    #if label_bars: bars.bar_label(bars.containers[0], fmt='%.2f')
 
     if x_label: plt.xlabel(x_label)
     if y_label: plt.ylabel(y_label)
