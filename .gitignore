@@ -9,3 +9,6 @@
 
 # PyCache should not be sent
 __pycache__
+
+# Virtual environments should not be sent
+venv
