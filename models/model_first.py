@@ -71,6 +71,7 @@ EXTENSION_TRANS = '.ctm'
 
 VARIATION_TASKS = [ 'Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7',
     'Verbal Fluency', 'Reading + Retelling', 'Description Affective Images' ]
+VARIATION_GENDERS = [ 'Male Gender', 'Female Gender', 'All Genders' ]
 VARIATION_CLASSIFIERS = [ 'Support Vector Machine', 'Decision Tree' ]
 VARIATION_PREPROCESSING = [ [ 'DROP_ROWS_NAN' ] ]
 
@@ -145,7 +146,7 @@ for dataset_key in features_info:
 
 variation_features = list(features_info.keys())
 variation_generator = module_variations.VariationGenerator(args.variations_key,
-    VARIATION_TASKS, variation_features, VARIATION_CLASSIFIERS, VARIATION_PREPROCESSING)
+    VARIATION_TASKS, VARIATION_GENDERS, variation_features, VARIATION_CLASSIFIERS, VARIATION_PREPROCESSING)
 
 variations_to_test = variation_generator.generate_variations(features_info)
 variations_results = []
@@ -177,7 +178,7 @@ for variation in variations_to_test:
         classifier.process_iteration(X_train, y_train, X_test, y_test)
     # Export Classifier Variations Results
     variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 
-        'Features': variation.features_code, 'Tasks': variation.tasks_code }
+        'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code }
     classifier.export_variations_results(variation_summary, TARGET_METRIC)
     # Export Best Classifier Variation Results
     _, best_scorer = classifier.get_best_scorer(TARGET_METRIC)
@@ -188,7 +189,7 @@ for variation in variations_to_test:
     # Update General Scores
     best_scorer_key, best_scorer = classifier.get_best_scorer(TARGET_METRIC)
     variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 'Classifier Variation': best_scorer_key,
-        'Features': variation.features_code, 'Tasks': variation.tasks_code }
+        'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code }
     for score in best_scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
     variations_results.append(variation_summary)
 

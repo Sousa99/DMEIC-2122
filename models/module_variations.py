@@ -1,3 +1,5 @@
+import itertools
+
 import pandas as pd
 
 from typing import Any, Dict, List, Optional, Tuple
@@ -16,6 +18,7 @@ class Variation():
     def __init__(self, variation_info: Dict[str, str], datasets_infos: Dict[str, Dict[str, Any]]) -> None:
         self.load_features(variation_info['features'], datasets_infos)
         self.load_tasks(variation_info['tasks'])
+        self.load_genders(variation_info['genders'])
         self.load_classifier(variation_info['classifier'])
         self.load_preprocessing(variation_info['preprocessing'])
 
@@ -47,6 +50,17 @@ class Variation():
         self.tasks_code = key_tasks
         self.tasks = temp_tasks
 
+    def load_genders(self, key_genders: str) -> None:
+
+        if key_genders == 'Male Gender': temp_genders = ['Male']
+        elif key_genders == 'Female Gender': temp_genders = ['Female']
+
+        elif key_genders == 'All Genders': temp_genders = ['Male', 'Female']
+        else: exit("🚨 Code for gender '{0}' not recognized".format(key_genders))
+
+        self.genders_code = key_genders
+        self.genders = temp_genders
+
     def load_classifier(self, key_classifier: str) -> None:
         temp_classifier = module_classifier.convert_key_to_classifier(key_classifier)
 
@@ -59,13 +73,16 @@ class Variation():
         self.preprocesser = module_preprocessing.Preprocesser(keys_preprocessing)
 
     def generate_code(self) -> str:
-        return ' - '.join([self.classifier_code_small, self.features_code, self.tasks_code])
+        return ' - '.join([self.classifier_code_small, self.features_code, self.tasks_code, self.genders_code])
 
     def get_treated_dataset(self, general_drop_columns: List[str], subject_info: pd.DataFrame, pivot_on_task: bool = False) -> Tuple[pd.DataFrame, pd.Series]:
 
         dataframe_filtered = self.features.copy(deep=True)
         # Filter Dataframe by task
         dataframe_filtered = dataframe_filtered[dataframe_filtered['Task'].isin(self.tasks)]
+        # Filter Dataframe by gender
+        filter_gender = dataframe_filtered['Subject'].apply(lambda subject: subject_info.loc[subject]['Gender'] in self.genders)
+        dataframe_filtered = dataframe_filtered[filter_gender.values]
 
         # Get final feature set (Dataframe X)
         dataframe_X = dataframe_filtered
@@ -84,12 +101,13 @@ class Variation():
 
 class VariationGenerator():
 
-    def __init__(self, variations_key: Optional[str], variation_tasks: List[str], variation_features: List[str],
-        variation_classifiers: List[str], variation_preprocessing: List[List[str]]) -> None:
+    def __init__(self, variations_key: Optional[str], variation_tasks: List[str], variation_genders: List[str],
+        variation_features: List[str], variation_classifiers: List[str], variation_preprocessing: List[List[str]]) -> None:
 
         self.key = variations_key 
 
         self.task_keys = variation_tasks
+        self.genders_keys = variation_genders
         self.feature_keys = variation_features
         self.classifier_keys = variation_classifiers
         self.preprocessing_pipeline_keys = variation_preprocessing
@@ -104,14 +122,13 @@ class VariationGenerator():
     def generate_default_variations(self, dataset_infos: Dict[str, Dict[str, Any]]) -> List[Variation]:
 
         variations : List[Variation] = []
-        for classifier_key in self.classifier_keys:
-            for feature_key in self.feature_keys:
-                for task_key in self.task_keys:
-                    for preprocessing_key in self.preprocessing_pipeline_keys:
+        for (classifier_key, feature_key, task_key, genders_key, preprocessing_key) in \
+            itertools.product(self.classifier_keys, self.feature_keys, self.task_keys,
+                self.genders_keys, self.preprocessing_pipeline_keys):
 
-                        variation_info = { 'tasks': task_key, 'features': feature_key,
-                            'classifier': classifier_key, 'preprocessing': preprocessing_key }
-                        variations.append(Variation(variation_info, dataset_infos))
+            variation_info = { 'tasks': task_key, 'genders': genders_key, 'features': feature_key,
+                'classifier': classifier_key, 'preprocessing': preprocessing_key }
+            variations.append(Variation(variation_info, dataset_infos))
 
         return variations
 
