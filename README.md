@@ -33,12 +33,13 @@ Although the data itself is not available in the repository, it is still importa
 
 | relevant paths                                                    | objective                                                                                                                             |
 | :---------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------ |
-| control_info.xlsx                                                 | excel file with the demogrpahic information for each control                                                                          |
-| psychosis_info.xlsx                                               | excel file with the demogrpahic information for each patient with psychosis                                                           |
+| control_info.xlsx                                                 | excel file with the demographic information for each control                                                                          |
+| psychosis_info.xlsx                                               | excel file with the demographic information for each patient with psychosis                                                           |
 | recordings/*                                                      | folder where the initial recordings, in *WAV* format, are placed                                                                      |
 | recordings/controls/*                                             | folder with the recordings, in *WAV* format, from the controls already splitted by subject and task                                   |
 | recordings/psychosis/*                                            | folder with the recordings, in *WAV* format, from the patients with psychosis already splitted by subject and task                    |
 | recordings/psychosis_uncut/*                                      | folder with the recordings, in *WAV* format, from the patients with psychosis splitted uniquely according to the subject              |
+| recordings/to_identify/*                                          | folder with the recordings, in *WAV* format, from the patients which diagnosis is still unknonwn                                      |
 | recordings/psychosis_cutting_times.json                           | JSON file with the timestamps for each task and subject in order to split the uncut version into cut                                  |
 | recordings_converted/*                                            | folder where the recordings converted from *WAV* into *wav* format are placed, one track for each subject and task                    |
 | recordings_converted/controls_converted/*                         | folder where the recordings, in *wav* format, from the controls for each subject and task                                             |
