@@ -72,7 +72,7 @@ EXTENSION_TRANS = '.ctm'
 VARIATION_TASKS = [ 'Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7',
     'Verbal Fluency', 'Reading + Retelling', 'Description Affective Images' ]
 VARIATION_GENDERS = [ 'Male Gender', 'Female Gender', 'All Genders' ]
-VARIATION_CLASSIFIERS = [ 'Support Vector Machine', 'Decision Tree' ]
+VARIATION_CLASSIFIERS = [ 'Naive Bayes', 'Decision Tree', 'Support Vector Machine' ]
 VARIATION_PREPROCESSING = [ [ 'DROP_ROWS_NAN' ] ]
 
 TARGET_METRIC = 'F1-Measure'

@@ -1,4 +1,5 @@
 import abc
+import copy
 import itertools
 
 import pandas as pd
@@ -8,12 +9,15 @@ from typing import Any, Dict, Generator, List, Optional, Tuple, Type
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import LeaveOneOut
+from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
 
 # Local Modules
 import module_scorer
 import module_exporter
 
 # =================================== CONSTANTS - VARIATIONS ===================================
+
+VARIATIONS_NB_ALGORITHM =   [ 'Gaussian', 'Bernoulli' ]
 
 VARIATIONS_DT_CRITERION =           [ 'gini', 'entropy' ]
 VARIATIONS_DT_MAX_DEPTH =           [ None ] + [ pow(2, value) for value in range(0, 7) ]
@@ -111,6 +115,42 @@ class Classifier(metaclass=abc.ABCMeta):
 
 # =================================== PUBLIC CLASS DEFINITIONS ===================================
 
+class NaiveBayes(Classifier):
+
+    scorers = {}
+    variations = VARIATIONS_DT_PRESET
+    def __init__(self, categories: List[str]):
+        self.variations.update(self.compute_variations())
+        for variation_key in self.variations:
+            self.scorers[variation_key] = module_scorer.Scorer(categories)
+
+    def compute_variations(self) -> Dict[str, Dict[str, Any]]:
+        keys = [ 'algorithm' ]
+        values = [ VARIATIONS_NB_ALGORITHM ]
+        return develop_parameters_variations(keys, values)
+
+    def make_prediction(self, params: Dict[str, Dict[str, Any]], train_X: pd.DataFrame, train_Y: pd.Series, test_X: pd.DataFrame) -> Tuple[pd.Series]:
+        # Remove params not fed to classifier
+        params_copy = copy.deepcopy(params)
+        algorithm = params_copy.pop('algorithm', None)
+
+        if algorithm == 'Gaussian': nb_classifier = GaussianNB(**params_copy)
+        elif algorithm == 'Multinomial': nb_classifier = MultinomialNB(**params_copy)
+        elif algorithm == 'Bernoulli': nb_classifier = BernoulliNB(**params_copy)
+        else: raise(f"🚨 Naive Bayes algorithm '{algorithm}' not recognized")
+        nb_classifier.fit(train_X, train_Y)
+
+        prd_train_Y = nb_classifier.predict(train_X)
+        prd_test_Y = nb_classifier.predict(test_X)
+        return (prd_train_Y, prd_test_Y)
+
+    def export_variations_results(self, variation_summary: Dict[str, Any], metric: str) -> None:
+        summary_df = self.get_variations_df(variation_summary)
+        # Standard Output of Variations
+        module_exporter.export_csv(summary_df, 'results (variations)')
+        # Specific graphs
+        module_exporter.bar_chart('algorithms', summary_df, 'Set', metric, hue_key='algorithm', y_lim=(0, 1))
+
 class DecisionTree(Classifier):
 
     scorers = {}
@@ -179,7 +219,8 @@ class SupportVectorMachine(Classifier):
 
 def convert_key_to_classifier(key: str) -> Optional[Tuple[str, Type[Classifier]]]:
 
-    if key == 'Decision Tree': return ('DT', DecisionTree)
+    if key == 'Naive Bayes': return ('NB', NaiveBayes)
+    elif key == 'Decision Tree': return ('DT', DecisionTree)
     elif key == 'Support Vector Machine': return ('SVM', SupportVectorMachine)
     else: return None
 

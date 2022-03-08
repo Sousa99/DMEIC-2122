@@ -28,7 +28,7 @@ class Variation():
 
         temp_dataset_info = dataset_infos[key_features]
         self.features_code : List[str] = key_features
-        self.features : pd.Dataframe = temp_dataset_info['features'].copy(deep=True)
+        self.features : pd.DataFrame = temp_dataset_info['features'].copy(deep=True)
         self.drop_columns : List[str] = temp_dataset_info['drop_columns']
         self.feature_columns : List[str] = temp_dataset_info['feature_columns']
 

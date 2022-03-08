@@ -73,29 +73,25 @@ def export_confusion_matrix(confusion_matrix: np.ndarray, categories: List[str],
 ExportMetric = TypedDict("ExportMetric", { 'name': str, 'score': float } )
 def export_metrics_bar_graph(metrics: List[ExportMetric], filename: str = 'temp') -> None:
 
-    x_values = []
-    y_values = []
-    for stat in metrics:
-        x_values.append(stat['name'])
-        y_values.append(stat['score'])
-
-    bar_chart(filename, x_values, y_values, x_label='Metrics', y_label='Score', y_lim=(0, 1))
+    info = []
+    for stat in metrics: info.append({'metric': stat['name'], 'score': stat['score'] })
+    bar_chart(filename, pd.DataFrame(info), 'metric', 'score', x_label='Metrics', y_label='Score', y_lim=(0, 1))
 
 # =================================== PUBLIC FUNCTIONS - GENERAL METHODS ===================================
 
-def bar_chart(filename: str, x_values: List[str], y_values: List[int], figsize: Tuple[int] = (10, 4),
-    label_bars: bool = True, x_label: Optional[str] = None, y_label: Optional[str] = None,
+def bar_chart(filename: str, dataframe: pd.DataFrame, x_key: str, y_key: str, figsize: Tuple[int] = (10, 4),
+    hue_key: Optional[str] = None, label_bars: bool = True, x_label: Optional[str] = None, y_label: Optional[str] = None,
     x_rot: Optional[float] = None, y_rot: Optional[float] = None, margins: Optional[Dict[str, Optional[float]]] = None,
     x_lim: Optional[Tuple[float, float]] = None, y_lim: Optional[Tuple[float, float]] = None) -> None:
 
     complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
 
     plt.figure(figsize=figsize)
-    plot = sns.barplot(x=x_values, y=y_values)
+    plot = sns.barplot(data=dataframe, x=x_key, y=y_key, hue=hue_key)
     rects = plot.patches
     
     if label_bars:
-        for rect, label in zip(rects, y_values):
+        for rect, label in zip(rects, dataframe[y_key].values):
             height = rect.get_height()
             label_formatted = "{:.2f}".format(label)
             plot.text(rect.get_x() + rect.get_width() / 2, height, label_formatted, ha="center", va="bottom")

@@ -64,18 +64,19 @@ class DatasetProfiling():
 
     def profile_dimensionality(self) -> None:
         # Run Dimensionality Profiling
-        bar_plots = { 'Nr Records': self.features.shape[0] , 'Nr Features': self.features.shape[1] }
-        module_exporter.bar_chart('dimensionality', list(bar_plots.keys()), list(bar_plots.values()), figsize=(5, 4))
+        bar_plots = [ {'dimensionality': 'Nr Records', 'size': self.features.shape[0] },
+            {'dimensionality': 'Nr Features', 'size': self.features.shape[1] } ]
+        module_exporter.bar_chart('dimensionality', pd.DataFrame(bar_plots), 'dimensionality', 'size', figsize=(5, 4), x_label="Dimensionality", y_label="Size")
 
     def profile_missing_values(self) -> None:
         # Run Missing Values Profiling
-        bar_plots = {}
+        bar_plots = []
         for column in self.features:
             number_missing = self.features[column].isna().sum()
-            if number_missing != 0: bar_plots[column] = number_missing
+            if number_missing != 0: bar_plots.append({'variable': column, 'number': number_missing})
         
         if len(bar_plots) != 0:
-            module_exporter.bar_chart('missing values', list(bar_plots.keys()), list(bar_plots.values()),
+            module_exporter.bar_chart('missing values', pd.DataFrame(bar_plots), 'variable', 'number', x_label="Variable", y_label="Count",
                 figsize=(5 + len(bar_plots) / 3, 4), x_rot=25, margins={ 'bottom': 0.35, 'left': None, 'top': None, 'right': None })
 
     def profile_distribution(self) -> None:
