@@ -88,11 +88,12 @@ class Variation():
         dataframe_X = dataframe_filtered
         dataframe_X = dataframe_X.drop(self.drop_columns, axis=1)
         if pivot_on_task: dataframe_X = module_aux.pivot_on_column(dataframe_X, ['Subject'], 'Task', self.feature_columns, 'on')
-        dataframe_X = self.preprocesser.preprocess(dataframe_X)
+        dataframe_X = self.preprocesser.preprocess_train(dataframe_X)
 
         # Get final target class (Dataframe Y)
         dataframe_Y = dataframe_X.reset_index()['Subject'].apply(lambda subject: subject_info.loc[subject]['Target'])
         dataframe_Y.index = dataframe_X.index
+        dataframe_Y = self.preprocesser.preprocess_test(dataframe_Y)
 
         # Remove General Columns from Dataframe X
         if not pivot_on_task: dataframe_X = dataframe_X.drop(general_drop_columns, axis=1)
