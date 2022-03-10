@@ -8,6 +8,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+from tqdm import tqdm
 from typing import List
 from pydub import AudioSegment
 
@@ -45,36 +46,12 @@ if ( any(not req['arg'] for req in requirements) ):
 
 # =================================== AUXILIARY FUNCTIONS ===================================
 
-def printProgressBar(iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
-    """
-    By: https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
-    Call in a loop to create terminal progress bar
-    @params:
-        iteration   - Required  : current iteration (Int)
-        total       - Required  : total iterations (Int)
-        prefix      - Optional  : prefix string (Str)
-        suffix      - Optional  : suffix string (Str)
-        decimals    - Optional  : positive number of decimals in percent complete (Int)
-        length      - Optional  : character length of bar (Int)
-        fill        - Optional  : bar fill character (Str)
-        printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
-    """
-
-    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
-    filledLength = int(length * iteration // total)
-    bar = fill * filledLength + '-' * (length - filledLength)
-    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = printEnd)
-    # Print New Line on Complete
-    if iteration == total: 
-        print()
-
 def retrieveByTaskInformation(path: str, type: str, tasks: List[str], information_key: str, callback):
     information = []
     subjects_dirs = os.listdir(path)
     number_of_subjects = len(subjects_dirs)
 
-    printProgressBar(0, number_of_subjects, prefix = 'Processing \'' + type + '\' '+ information_key + ':', suffix = 'Complete', length = 50)
-    for index_value, current_subject in enumerate(subjects_dirs):
+    for index_value, current_subject in tqdm(enumerate(subjects_dirs), desc="🚀 Processing subjects", leave=True):
 
         current_subject_path = os.path.join(path, current_subject)
 
@@ -88,9 +65,7 @@ def retrieveByTaskInformation(path: str, type: str, tasks: List[str], informatio
             value = callback(files_path)
             entry = { 'id': current_subject, 'type': type, 'task': current_task, information_key: value }
             information.append(entry)
-        
-        printProgressBar(index_value + 1, number_of_subjects, prefix = 'Processing \'' + type + '\' '+ information_key + ':', suffix = 'Complete', length = 50)
-
+    
     return information
 
 def callbackDuration(paths):

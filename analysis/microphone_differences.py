@@ -7,6 +7,7 @@ import pandas               as pd
 import seaborn              as sns
 import matplotlib.pyplot    as plt
 
+from tqdm                   import tqdm
 from nltk.metrics.distance  import edit_distance
 
 # =================================== IGNORE CERTAIN ERRORS ===================================
@@ -34,29 +35,6 @@ if ( any(not req['arg'] for req in requirements) ):
     exit(1)
 
 # =================================== AUXILIARY FUNCTIONS ===================================
-
-def printProgressBar(iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
-    """
-    By: https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
-    Call in a loop to create terminal progress bar
-    @params:
-        iteration   - Required  : current iteration (Int)
-        total       - Required  : total iterations (Int)
-        prefix      - Optional  : prefix string (Str)
-        suffix      - Optional  : suffix string (Str)
-        decimals    - Optional  : positive number of decimals in percent complete (Int)
-        length      - Optional  : character length of bar (Int)
-        fill        - Optional  : bar fill character (Str)
-        printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
-    """
-
-    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
-    filledLength = int(length * iteration // total)
-    bar = fill * filledLength + '-' * (length - filledLength)
-    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = printEnd)
-    # Print New Line on Complete
-    if iteration == total: 
-        print()
 
 def get_task_info(folder: str):
     SEPARATOR = '_'
@@ -132,8 +110,7 @@ for type, transcription_path in zip(['Controls', 'Psychosis'], [args.controls_tr
 
     subjects_dirs = os.listdir(transcription_path)
     number_of_subjects = len(subjects_dirs)
-    printProgressBar(0, number_of_subjects, prefix = 'Processing \'' + type + '\':', suffix = 'Complete', length = 50)
-    for index_value, subject in enumerate(subjects_dirs):
+    for index_value, subject in tqdm(enumerate(subjects_dirs), desc="🚀 Processing subjects", leave=True):
         subject_path = os.path.join(transcription_path, subject)
 
         for task in os.listdir(subject_path):
@@ -174,8 +151,6 @@ for type, transcription_path in zip(['Controls', 'Psychosis'], [args.controls_tr
 
             similarities.append(entry)
         
-        printProgressBar(index_value + 1, number_of_subjects, prefix = 'Processing \'' + type + '\':', suffix = 'Complete', length = 50)
-
 # Create Dataframe with obtained similarities
 dataframe_similarities = pd.DataFrame(similarities)
 dataframe_similarities.set_index(keys=['subject_id', 'task'], inplace=True)
