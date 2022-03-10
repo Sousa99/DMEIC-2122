@@ -1,12 +1,14 @@
-#!/bin/sh
+#!/bin/bash
 
 TRIBUS_LOC=/tmp/miamoto/tribus.sh
 
 RECORDINGS_CONTROLS_PATH=../recordings/controls/
 TRANSCRIBE_CONTROLS_PATH=../recordings_transcribed/controls_transcribed/
+TRANSCRIBE_RESULTS_CONTROLS_PATH=../recordings_transcribed_results/controls_transcribed_results/
 
 RECORDINGS_PSYCHOSIS_PATH=../recordings/psychosis/
 TRANSCRIBE_PSYCHOSIS_PATH=../recordings_transcribed/psychosis_transcribed/
+TRANSCRIBE_RESULTS_PSYCHOSIS_PATH=../recordings_transcribed_results/psychosis_transcribed_results/
 
 prog() {
     local w=80 p=$1;  shift
@@ -17,25 +19,27 @@ prog() {
 }
 
 
-if [ -d "$TRANSCRIBE_CONTROLS_PATH" ]; then rm -rf $TRANSCRIBE_CONTROLS_PATH; fi
-mkdir $TRANSCRIBE_CONTROLS_PATH
+if [ ! -d "$TRANSCRIBE_RESULTS_CONTROLS_PATH" ]; then mkdir $TRANSCRIBE_CONTROLS_PATH; fi
 
-echo "Processing Controls ..."
+echo "🚀 Processing Controls ..."
 CONTROLS=( $(ls ${RECORDINGS_CONTROLS_PATH}))
 NUMBER_CONTROLS=${#CONTROLS[@]}
 count=0
 prog 0
 for subject_folder in "${CONTROLS[@]}"; do
 	
-	for task_folder in `ls ${RECORDINGS_CONTROLS_PATH}${subject_folder}`; do
-		
-		for file in `ls ${RECORDINGS_CONTROLS_PATH}${subject_folder}/${task_folder}`; do
+        if [ ! -d "${TRANSCRIBE_RESULTS_CONTROLS_PATH}${subject_folder}" ]
+        then
+                for task_folder in `ls ${RECORDINGS_CONTROLS_PATH}${subject_folder}`; do
+                        
+                        for file in `ls ${RECORDINGS_CONTROLS_PATH}${subject_folder}/${task_folder}`; do
 
-			INPUT_FILE=${RECORDINGS_CONTROLS_PATH}${subject_folder}/${task_folder}/$file
-			$TRIBUS_LOC --dir $TRANSCRIBE_CONTROLS_PATH $INPUT_FILE > /dev/null
+                                INPUT_FILE=${RECORDINGS_CONTROLS_PATH}${subject_folder}/${task_folder}/$file
+                                $TRIBUS_LOC --dir $TRANSCRIBE_CONTROLS_PATH $INPUT_FILE > /dev/null
 
-		done
-	done
+                        done
+                done
+        fi
 
 	(( count++ ))
         current_prog=$(( $count * 100 / $NUMBER_CONTROLS ))
@@ -43,26 +47,27 @@ for subject_folder in "${CONTROLS[@]}"; do
 done
 echo
 
+if [ ! -d "$TRANSCRIBE_RESULTS_PSYCHOSIS_PATH" ]; then mkdir $TRANSCRIBE_PSYCHOSIS_PATH; fi
 
-if [ -d "$TRANSCRIBE_PSYCHOSIS_PATH" ]; then rm -rf $TRANSCRIBE_PSYCHOSIS_PATH; fi
-mkdir $TRANSCRIBE_PSYCHOSIS_PATH
-
-echo "Processing Psychosis ..."
+echo "🚀 Processing Psychosis ..."
 PSYCHOSIS=( $(ls ${RECORDINGS_PSYCHOSIS_PATH}))
 NUMBER_PSYCHOSIS=${#PSYCHOSIS[@]}
 count=0
 prog 0
 for subject_folder in "${PSYCHOSIS[@]}"; do
 
-        for task_folder in `ls ${RECORDINGS_PSYCHOSIS_PATH}${subject_folder}`; do
+        if [ ! -d "${TRANSCRIBE_RESULTS_PSYCHOSIS_PATH}${subject_folder}" ]
+        then
+                for task_folder in `ls ${RECORDINGS_PSYCHOSIS_PATH}${subject_folder}`; do
 
-                for file in `ls ${RECORDINGS_PSYCHOSIS_PATH}${subject_folder}/${task_folder}`; do
+                        for file in `ls ${RECORDINGS_PSYCHOSIS_PATH}${subject_folder}/${task_folder}`; do
 
-                        INPUT_FILE=${RECORDINGS_PSYCHOSIS_PATH}${subject_folder}/${task_folder}/$file
-                        $TRIBUS_LOC --dir $TRANSCRIBE_PSYCHOSIS_PATH $INPUT_FILE > /dev/null
+                                INPUT_FILE=${RECORDINGS_PSYCHOSIS_PATH}${subject_folder}/${task_folder}/$file
+                                $TRIBUS_LOC --dir $TRANSCRIBE_PSYCHOSIS_PATH $INPUT_FILE > /dev/null
 
+                        done
                 done
-        done
+        fi
 
         (( count++ ))
         current_prog=$(( $count * 100 / $NUMBER_PSYCHOSIS ))

@@ -1,9 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 
 RECORDINGS_CONTROLS_PATH=../recordings/controls/
-CONVERSION_CONTROLS_PATH=../recordings/controls_converted/
+CONVERSION_CONTROLS_PATH=../recordings_converted/controls_converted/
+
 RECORDINGS_PSYCHOSIS_PATH=../recordings/psychosis/
-CONVERSION_PSYCHOSIS_PATH=../recordings/psychosis_converted/
+CONVERSION_PSYCHOSIS_PATH=../recordings_converted/psychosis_converted/
 
 # progress bar function
 prog() {
@@ -14,31 +15,32 @@ prog() {
     printf "\r\e[K|%-*s| %3d %% %s" "$w" "$dots" "$p" "$*";
 }
 
-if [ -d "$CONVERSION_CONTROLS_PATH" ]; then rm -rf $CONVERSION_CONTROLS_PATH; fi
-mkdir $CONVERSION_CONTROLS_PATH
+if [ ! -d "$CONVERSION_CONTROLS_PATH" ]; then mkdir $CONVERSION_CONTROLS_PATH; fi
 
-echo "Processing Controls ..."
+echo "🚀 Processing Controls ..."
 CONTROLS=( $(ls ${RECORDINGS_CONTROLS_PATH}))
 NUMBER_CONTROLS=${#CONTROLS[@]}
 count=0
 prog 0
 for subject_folder in "${CONTROLS[@]}"; do
 	
-	mkdir "${CONVERSION_CONTROLS_PATH}${subject_folder}/"
+        if [ ! -d "${CONVERSION_CONTROLS_PATH}${subject_folder}" ]
+        then
+                mkdir "${CONVERSION_CONTROLS_PATH}${subject_folder}/"
+                for task_folder in `ls ${RECORDINGS_CONTROLS_PATH}${subject_folder}`; do
+                        
+                        mkdir "${CONVERSION_CONTROLS_PATH}${subject_folder}/${task_folder}/"
 
-	for task_folder in `ls ${RECORDINGS_CONTROLS_PATH}${subject_folder}`; do
-		
-		mkdir "${CONVERSION_CONTROLS_PATH}${subject_folder}/${task_folder}/"
+                        for file in `ls ${RECORDINGS_CONTROLS_PATH}${subject_folder}/${task_folder}`; do
 
-		for file in `ls ${RECORDINGS_CONTROLS_PATH}${subject_folder}/${task_folder}`; do
+                                INPUT_FILE=${RECORDINGS_CONTROLS_PATH}${subject_folder}/${task_folder}/$file
+                                OUTPUT_FILE=${CONVERSION_CONTROLS_PATH}${subject_folder}/${task_folder}/${file%.*}.wav
 
-			INPUT_FILE=${RECORDINGS_CONTROLS_PATH}${subject_folder}/${task_folder}/$file
-			OUTPUT_FILE=${CONVERSION_CONTROLS_PATH}${subject_folder}/${task_folder}/${file%.*}.wav
+                                ffmpeg -hide_banner -loglevel error -i $INPUT_FILE $OUTPUT_FILE
 
-			ffmpeg -hide_banner -loglevel error -i $INPUT_FILE $OUTPUT_FILE
-
-		done
-	done
+                        done
+                done
+        fi
 
 	(( count++ ))
         current_prog=$(( $count * 100 / $NUMBER_CONTROLS ))
@@ -46,35 +48,32 @@ for subject_folder in "${CONTROLS[@]}"; do
 done
 echo
 
+if [ ! -d "$CONVERSION_PSYCHOSIS_PATH" ]; then mkdir $CONVERSION_PSYCHOSIS_PATH; fi
 
-RECORDINGS_PSYCHOSIS_PATH=../recordings/psychosis/
-CONVERSION_PSYCHOSIS_PATH=../recordings/psychosis_converted/
-
-if [ -d "$CONVERSION_PSYCHOSIS_PATH" ]; then rm -rf $CONVERSION_PSYCHOSIS_PATH; fi
-mkdir $CONVERSION_PSYCHOSIS_PATH
-
-echo "Processing Psychosis ..."
+echo "🚀 Processing Psychosis ..."
 PSYCHOSIS=( $(ls ${RECORDINGS_PSYCHOSIS_PATH}))
 NUMBER_PSYCHOSIS=${#PSYCHOSIS[@]}
 count=0
 prog 0
 for subject_folder in "${PSYCHOSIS[@]}"; do
 
-        mkdir "${CONVERSION_PSYCHOSIS_PATH}${subject_folder}/"
+        if [ ! -d "${CONVERSION_PSYCHOSIS_PATH}${subject_folder}" ]
+        then
+                mkdir "${CONVERSION_PSYCHOSIS_PATH}${subject_folder}/"
+                for task_folder in `ls ${RECORDINGS_PSYCHOSIS_PATH}${subject_folder}`; do
 
-        for task_folder in `ls ${RECORDINGS_PSYCHOSIS_PATH}${subject_folder}`; do
+                        mkdir "${CONVERSION_PSYCHOSIS_PATH}${subject_folder}/${task_folder}/"
 
-                mkdir "${CONVERSION_PSYCHOSIS_PATH}${subject_folder}/${task_folder}/"
+                        for file in `ls ${RECORDINGS_PSYCHOSIS_PATH}${subject_folder}/${task_folder}`; do
 
-                for file in `ls ${RECORDINGS_PSYCHOSIS_PATH}${subject_folder}/${task_folder}`; do
+                                INPUT_FILE=${RECORDINGS_PSYCHOSIS_PATH}${subject_folder}/${task_folder}/$file
+                                OUTPUT_FILE=${CONVERSION_PSYCHOSIS_PATH}${subject_folder}/${task_folder}/${file%.*}.wav
 
-                        INPUT_FILE=${RECORDINGS_PSYCHOSIS_PATH}${subject_folder}/${task_folder}/$file
-                        OUTPUT_FILE=${CONVERSION_PSYCHOSIS_PATH}${subject_folder}/${task_folder}/${file%.*}.wav
+                                ffmpeg -hide_banner -loglevel error -i $INPUT_FILE $OUTPUT_FILE
 
-                        ffmpeg -hide_banner -loglevel error -i $INPUT_FILE $OUTPUT_FILE
-
+                        done
                 done
-        done
+        fi
 
         (( count++ ))
         current_prog=$(( $count * 100 / $NUMBER_PSYCHOSIS ))
