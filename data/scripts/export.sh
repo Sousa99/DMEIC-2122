@@ -8,6 +8,8 @@ RECORDINGS_DIR="./recordings"
 INFO_PATHS=(
     "control_info.xlsx"
     "psychosis_info.xlsx"
+    "bipolar_info.xlsx"
+    "to_identify_info.xlsx"
 )
 
 cd ..

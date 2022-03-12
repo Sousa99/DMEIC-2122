@@ -2,20 +2,12 @@ import os
 import math
 import argparse
 import warnings
-from consolemenu.format.menu_borders import MenuBorderStyle
-
-import numpy                as np
-import pandas               as pd
-import seaborn              as sns
-import matplotlib.pyplot    as plt
 
 from copy                   import deepcopy
 from pydub                  import AudioSegment
 from typing                 import List
 from consolemenu            import SelectionMenu, MenuFormatBuilder
 from pydub.playback         import play
-from consolemenu.format     import MenuBorderStyle
-from nltk.metrics.distance  import edit_distance
 
 # =================================== IGNORE CERTAIN ERRORS ===================================
 

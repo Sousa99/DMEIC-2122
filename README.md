@@ -35,6 +35,8 @@ Although the data itself is not available in the repository, it is still importa
 | :---------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------ |
 | control_info.xlsx                                                 | excel file with the demographic information for each control                                                                          |
 | psychosis_info.xlsx                                               | excel file with the demographic information for each patient with psychosis                                                           |
+| bipolar_info.xlsx                                                 | excel file with the demographic information for each patient with bipolar disorder                                                    |
+| to_identify_info.xlsx                                             | excel file with the demographic information for each patient with diagnosis yet to confirm with doctor                                |
 | recordings/*                                                      | folder where the initial recordings, in *WAV* format, are placed                                                                      |
 | recordings/controls/*                                             | folder with the recordings, in *WAV* format, from the controls already splitted by subject and task                                   |
 | recordings/psychosis/*                                            | folder with the recordings, in *WAV* format, from the patients with psychosis already splitted by subject and task                    |
