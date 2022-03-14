@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # Folder to specify
-CONTROL_TRANSCRIPTIONS_PATH="../recordings_transcribed_results/controls_transcribed_results/"
-PSYCHOSIS_TRANSCRIPTIONS_PATH="../recordings_transcribed_results/psychosis_transcribed_results/"
+CONTROL_TRANSCRIPTIONS_PATH="../recordings_transcribed_results/controls/"
+PSYCHOSIS_TRANSCRIPTIONS_PATH="../recordings_transcribed_results/psychosis/"
 CONTROL_TRANSCRIPTIONS_FIX_PATH="../fixed_transcriptions/controls/"
 PSYCHOSIS_TRANSCRIPTIONS_FIX_PATH="../fixed_transcriptions/psychosis/"
-CONTROL_AUDIOS="../recordings_converted/controls_converted/"
-PSYCHOSIS_AUDIOS="../recordings_converted/psychosis_converted/"
+CONTROL_AUDIOS="../recordings_converted/controls/"
+PSYCHOSIS_AUDIOS="../recordings_converted/psychosis/"
 
 if [ ! -d "${CONTROL_TRANSCRIPTIONS_FIX_PATH}" ]; then mkdir -p "${CONTROL_TRANSCRIPTIONS_FIX_PATH}"; fi
 

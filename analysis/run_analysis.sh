@@ -4,8 +4,8 @@ CONTROL="../data/control_info.xlsx"
 PSYCHOSIS="../data/psychosis_info.xlsx"
 CONTROL_RECORDS="../data/recordings/controls/"
 PSYCHOSIS_RECORDS="../data/recordings/psychosis/"
-CONTROL_TRANSCRIPTIONS="../data/recordings_transcribed_results/controls_transcribed_results/"
-PSYCHOSIS_TRANSCRIPTIONS="../data/recordings_transcribed_results/psychosis_transcribed_results/"
+CONTROL_TRANSCRIPTIONS="../data/recordings_transcribed_results/controls/"
+PSYCHOSIS_TRANSCRIPTIONS="../data/recordings_transcribed_results/psychosis/"
 
 NOW=$(date +"%Y.%m.%d %H.%M.%S")
 DIR="./records/${NOW}/"

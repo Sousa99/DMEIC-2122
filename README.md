@@ -17,12 +17,12 @@ In the mentioned directory a review of literature for the thesis has been done. 
 - Pottentially usefull citations
 
 Scripts were also developed for the automatization of certain tasks such as:
-- Exportation of all the latex files developed as PDFs ➡️ `./papers/scripts_latex/export.sh`
-- Cleanup of temporary files for the exportation previously mentioned ➡️ `./papers/scripts_latex/cleanup.sh`
-- Automatic generation of a new summary and critique from a given template for each (in `./papers/latex/templates`) ➡️ `./papers/scripts_latex/start_new.sh`
-- Installing of packages for latex ➡️ `./papers/scripts_latex/install_packages.sh`
-- Creation of the previously mentioned spreadsheet ➡️ `./papers/create_spreadsheet.py`
-- Automatic uploading of the pertinent documents to a shared Google Drive for the thesis ➡️ `./papers/upload_to_shared_drive.py`
+- Exportation of all the latex files developed as PDFs ➡️ [`./papers/scripts_latex/export.sh`](./papers/scripts_latex/export.sh)
+- Cleanup of temporary files for the exportation previously mentioned ➡️ [`./papers/scripts_latex/cleanup.sh`](./papers/scripts_latex/cleanup.sh)
+- Automatic generation of a new summary and critique from a given template for each (in [`./papers/latex/templates`](./papers/latex/templates)) ➡️ [`./papers/scripts_latex/start_new.sh`](./papers/scripts_latex/start_new.sh)
+- Installing of packages for latex ➡️ [`./papers/scripts_latex/install_packages.sh`](./papers/scripts_latex/install_packages.sh)
+- Creation of the previously mentioned spreadsheet ➡️ [`./papers/create_spreadsheet.py`](./papers/create_spreadsheet.py)
+- Automatic uploading of the pertinent documents to a shared Google Drive for the thesis ➡️ [`./papers/upload_to_shared_drive.py`](./papers/upload_to_shared_drive.py)
 
 ---
 
@@ -44,14 +44,9 @@ Although the data itself is not available in the repository, it is still importa
 | recordings/to_identify/*                                          | folder with the recordings, in *WAV* format, from the patients which diagnosis is still unknonwn                                      |
 | recordings/psychosis_cutting_times.json                           | JSON file with the timestamps for each task and subject in order to split the uncut version into cut                                  |
 | recordings_converted/*                                            | folder where the recordings converted from *WAV* into *wav* format are placed, one track for each subject and task                    |
-| recordings_converted/controls_converted/*                         | folder where the recordings, in *wav* format, from the controls for each subject and task                                             |
-| recordings_converted/psychosis_converted/*                        | folder where the recordings, in *wav* format, from the patients with psychosis for each subject and task                              |
+| recordings_transcribed/*                                          | folder created by the transcriber with everything that it outputs or develops in order to develop said output                         |
 | recordings_transcribed_results/*                                  | folder with the result from the transcriber, for each subject and task, a *.ctm*, *pctm*, and a *.trs*                                |
-| recordings_transcribed_results/controls_transcribed_results/*     | folder with the result from the transcriber, for the controls                                                                         |
-| recordings_transcribed_results/psychosis_transcribed_results/*    | folder with the result from the transcriber, for the patients with psychosis                                                          |
 | fixed_transcriptions/*                                            | folder with transcriptions mannually corrected, it includes both the fixed version of the transcription and the originals as *.ctm*   |
-| fixed_transcriptions/controls/*                                   | folder with transcriptions mannually corrected for each control                                                                       |
-| fixed_transcriptions/psychosis/*                                  | folder with transcriptions mannually corrected for each patient with psychosis                                                        |
 | exports/*                                                         | folder with exports from the various data folders, used as either backup or to send or recive from the secured servers                |
 
 ---

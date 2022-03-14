@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Folder to specify
-CONTROL_TRANSCRIPTIONS_PATH="../recordings_transcribed/controls_transcribed/"
-PSYCHOSIS_TRANSCRIPTIONS_PATH="../recordings_transcribed/psychosis_transcribed/"
+CONTROL_TRANSCRIPTIONS_PATH="../recordings_transcribed/controls/"
+PSYCHOSIS_TRANSCRIPTIONS_PATH="../recordings_transcribed/psychosis/"
 TRANSCRIPTIONS_RESULTS_PATH="../recordings_transcribed_results/"
-CONTROL_TRANSCRIPTIONS_RESULTS_PATH="../recordings_transcribed_results/controls_transcribed_results/"
-PSYCHOSIS_TRANSCRIPTIONS_RESULTS_PATH="../recordings_transcribed_results/psychosis_transcribed_results/"
+CONTROL_TRANSCRIPTIONS_RESULTS_PATH="../recordings_transcribed_results/controls/"
+PSYCHOSIS_TRANSCRIPTIONS_RESULTS_PATH="../recordings_transcribed_results/psychosis/"
 # Other important consts
 TRIBUS_EXPORT_PATH="exp_tribus/"
 TRIBUS_RESULT_PATH="result/transcription.trs"

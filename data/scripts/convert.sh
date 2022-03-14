@@ -1,10 +1,10 @@
 #!/bin/bash
 
 RECORDINGS_CONTROLS_PATH=../recordings/controls/
-CONVERSION_CONTROLS_PATH=../recordings_converted/controls_converted/
+CONVERSION_CONTROLS_PATH=../recordings_converted/controls/
 
 RECORDINGS_PSYCHOSIS_PATH=../recordings/psychosis/
-CONVERSION_PSYCHOSIS_PATH=../recordings_converted/psychosis_converted/
+CONVERSION_PSYCHOSIS_PATH=../recordings_converted/psychosis/
 
 # progress bar function
 prog() {
