@@ -2,6 +2,7 @@ import abc
 import copy
 import itertools
 
+import numpy as np
 import pandas as pd
 
 from typing import Any, Dict, Generator, List, Optional, Tuple, Type
@@ -10,6 +11,7 @@ from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import LeaveOneOut
 from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
+from sklearn.ensemble import RandomForestClassifier
 
 # Local Modules
 import module_scorer
@@ -19,16 +21,24 @@ import module_exporter
 
 VARIATIONS_NB_ALGORITHM =   [ 'Gaussian', 'Bernoulli' ]
 
-VARIATIONS_DT_CRITERION =           [ 'gini', 'entropy' ]
-VARIATIONS_DT_MAX_DEPTH =           [ None ] + [ pow(2, value) for value in range(0, 7) ]
-VARIATIONS_DT_MAX_FEATURES =        [ None, 'auto', 'sqrt', 'log2' ]
-VARIATIONS_MIN_IMPURITY_DECREASE =  [ 0 ] + [ 0.1 * pow(2, value) for value in range(0, 4) ]
+VARIATIONS_DT_CRITERION =               [ 'gini', 'entropy' ]
+VARIATIONS_DT_MAX_DEPTH =               [ pow(2, value) for value in range(0, 8) ]
+VARIATIONS_DT_MAX_FEATURES =            [ None, 'auto', 'sqrt', 'log2' ]
+VARIATIONS_DT_MIN_IMPURITY_DECREASE =   [ 0 ] + [ 0.1 * pow(2, value) for value in range(0, 4) ]
 
 VARIATIONS_SVM_C =      [ 0.1 * pow(2, value) for value in range(1, 4) ] + [ pow(2, value) for value in range(0, 7) ]
 VARIATIONS_SVM_KERNEL = [ 'linear', 'poly', 'rbf', 'sigmoid' ]
 
+VARIATIONS_RF_ESTIMATORS =              [ 10, 25, 50, 75, 100, 125, 150 ]
+VARIATIONS_RF_CRITERION =               [ 'gini', 'entropy' ]
+VARIATIONS_RF_MAX_DEPTH =               [ pow(2, value) for value in range(0, 8) ]
+VARIATIONS_RF_MAX_FEATURES =            [ None, 'auto', 'sqrt', 'log2' ]
+VARIATIONS_RF_MIN_IMPURITY_DECREASE =   [ 0 ] + [ 0.1 * pow(2, value) for value in range(0, 4) ]
+
+VARIATIONS_NB_PRESET =  { }
 VARIATIONS_DT_PRESET =  { }
 VARIATIONS_SVM_PRESET = { }
+VARIATIONS_RF_PRESET =  { }
 
 # =================================== PRIVATE METHODS ===================================
 
@@ -118,7 +128,7 @@ class Classifier(metaclass=abc.ABCMeta):
 class NaiveBayes(Classifier):
 
     scorers = {}
-    variations = VARIATIONS_DT_PRESET
+    variations = VARIATIONS_NB_PRESET
     def __init__(self, categories: List[str]):
         self.variations.update(self.compute_variations())
         for variation_key in self.variations:
@@ -162,7 +172,7 @@ class DecisionTree(Classifier):
 
     def compute_variations(self) -> Dict[str, Dict[str, Any]]:
         keys = [ 'criterion', 'max_depth', 'max_features', 'min_impurity_decrease' ]
-        values = [ VARIATIONS_DT_CRITERION, VARIATIONS_DT_MAX_DEPTH, VARIATIONS_DT_MAX_FEATURES, VARIATIONS_MIN_IMPURITY_DECREASE ]
+        values = [ VARIATIONS_DT_CRITERION, VARIATIONS_DT_MAX_DEPTH, VARIATIONS_DT_MAX_FEATURES, VARIATIONS_DT_MIN_IMPURITY_DECREASE ]
         return develop_parameters_variations(keys, values)
 
     def make_prediction(self, params: Dict[str, Dict[str, Any]], train_X: pd.DataFrame, train_Y: pd.Series, test_X: pd.DataFrame) -> Tuple[pd.Series]:
@@ -175,16 +185,24 @@ class DecisionTree(Classifier):
 
     def export_variations_results(self, variation_summary: Dict[str, Any], metric: str) -> None:
         summary_df = self.get_variations_df(variation_summary)
+        summary_df = summary_df.fillna("None")
+        best_row = summary_df.loc[summary_df[metric].idxmax()]
         # Standard Output of Variations
         module_exporter.export_csv(summary_df, 'results (variations)')
         # Specific graphs
         module_exporter.multiple_lines_chart('complexity - maximum depth', summary_df, 'max_depth', metric, hue_key='max_features', style_key='Set', y_lim=(0, 1))
         module_exporter.multiple_lines_chart('complexity - minimum impurity decrease', summary_df, 'min_impurity_decrease', metric, hue_key='max_features', style_key='Set', y_lim=(0, 1))
         
-        tmp_df = summary_df[(summary_df['criterion'] == VARIATIONS_DT_CRITERION[0]) & (summary_df['min_impurity_decrease'] == VARIATIONS_MIN_IMPURITY_DECREASE[0])]
-        module_exporter.multiple_lines_chart('complexity - maximum depth (controlled)', tmp_df, 'max_depth', metric, hue_key='max_features', style_key='Set', y_lim=(0, 1))
-        tmp_df = summary_df[(summary_df['criterion'] == VARIATIONS_DT_CRITERION[0]) & (summary_df['max_depth'].isnull())]
-        module_exporter.multiple_lines_chart('complexity - minimum impurity decrease (controlled)', tmp_df, 'min_impurity_decrease', metric, hue_key='max_features', style_key='Set', y_lim=(0, 1))
+        best_criterion =                best_row['criterion']
+        best_min_impurity_decrease =    best_row['min_impurity_decrease']
+        best_max_depth =                best_row['max_depth']
+
+        tmp_df = summary_df[(summary_df['criterion'] == best_criterion) & (summary_df['min_impurity_decrease'] == best_min_impurity_decrease)]
+        module_exporter.multiple_lines_chart(f'complexity - maximum depth (criterion = {best_criterion}, min_impurity_decrease = {best_min_impurity_decrease})',
+            tmp_df, 'max_depth', metric, hue_key='max_features', style_key='Set', y_lim=(0, 1))
+        tmp_df = summary_df[(summary_df['criterion'] == best_criterion) & (summary_df['max_depth'] == best_max_depth)]
+        module_exporter.multiple_lines_chart(f'complexity - minimum impurity decrease (criterion = {best_criterion}, max_depth = {best_max_depth})',
+            tmp_df, 'min_impurity_decrease', metric, hue_key='max_features', style_key='Set', y_lim=(0, 1))
 
 class SupportVectorMachine(Classifier):
 
@@ -215,13 +233,62 @@ class SupportVectorMachine(Classifier):
         # Specific graphs
         module_exporter.multiple_lines_chart('complexity - regularization', summary_df, 'C', metric, hue_key='kernel', style_key='Set', y_lim=(0, 1))
 
+class RandomForest(Classifier):
+
+    scorers = {}
+    variations = VARIATIONS_RF_PRESET
+    def __init__(self, categories: List[str]):
+        self.variations.update(self.compute_variations())
+        for variation_key in self.variations:
+            self.scorers[variation_key] = module_scorer.Scorer(categories)
+
+    def compute_variations(self) -> Dict[str, Dict[str, Any]]:
+        keys = [ 'n_estimators', 'criterion', 'max_depth', 'max_features', 'min_impurity_decrease' ]
+        values = [ VARIATIONS_RF_ESTIMATORS, VARIATIONS_RF_CRITERION, VARIATIONS_RF_MAX_DEPTH, VARIATIONS_RF_MAX_FEATURES, VARIATIONS_RF_MIN_IMPURITY_DECREASE ]
+        return develop_parameters_variations(keys, values)
+
+    def make_prediction(self, params: Dict[str, Dict[str, Any]], train_X: pd.DataFrame, train_Y: pd.Series, test_X: pd.DataFrame) -> Tuple[pd.Series]:
+        forest_classifier = RandomForestClassifier(**params)
+        forest_classifier.fit(train_X, train_Y)
+
+        prd_train_Y = forest_classifier.predict(train_X)
+        prd_test_Y = forest_classifier.predict(test_X)
+        return (prd_train_Y, prd_test_Y)
+
+    def export_variations_results(self, variation_summary: Dict[str, Any], metric: str) -> None:
+        summary_df = self.get_variations_df(variation_summary)
+        summary_df = summary_df.fillna("None")
+        best_row = summary_df.loc[summary_df[metric].idxmax()]
+        # Standard Output of Variations
+        module_exporter.export_csv(summary_df, 'results (variations)')
+        # Specific graphs
+        module_exporter.multiple_lines_chart('complexity - number of estimators', summary_df, 'n_estimators', metric, hue_key='max_features', style_key='Set', y_lim=(0, 1))
+        module_exporter.multiple_lines_chart('complexity - maximum depth', summary_df, 'max_depth', metric, hue_key='max_features', style_key='Set', y_lim=(0, 1))
+        module_exporter.multiple_lines_chart('complexity - minimum impurity decrease', summary_df, 'min_impurity_decrease', metric, hue_key='max_features', style_key='Set', y_lim=(0, 1))
+        
+        best_estimators =               best_row['n_estimators']
+        best_criterion =                best_row['criterion']
+        best_min_impurity_decrease =    best_row['min_impurity_decrease']
+        best_max_depth =                best_row['max_depth']
+
+        tmp_df = summary_df[(summary_df['n_estimators'] == best_estimators) & (summary_df['criterion'] == best_criterion) & (summary_df['min_impurity_decrease'] == best_min_impurity_decrease)]
+        module_exporter.multiple_lines_chart(f'complexity - maximum depth (n_estimators = {best_estimators}, criterion = {best_criterion}, min_impurity_decrease = {best_min_impurity_decrease})',
+            tmp_df, 'max_depth', metric, hue_key='max_features', style_key='Set', y_lim=(0, 1))
+        tmp_df = summary_df[(summary_df['n_estimators'] == best_estimators) & (summary_df['criterion'] == best_criterion) & (summary_df['max_depth'] == best_max_depth)]
+        module_exporter.multiple_lines_chart(f'complexity - minimum impurity decrease (n_estimators = {best_estimators}, criterion = {best_criterion}, max_depth = {best_max_depth})',
+            tmp_df, 'min_impurity_decrease', metric, hue_key='max_features', style_key='Set', y_lim=(0, 1))
+        tmp_df = summary_df[(summary_df['criterion'] == best_criterion) & (summary_df['min_impurity_decrease'] == best_min_impurity_decrease) & (summary_df['max_depth'] == best_max_depth)]
+        module_exporter.multiple_lines_chart(f'complexity - number of estimators (criterion = {best_criterion}, min_impurity_decrease = {best_min_impurity_decrease}, max_depth = {best_max_depth})',
+            tmp_df, 'n_estimators', metric, hue_key='max_features', style_key='Set', y_lim=(0, 1))
+
 # =================================== PUBLIC METHODS ===================================
 
 def convert_key_to_classifier(key: str) -> Optional[Tuple[str, Type[Classifier]]]:
 
-    if key == 'Naive Bayes': return ('NB', NaiveBayes)
-    elif key == 'Decision Tree': return ('DT', DecisionTree)
-    elif key == 'Support Vector Machine': return ('SVM', SupportVectorMachine)
+    if key == 'Naive Bayes':                return ('NB', NaiveBayes)
+    elif key == 'Decision Tree':            return ('DT', DecisionTree)
+    elif key == 'Support Vector Machine':   return ('SVM', SupportVectorMachine)
+    elif key == 'Random Forest':            return ('RF', RandomForest)
     else: return None
 
 def leave_one_out(data: pd.DataFrame) -> Generator[tuple, None, None]:
