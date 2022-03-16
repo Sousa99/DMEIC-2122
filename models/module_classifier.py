@@ -1,6 +1,7 @@
 import abc
 import copy
 import itertools
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -12,10 +13,17 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import LeaveOneOut
 from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.neural_network import MLPClassifier
+
+from sklearn.exceptions import ConvergenceWarning
 
 # Local Modules
 import module_scorer
 import module_exporter
+
+# =================================== PACKAGES PARAMETERS ===================================
+
+warnings.filterwarnings('ignore', category = ConvergenceWarning)
 
 # =================================== CONSTANTS - VARIATIONS ===================================
 
@@ -35,10 +43,17 @@ VARIATIONS_RF_MAX_DEPTH =               [ pow(2, value) for value in range(0, 8)
 VARIATIONS_RF_MAX_FEATURES =            [ None, 'auto', 'sqrt', 'log2' ]
 VARIATIONS_RF_MIN_IMPURITY_DECREASE =   [ 0 ] + [ 0.1 * pow(2, value) for value in range(0, 4) ]
 
+VARIATIONS_MLP_HIDDEN_LAYERS =      [ (50, ), (100, ), (100, 50), (50, 100), (50, 100, 50) ]
+VARIATIONS_MLP_ACTIVATION =         [ 'logistic', 'tanh', 'relu' ]
+VARIATIONS_MLP_LEARNING_RATE_INIT = [ 0.001 * pow(5, value) for value in range(0, 4) ]
+VARIATIONS_MLP_LEARNING_RATE =      [ 'constant', 'invscaling', 'adaptive' ]
+VARIATIONS_MLP_MAX_ITERATIONS =     [ 100, 300, 500, 750, 1000, 1500, 2000, 3000 ]
+
 VARIATIONS_NB_PRESET =  { }
 VARIATIONS_DT_PRESET =  { }
 VARIATIONS_SVM_PRESET = { }
 VARIATIONS_RF_PRESET =  { }
+VARIATIONS_MLP_PRESET = { }
 
 # =================================== PRIVATE METHODS ===================================
 
@@ -281,6 +296,57 @@ class RandomForest(Classifier):
         module_exporter.multiple_lines_chart(f'complexity - number of estimators (criterion = {best_criterion}, min_impurity_decrease = {best_min_impurity_decrease}, max_depth = {best_max_depth})',
             tmp_df, 'n_estimators', metric, hue_key='max_features', style_key='Set', y_lim=(0, 1))
 
+class MultiLayerPerceptron(Classifier):
+
+    scorers = {}
+    variations = VARIATIONS_RF_PRESET
+    def __init__(self, categories: List[str]):
+        self.variations.update(self.compute_variations())
+        for variation_key in self.variations:
+            self.scorers[variation_key] = module_scorer.Scorer(categories)
+
+    def compute_variations(self) -> Dict[str, Dict[str, Any]]:
+        keys = [ 'hidden_layer_sizes', 'activation', 'learning_rate_init', 'learning_rate', 'max_iter' ]
+        values = [ VARIATIONS_MLP_HIDDEN_LAYERS, VARIATIONS_MLP_ACTIVATION, VARIATIONS_MLP_LEARNING_RATE_INIT, VARIATIONS_MLP_LEARNING_RATE, VARIATIONS_MLP_MAX_ITERATIONS ]
+        return develop_parameters_variations(keys, values)
+
+    def make_prediction(self, params: Dict[str, Dict[str, Any]], train_X: pd.DataFrame, train_Y: pd.Series, test_X: pd.DataFrame) -> Tuple[pd.Series]:
+        mlp_classifier = MLPClassifier(**params)
+        mlp_classifier.fit(train_X, train_Y)
+
+        prd_train_Y = mlp_classifier.predict(train_X)
+        prd_test_Y = mlp_classifier.predict(test_X)
+        return (prd_train_Y, prd_test_Y)
+
+    def export_variations_results(self, variation_summary: Dict[str, Any], metric: str) -> None:
+        summary_df = self.get_variations_df(variation_summary)
+        best_row = summary_df.loc[summary_df[metric].idxmax()]
+        # Standard Output of Variations
+        module_exporter.export_csv(summary_df, 'results (variations)')
+        # Specific graphs
+        module_exporter.multiple_lines_chart('complexity - number of maximum iterations per hidden layer', summary_df, 'max_iter', metric, hue_key='hidden_layer_sizes', style_key='Set', y_lim=(0, 1))
+        module_exporter.multiple_lines_chart('complexity - number of maximum iterations per activation', summary_df, 'max_iter', metric, hue_key='activation', style_key='Set', y_lim=(0, 1))
+        module_exporter.multiple_lines_chart('complexity - number of maximum iterations per learning rate type', summary_df, 'max_iter', metric, hue_key='learning_rate_init', style_key='Set', y_lim=(0, 1))
+        module_exporter.multiple_lines_chart('complexity - number of maximum iterations per learning rate init', summary_df, 'max_iter', metric, hue_key='learning_rate', style_key='Set', y_lim=(0, 1))
+
+        best_hidden_layer_sizes =   best_row['hidden_layer_sizes']
+        best_activation =           best_row['activation']
+        best_learning_rate_init =   best_row['learning_rate_init']
+        best_learning_rate =        best_row['learning_rate']
+
+        tmp_df = summary_df[(summary_df['activation'] == best_activation) & (summary_df['learning_rate_init'] == best_learning_rate_init) & (summary_df['learning_rate'] == best_learning_rate)]
+        module_exporter.multiple_lines_chart(f'complexity - number of maximum iterations per hidden layer (activation = {best_activation}, learning_rate_init = {best_learning_rate_init}, learning_rate = {best_learning_rate})',
+            tmp_df, 'max_iter', metric, hue_key='hidden_layer_sizes', style_key='Set', y_lim=(0, 1))
+        tmp_df = summary_df[(summary_df['hidden_layer_sizes'] == best_hidden_layer_sizes) & (summary_df['learning_rate_init'] == best_learning_rate_init) & (summary_df['learning_rate'] == best_learning_rate)]
+        module_exporter.multiple_lines_chart(f'complexity - number of maximum iterations per activation (hidden_layer_sizes = {best_hidden_layer_sizes}, learning_rate_init = {best_learning_rate_init}, learning_rate = {best_learning_rate})',
+            tmp_df, 'max_iter', metric, hue_key='activation', style_key='Set', y_lim=(0, 1))
+        tmp_df = summary_df[(summary_df['hidden_layer_sizes'] == best_hidden_layer_sizes) & (summary_df['activation'] == best_activation) & (summary_df['learning_rate'] == best_learning_rate)]
+        module_exporter.multiple_lines_chart(f'complexity - number of maximum iterations per learning rate type (hidden_layer_sizes = {best_hidden_layer_sizes}, activation = {best_activation}, learning_rate = {best_learning_rate})',
+            tmp_df, 'max_iter', metric, hue_key='learning_rate_init', style_key='Set', y_lim=(0, 1))
+        tmp_df = summary_df[(summary_df['hidden_layer_sizes'] == best_hidden_layer_sizes) & (summary_df['activation'] == best_activation) & (summary_df['learning_rate_init'] == best_learning_rate_init)]
+        module_exporter.multiple_lines_chart(f'complexity - number of maximum iterations per learning rate init (hidden_layer_sizes = {best_hidden_layer_sizes}, activation = {best_activation}, learning_rate_init = {best_learning_rate_init})',
+            tmp_df, 'max_iter', metric, hue_key='learning_rate', style_key='Set', y_lim=(0, 1))
+
 # =================================== PUBLIC METHODS ===================================
 
 def convert_key_to_classifier(key: str) -> Optional[Tuple[str, Type[Classifier]]]:
@@ -289,6 +355,7 @@ def convert_key_to_classifier(key: str) -> Optional[Tuple[str, Type[Classifier]]
     elif key == 'Decision Tree':            return ('DT', DecisionTree)
     elif key == 'Support Vector Machine':   return ('SVM', SupportVectorMachine)
     elif key == 'Random Forest':            return ('RF', RandomForest)
+    elif key == 'Multi-Layer Perceptron':            return ('MLP', MultiLayerPerceptron)
     else: return None
 
 def leave_one_out(data: pd.DataFrame) -> Generator[tuple, None, None]:
