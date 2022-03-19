@@ -12,10 +12,10 @@ import module_load
 
 # =================================== PRIVATE METHODS ===================================
 
-def compute_file_paths(trans_path: str, extension_preference_order: List[str], extension: str) -> str:
+def compute_file_paths(file_path: str, extension_preference_order: List[str], extension: str) -> str:
 
-    _, _, files_full = list(os.walk(trans_path))[0]
-    if extension != None: files_full = filter(lambda file: os.path.splitext(file)[1] == extension, files_full)
+    _, _, files_full = list(os.walk(file_path))[0]
+    if extension != None: files_full = list(filter(lambda file: os.path.splitext(file)[1] == extension, files_full))
     files = list(map(lambda file: (file, os.path.splitext(file)[0]), files_full))
 
     for prefered_extension in extension_preference_order:
