@@ -46,6 +46,10 @@ def optimal_grid(number: int) -> Tuple[int, int]:
 
 # =================================== PUBLIC FUNCTIONS - CHANGE GLOBAL PARAMETERS ===================================
 
+def change_execution_timestamp(timestamp: str):
+    global EXECUTION_TIMESTAMP
+    EXECUTION_TIMESTAMP = datetime.strptime(timestamp, "%Y.%m.%d %H.%M.%S")
+
 def change_current_directory(current_directories: List[str] = []):
     global CURRENT_DIRECTORIES
     CURRENT_DIRECTORIES = current_directories

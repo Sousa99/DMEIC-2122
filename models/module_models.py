@@ -1,4 +1,6 @@
+import os
 import abc
+import pickle
 import argparse
 import warnings
 
@@ -26,6 +28,16 @@ warnings.filterwarnings('ignore', category = UserWarning, module = 'opensmile')
 DATASET_SAMPLE              :   float               = 1.00
 PIVOT_ON_TASKS              :   bool                = False
 VARIATIONS_FILTER_BY_INDEX  :   Optional[List[int]] = None
+
+# =================================== CONSTANTS ===================================
+
+PARALLEL_TMP_DIRECTORY          = '/tmp/'
+PARALLEL_FEATURE_SETS_FILE      = 'tmp_feature_set.pkl'
+PARALLEL_NUMBER_VARIATIONS_FILE = 'tmp_number_variations.txt'
+
+PARALLEL_FEATURE_EXTRACTION = 'FEATURE_EXTRACTION'
+PARALLEL_RUN_MODELS         = 'RUN_MODELS'
+PARALLEL_RUN_FINAL          = 'RUN_FINAL'
 
 # =================================== PRIVATE CLASSES ===================================
 
@@ -119,7 +131,11 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def __init__(self, arguments: argparse.Namespace) -> None:
+        # Arguments and Logic        
         self.arguments = arguments
+        timestamp_argument = arguments.timestamp;
+        if timestamp_argument is not None: module_exporter.change_execution_timestamp(timestamp_argument)
+
         # Load Informations
         self.load_subjects()
         self.load_subjects_info()
@@ -149,6 +165,109 @@ class SequentialModel(ModelAbstraction):
             profiler = module_profiling.DatasetProfiling(feature_set, target_set)
             profiler.make_profiling()
 
+    def run_variations(self):
+
+        print()
+        print("🚀 Running solution variations ...")
+
+        for variation in self.variations_to_test:
+
+            print("🚀 Running variation '{0}'".format(variation.generate_code()))
+            dataframe_X, dataframe_Y = variation.get_treated_dataset(self.GENERAL_DROP_COLUMNS, self.subjects_infos, PIVOT_ON_TASKS)
+
+            # Do profiling of current dataset
+            module_exporter.change_current_directory([variation.generate_code(), 'Data Profiling'])
+            print("🚀 Running profiling ...")
+            profiler = module_profiling.DatasetProfiling(dataframe_X, dataframe_Y)
+            profiler.make_profiling()
+
+            # Running the classifier itself
+            module_exporter.change_current_directory([variation.generate_code(), 'Classifier'])
+            print("🚀 Running model ...")
+            data_splits = list(module_classifier.leave_one_out(dataframe_X))
+            classifier = variation.classifier(['Psychosis', 'Control'])
+            for (train_index, test_index) in tqdm(data_splits, desc="👉 Running classifier:", leave=False):
+                X_train, X_test = dataframe_X.iloc[train_index], dataframe_X.iloc[test_index]
+                y_train, y_test = dataframe_Y.iloc[train_index], dataframe_Y.iloc[test_index]
+
+                classifier.process_iteration(X_train, y_train, X_test, y_test)
+            # Export Classifier Variations Results
+            variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 
+                'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code }
+            classifier.export_variations_results(variation_summary, self.TARGET_METRIC)
+            # Export Best Classifier Variation Results
+            _, best_scorer = classifier.get_best_scorer(self.TARGET_METRIC)
+            best_scorer.export_results('results')
+
+            print("✅ Completed variation")
+
+            # Update General Scores
+            best_scorer_key, best_scorer = classifier.get_best_scorer(self.TARGET_METRIC)
+            variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 'Classifier Variation': best_scorer_key,
+                'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code }
+            for score in best_scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
+            self.variations_results.append(variation_summary)
+
+    def export_final_results(self):
+        module_exporter.change_current_directory()
+        # Summary of All Variations
+        variations_results_df = pd.DataFrame(self.variations_results)
+        module_exporter.export_csv(variations_results_df, 'results', False)
+
+class ParallelModel(ModelAbstraction):
+
+    def __init__(self, arguments: argparse.Namespace) -> None:
+        # Run Super Initialization
+        super().__init__(arguments)
+
+    def study_feature_sets(self):
+
+        print()
+        print("🚀 Running datasets profiling ...")
+
+        for feature_key in self.features_infos:
+
+            print("🚀 Running profiling of '{0}' dataset".format(feature_key))
+            module_exporter.change_current_directory(['Data Profiling', feature_key])
+            feature_info = self.features_infos[feature_key]
+
+            feature_set : pd.DataFrame = feature_info['features'].drop(feature_info['drop_columns'] + self.GENERAL_DROP_COLUMNS, axis=1)
+            target_set : pd.Series = feature_info['features'].reset_index()['Subject'].apply(lambda subject: self.subjects_infos.loc[subject]['Target'])
+            profiler = module_profiling.DatasetProfiling(feature_set, target_set)
+            profiler.make_profiling()
+
+    def load_feature_sets(self):
+
+        directory_path = PARALLEL_TMP_DIRECTORY
+        if self.arguments.timestamp is not None: directory_path = os.path.join(directory_path, self.arguments.timestamp)
+        full_path = os.path.join(directory_path, PARALLEL_FEATURE_SETS_FILE)
+
+        file = open(full_path, 'rb')
+        self.load_features_infos(pickle.load(file))
+        file.close()
+
+    def save_feature_sets(self):
+
+        directory_path = PARALLEL_TMP_DIRECTORY
+        if self.arguments.timestamp is not None: directory_path = os.path.join(directory_path, self.arguments.timestamp)
+        if not os.path.exists(directory_path): os.makedirs(directory_path)
+        full_path = os.path.join(directory_path, PARALLEL_FEATURE_SETS_FILE)
+
+        file = open(full_path, 'wb')
+        pickle.dump(self.features_infos, file)
+        file.close()
+
+    def save_number_of_variations(self):
+
+        directory_path = PARALLEL_TMP_DIRECTORY
+        if self.arguments.timestamp is not None: directory_path = os.path.join(directory_path, self.arguments.timestamp)
+        if not os.path.exists(directory_path): os.makedirs(directory_path)
+        full_path = os.path.join(directory_path, PARALLEL_NUMBER_VARIATIONS_FILE)
+
+        file = open(full_path, 'w')
+        file.write(str(len(self.variations_to_test)))
+        file.close()
+    
     def run_variations(self):
 
         print()

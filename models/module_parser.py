@@ -11,7 +11,10 @@ parser.add_argument("-audio_psychosis", help="path to audio segments from psycho
 parser.add_argument("-trans_controls",  help="path to transcription files from controls")
 parser.add_argument("-trans_psychosis", help="path to transcription files from psychosis")
 # Define Optional Arguments
-parser.add_argument("-variations_key",  help="key for the generation of variations, by default all are created")
+parser.add_argument("-variations_key",          help="key for the generation of variations, by default all are created")
+parser.add_argument("-timestamp",               help="key for the timestamp identifier, if not given current timestamp is used")
+parser.add_argument("-parallelization_key",     help="key for the parallelized model, if not given is executed sequentially")
+parser.add_argument("-parallelization_index",   help="key index for the parallelized model, must be given if task is to be parallelized")
 
 # Define Requirements
 arguments_requirements = [
