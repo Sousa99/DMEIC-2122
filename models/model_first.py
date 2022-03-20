@@ -1,14 +1,15 @@
 import pandas as pd
 
 # Local Modules
+import module_parser
 import module_models
 import module_sound_features
 import module_speech_features
 
-
 # =================================== INITIALIZE MODEL ===================================
 
-model = module_models.SequentialModel()
+arguments = module_parser.get_arguments()
+model = module_models.SequentialModel(arguments)
 
 # =================================== COMPUTE FEATURES ===================================
 

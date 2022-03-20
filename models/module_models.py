@@ -55,8 +55,6 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
 
     # =================================== PROPERTIES ===================================
 
-    parser : argparse.ArgumentParser = argparse.ArgumentParser()
-    arguments_requirements : List[Dict[str, Any]] = []
     arguments : argparse.Namespace
     features_infos : Dict[str, Dict[str, Any]] = {}
     
@@ -68,42 +66,6 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
     variations_results : List[Dict[str, Any]] = []
 
     # =================================== FUNCTIONS ===================================
-
-    @abc.abstractmethod
-    def define_arguments(self):
-        # Required Arguments
-        self.parser.add_argument("-info_controls",   help="path to info file from controls")
-        self.parser.add_argument("-info_psychosis",  help="path to info file from psychosis")
-        self.parser.add_argument("-audio_controls",  help="path to audio segments from controls")
-        self.parser.add_argument("-audio_psychosis", help="path to audio segments from psychosis")
-        self.parser.add_argument("-trans_controls",  help="path to transcription files from controls")
-        self.parser.add_argument("-trans_psychosis", help="path to transcription files from psychosis")
-        # Optional Arguments
-        self.parser.add_argument("-variations_key",  help="key for the generation of variations, by default all are created")
-
-        self.arguments_requirements.extend([
-            { 'key': 'info_controls',     'help': 'path to info file from controls'},
-            { 'key': 'info_psychosis',    'help': 'path to info file from psychosis'},
-            { 'key': 'audio_controls',    'help': 'path to audio segments from controls'},
-            { 'key': 'audio_psychosis',   'help': 'path to audio segments from psychosis'},
-            { 'key': 'trans_controls',    'help': 'path to transcriptions files from controls'},
-            { 'key': 'trans_psychosis',   'help': 'path to transcriptions files from psychosis'},
-        ])
-
-    def parse_arguments(self):
-
-        self.arguments = self.parser.parse_args()
-
-        # Convert requirements
-        arguments_dict = vars(self.arguments)
-        for requirement in self.arguments_requirements:
-            requirement['arg'] = arguments_dict[requirement['key']]
-
-        if ( any(not req['arg'] for req in self.arguments_requirements) ):
-            print("🙏 Please provide a:")
-            for requirement in self.arguments_requirements:
-                print('\t\'{}\': {}'.format(requirement['key'], requirement['help']))
-            exit(1)
 
     def load_subjects(self):
         # Load Datasets and Paths
@@ -155,10 +117,10 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
         if VARIATIONS_FILTER_BY_INDEX is not None:
             self.variations_to_test = [ self.variations_to_test[index] for index in VARIATIONS_FILTER_BY_INDEX ]
 
-    def __init__(self) -> None:
-        # Specific Initialization
-        self.define_arguments()
-        self.parse_arguments()
+    @abc.abstractmethod
+    def __init__(self, arguments: argparse.Namespace) -> None:
+        self.arguments = arguments
+        # Load Informations
         self.load_subjects()
         self.load_subjects_info()
         self.load_subjects_paths()
@@ -167,12 +129,9 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
 
 class SequentialModel(ModelAbstraction):
 
-    def __init__(self) -> None:
+    def __init__(self, arguments: argparse.Namespace) -> None:
         # Run Super Initialization
-        super().__init__()
-
-    def define_arguments(self):
-        return super().define_arguments()
+        super().__init__(arguments)
 
     def study_feature_sets(self):
 
