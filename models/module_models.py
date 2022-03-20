@@ -1,8 +1,9 @@
+import abc
 import argparse
 import warnings
 
 from tqdm import tqdm
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 
@@ -20,168 +21,223 @@ tqdm.pandas(desc='🐼 Pandas DataFrame apply', mininterval=0.1, maxinterval=10.
 warnings.filterwarnings('ignore', category = UserWarning, module = 'openpyxl')
 warnings.filterwarnings('ignore', category = UserWarning, module = 'opensmile')
 
-# =================================== FLAGS PARSING ===================================
-
-parser = argparse.ArgumentParser()
-# Required Arguments
-parser.add_argument("-info_controls",   help="path to info file from controls")
-parser.add_argument("-info_psychosis",  help="path to info file from psychosis")
-parser.add_argument("-audio_controls",  help="path to audio segments from controls")
-parser.add_argument("-audio_psychosis", help="path to audio segments from psychosis")
-parser.add_argument("-trans_controls",  help="path to transcription files from controls")
-parser.add_argument("-trans_psychosis", help="path to transcription files from psychosis")
-# Optional Arguments
-parser.add_argument("-variations_key",  help="key for the generation of variations, by default all are created")
-args = parser.parse_args()
-
-requirements = [
-    { 'arg': args.info_controls, 'key': 'info_controls', 'help': 'path to info file from controls'},
-    { 'arg': args.info_psychosis, 'key': 'info_psychosis', 'help': 'path to info file from psychosis'},
-    { 'arg': args.audio_controls, 'key': 'audio_controls', 'help': 'path to audio segments from controls'},
-    { 'arg': args.audio_psychosis, 'key': 'audio_psychosis', 'help': 'path to audio segments from psychosis'},
-    { 'arg': args.trans_controls, 'key': 'trans_controls', 'help': 'path to transcriptions files from controls'},
-    { 'arg': args.trans_psychosis, 'key': 'trans_psychosis', 'help': 'path to transcriptions files from psychosis'},
-]
-
-if ( any(not req['arg'] for req in requirements) ):
-    print("🙏 Please provide a:")
-    for requirement in requirements:
-        print('\t\'{}\': {}'.format(requirement['key'], requirement['help']))
-    exit(1)
-
 # =================================== DEBUG CONSTANTS ===================================
 
-DATASET_SAMPLE = 1.0
-PIVOT_ON_TASKS = False
+DATASET_SAMPLE              :   float               = 1.00
+PIVOT_ON_TASKS              :   bool                = False
+VARIATIONS_FILTER_BY_INDEX  :   Optional[List[int]] = None
 
-# =================================== EXECUTION CONSTANTS ===================================
+# =================================== PRIVATE CLASSES ===================================
 
-TASKS = [ {'code': 1, 'name': 'Task 1'},  {'code': 2, 'name': 'Task 2'},  {'code': 3, 'name': 'Task 3'}, 
-    {'code': 4, 'name': 'Task 4'}, {'code': 5, 'name': 'Task 5'}, {'code': 6, 'name': 'Task 6'}, {'code': 7, 'name': 'Task 7'}]
+class ModelAbstraction(metaclass=abc.ABCMeta):
 
-CODE_CONTROL = { 'code': 'Control', 'target': False, 'file_system': 'c' }
-CODE_PSYCHOSIS = { 'code': 'Psychosis', 'target': True, 'file_system': 'p' }
+    # =================================== EXECUTION CONSTANTS ===================================
 
-PREFERENCE_AUDIO_TRACKS = ['Tr1', 'Tr2', 'Tr3', 'Tr4', 'LR']
-PREFERENCE_TRANS = ['Fix', 'Tr1', 'Tr2', 'Tr3', 'Tr4', 'LR']
-EXTENSION_TRANS = '.ctm'
+    TASKS = [ {'code': 1, 'name': 'Task 1'},  {'code': 2, 'name': 'Task 2'},  {'code': 3, 'name': 'Task 3'}, 
+        {'code': 4, 'name': 'Task 4'}, {'code': 5, 'name': 'Task 5'}, {'code': 6, 'name': 'Task 6'}, {'code': 7, 'name': 'Task 7'}]
 
-VARIATION_TASKS = [ 'Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7',
-    'Verbal Fluency', 'Reading + Retelling', 'Description Affective Images' ]
-VARIATION_GENDERS = [ 'Male Gender', 'Female Gender', 'All Genders' ]
-VARIATION_CLASSIFIERS = [ 'Naive Bayes', 'Decision Tree', 'Support Vector Machine', 'Random Forest', 'Multi-Layer Perceptron' ]
-VARIATION_PREPROCESSING = [ [ 'DROP_ROWS_NAN' ] ]
+    CODE_CONTROL = { 'code': 'Control', 'target': False, 'file_system': 'c' }
+    CODE_PSYCHOSIS = { 'code': 'Psychosis', 'target': True, 'file_system': 'p' }
 
-TARGET_METRIC = 'F1-Measure'
+    PREFERENCE_AUDIO_TRACKS = ['Tr1', 'Tr2', 'Tr3', 'Tr4', 'LR']
+    PREFERENCE_TRANS = ['Fix', 'Tr1', 'Tr2', 'Tr3', 'Tr4', 'LR']
+    EXTENSION_TRANS = '.ctm'
 
-GENERAL_DROP_COLUMNS = ['Subject', 'Task']
+    VARIATION_TASKS = [ 'Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7',
+        'Verbal Fluency', 'Reading + Retelling', 'Description Affective Images' ]
+    VARIATION_GENDERS = [ 'Male Gender', 'Female Gender', 'All Genders' ]
+    VARIATION_CLASSIFIERS = [ 'Naive Bayes', 'Decision Tree', 'Support Vector Machine', 'Random Forest', 'Multi-Layer Perceptron' ]
+    VARIATION_PREPROCESSING = [ [ 'DROP_ROWS_NAN' ] ]
 
-# =================================== PUBLIC FUNCTIONS ===================================
+    TARGET_METRIC = 'F1-Measure'
 
-def get_arguments() -> argparse.Namespace: return args
+    GENERAL_DROP_COLUMNS = ['Subject', 'Task']
 
-def get_preference_audio_tracks() -> List[str]: return PREFERENCE_AUDIO_TRACKS
-def get_preference_transcriptions() -> List[str]: return PREFERENCE_TRANS
-def get_transcription_extension() -> str: return EXTENSION_TRANS
-def get_general_drop_columns() -> List[str]: return GENERAL_DROP_COLUMNS
+    # =================================== PROPERTIES ===================================
+    
+    subjects_loads : Tuple[pd.DataFrame, pd.DataFrame]
+    subjects_infos : pd.DataFrame
+    subjects_paths : pd.DataFrame
+    variations_to_test : List[module_variations.Variation] = []
 
-def get_subjects_loads() -> Tuple[pd.DataFrame, pd.DataFrame]:
-    # Load Datasets and Paths
-    control_load = module_load.load_dataset(CODE_CONTROL['file_system'],
-        args.info_controls, args.audio_controls, args.trans_controls, TASKS)
-    psychosis_load = module_load.load_dataset(CODE_PSYCHOSIS['file_system'],
-        args.info_psychosis, args.audio_psychosis, args.trans_psychosis, TASKS)
+    variations_results : List[Dict[str, Any]] = []
 
-    return (control_load, psychosis_load)
+    # =================================== ABSTRACT - PROPERTIES ===================================
 
-def get_subjects_info() -> pd.DataFrame:
-    # Get Loads
-    control_load, psychosis_load = get_subjects_loads()
+    @abc.abstractproperty
+    @abc.abstractmethod
+    def arguments(self) -> argparse.Namespace: raise("🚨 Property 'arguments' not defined")
+    @abc.abstractproperty
+    @abc.abstractmethod
+    def features_infos(self) -> Dict[str, Dict[str, Any]]: raise("🚨 Property 'features_infos' not defined")
 
-    # Control Info
-    control_info = control_load['info']
-    control_info_columns = list(control_info.columns.values)
-    control_info['Type'] = CODE_CONTROL['code']
-    control_info['Target'] = CODE_CONTROL['target']
-    control_info = control_info[['Type', 'Target'] + control_info_columns]
-    # Psychosis Info
-    psychosis_info = psychosis_load['info']
-    psychosis_info_columns = list(psychosis_info.columns.values)
-    psychosis_info['Type'] = CODE_PSYCHOSIS['code']
-    psychosis_info['Target'] = CODE_PSYCHOSIS['target']
-    psychosis_info = psychosis_info[['Type', 'Target'] + psychosis_info_columns]
+    # =================================== FUNCTIONS ===================================
 
-    subject_info = pd.concat([control_info, psychosis_info])
-    return subject_info
+    def load_subjects(self):
+        # Load Datasets and Paths
+        control_load = module_load.load_dataset(self.CODE_CONTROL['file_system'],
+            self.arguments.info_controls, self.arguments.audio_controls, self.arguments.trans_controls, self.TASKS)
+        psychosis_load = module_load.load_dataset(self.CODE_PSYCHOSIS['file_system'],
+            self.arguments.info_psychosis, self.arguments.audio_psychosis, self.arguments.trans_psychosis, self.TASKS)
+        # Store Load
+        self.subjects_loads = (control_load, psychosis_load)
 
-def get_subjects_paths() -> pd.DataFrame:
-    # Get Loads
-    control_load, psychosis_load = get_subjects_loads()
+    def load_subjects_info(self):
+        # Get Loads
+        control_load, psychosis_load = self.subjects_loads
+        # Control Info
+        control_info = control_load['info']
+        control_info_columns = list(control_info.columns.values)
+        control_info['Type'] = self.CODE_CONTROL['code']
+        control_info['Target'] = self.CODE_CONTROL['target']
+        control_info = control_info[['Type', 'Target'] + control_info_columns]
+        # Psychosis Info
+        psychosis_info = psychosis_load['info']
+        psychosis_info_columns = list(psychosis_info.columns.values)
+        psychosis_info['Type'] = self.CODE_PSYCHOSIS['code']
+        psychosis_info['Target'] = self.CODE_PSYCHOSIS['target']
+        psychosis_info = psychosis_info[['Type', 'Target'] + psychosis_info_columns]
+        # Store Info
+        self.subjects_infos = pd.concat([control_info, psychosis_info])
 
-    # Control Info
-    control_paths = control_load['paths'].sample(frac=DATASET_SAMPLE)
-    # Psychosis Info
-    psychosis_paths = psychosis_load['paths'].sample(frac=DATASET_SAMPLE)
+    def load_subjects_paths(self) -> pd.DataFrame:
+        # Get Loads
+        control_load, psychosis_load = self.subjects_loads
+        # Control Info
+        control_paths = control_load['paths'].sample(frac=DATASET_SAMPLE)
+        # Psychosis Info
+        psychosis_paths = psychosis_load['paths'].sample(frac=DATASET_SAMPLE)
+        # Store Paths
+        self.subjects_paths = pd.concat([control_paths, psychosis_paths])
 
-    subject_paths = pd.concat([control_paths, psychosis_paths])
-    return subject_paths
+    def load_features_infos(self, features_infos : Dict[str, Dict[str, Any]]):
+        self.features_infos = features_infos
+        self.generate_variations()
 
-def study_feature_sets(features_info: Dict[str, Dict[str, Any]], subject_info: pd.DataFrame):
-    print()
-    print("🚀 Running datasets profiling ...")
-    for dataset_key in features_info:
+    def generate_variations(self):
+        variation_features = list(self.features_infos.keys())
+        variation_generator = module_variations.VariationGenerator(self.arguments.variations_key,
+            self.VARIATION_TASKS, self.VARIATION_GENDERS, variation_features, self.VARIATION_CLASSIFIERS, self.VARIATION_PREPROCESSING)
 
-        print("🚀 Running profiling of '{0}' dataset".format(dataset_key))
-        module_exporter.change_current_directory(['Data Profiling', dataset_key])
-        feature_info = features_info[dataset_key]
+        self.variations_to_test = variation_generator.generate_variations(self.features_infos)
+        if VARIATIONS_FILTER_BY_INDEX is not None:
+            self.variations_to_test = [ self.variations_to_test[index] for index in VARIATIONS_FILTER_BY_INDEX ]
 
-        feature_set : pd.DataFrame = feature_info['features'].drop(feature_info['drop_columns'] + GENERAL_DROP_COLUMNS, axis=1)
-        target_set : pd.Series = feature_info['features'].reset_index()['Subject'].apply(lambda subject: subject_info.loc[subject]['Target'])
-        profiler = module_profiling.DatasetProfiling(feature_set, target_set)
-        profiler.make_profiling()
+    def __init__(self) -> None:
+        # Specific Initialization
+        self.parse_arguments()
+        self.load_subjects()
+        self.load_subjects_info()
+        self.load_subjects_paths()
 
-def generate_variations(features_info: Dict[str, Dict[str, Any]]) -> List[module_variations.Variation]:
-    variation_features = list(features_info.keys())
-    variation_generator = module_variations.VariationGenerator(args.variations_key,
-        VARIATION_TASKS, VARIATION_GENDERS, variation_features, VARIATION_CLASSIFIERS, VARIATION_PREPROCESSING)
+    # =================================== ABSTRACT - FUNCTIONS ===================================
+    @abc.abstractmethod
+    def parse_arguments(self): raise("🚨 Method 'parse_arguments' not defined")
+    @abc.abstractmethod
+    def parse_arguments(self): raise("🚨 Method 'parse_arguments' not defined")
 
-    variations_to_test = variation_generator.generate_variations(features_info)
-    return variations_to_test
+# =================================== PUBLIC CLASSES ===================================
 
-def run_variation(variation: module_variations.Variation, subject_info: pd.DataFrame, variations_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+class SequentialModel(ModelAbstraction):
 
-    print("🚀 Running variation '{0}'".format(variation.generate_code()))
-    dataframe_X, dataframe_Y = variation.get_treated_dataset(GENERAL_DROP_COLUMNS, subject_info, PIVOT_ON_TASKS)
+    arguments : argparse.Namespace = None
+    features_infos : Dict[str, Dict[str, Any]] = {}
 
-    # Do profiling of current dataset
-    module_exporter.change_current_directory([variation.generate_code(), 'Data Profiling'])
-    print("🚀 Running profiling ...")
-    profiler = module_profiling.DatasetProfiling(dataframe_X, dataframe_Y)
-    profiler.make_profiling()
+    def parse_arguments(self):
 
-    # Running the classifier itself
-    module_exporter.change_current_directory([variation.generate_code(), 'Classifier'])
-    print("🚀 Running model ...")
-    data_splits = list(module_classifier.leave_one_out(dataframe_X))
-    classifier = variation.classifier(['Psychosis', 'Control'])
-    for (train_index, test_index) in tqdm(data_splits, desc="👉 Running classifier:", leave=False):
-        X_train, X_test = dataframe_X.iloc[train_index], dataframe_X.iloc[test_index]
-        y_train, y_test = dataframe_Y.iloc[train_index], dataframe_Y.iloc[test_index]
+        parser = argparse.ArgumentParser()
+        # Required Arguments
+        parser.add_argument("-info_controls",   help="path to info file from controls")
+        parser.add_argument("-info_psychosis",  help="path to info file from psychosis")
+        parser.add_argument("-audio_controls",  help="path to audio segments from controls")
+        parser.add_argument("-audio_psychosis", help="path to audio segments from psychosis")
+        parser.add_argument("-trans_controls",  help="path to transcription files from controls")
+        parser.add_argument("-trans_psychosis", help="path to transcription files from psychosis")
+        # Optional Arguments
+        parser.add_argument("-variations_key",  help="key for the generation of variations, by default all are created")
 
-        classifier.process_iteration(X_train, y_train, X_test, y_test)
-    # Export Classifier Variations Results
-    variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 
-        'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code }
-    classifier.export_variations_results(variation_summary, TARGET_METRIC)
-    # Export Best Classifier Variation Results
-    _, best_scorer = classifier.get_best_scorer(TARGET_METRIC)
-    best_scorer.export_results('results')
+        self.arguments = parser.parse_args()
 
-    print("✅ Completed variation")
+        requirements = [
+            { 'arg': self.arguments.info_controls,      'key': 'info_controls',     'help': 'path to info file from controls'},
+            { 'arg': self.arguments.info_psychosis,     'key': 'info_psychosis',    'help': 'path to info file from psychosis'},
+            { 'arg': self.arguments.audio_controls,     'key': 'audio_controls',    'help': 'path to audio segments from controls'},
+            { 'arg': self.arguments.audio_psychosis,    'key': 'audio_psychosis',   'help': 'path to audio segments from psychosis'},
+            { 'arg': self.arguments.trans_controls,     'key': 'trans_controls',    'help': 'path to transcriptions files from controls'},
+            { 'arg': self.arguments.trans_psychosis,    'key': 'trans_psychosis',   'help': 'path to transcriptions files from psychosis'},
+        ]
 
-    # Update General Scores
-    best_scorer_key, best_scorer = classifier.get_best_scorer(TARGET_METRIC)
-    variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 'Classifier Variation': best_scorer_key,
-        'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code }
-    for score in best_scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
-    variations_results.append(variation_summary)
+        if ( any(not req['arg'] for req in requirements) ):
+            print("🙏 Please provide a:")
+            for requirement in requirements:
+                print('\t\'{}\': {}'.format(requirement['key'], requirement['help']))
+            exit(1)
+
+    def __init__(self) -> None:
+        # Run Super Initialization
+        super().__init__()
+
+    def study_feature_sets(self):
+
+        print()
+        print("🚀 Running datasets profiling ...")
+
+        for feature_key in self.features_infos:
+
+            print("🚀 Running profiling of '{0}' dataset".format(feature_key))
+            module_exporter.change_current_directory(['Data Profiling', feature_key])
+            feature_info = self.features_infos[feature_key]
+
+            feature_set : pd.DataFrame = feature_info['features'].drop(feature_info['drop_columns'] + self.GENERAL_DROP_COLUMNS, axis=1)
+            target_set : pd.Series = feature_info['features'].reset_index()['Subject'].apply(lambda subject: self.subjects_infos.loc[subject]['Target'])
+            profiler = module_profiling.DatasetProfiling(feature_set, target_set)
+            profiler.make_profiling()
+
+    def run_variations(self):
+
+        print()
+        print("🚀 Running solution variations ...")
+
+        for variation in self.variations_to_test:
+
+            print("🚀 Running variation '{0}'".format(variation.generate_code()))
+            dataframe_X, dataframe_Y = variation.get_treated_dataset(self.GENERAL_DROP_COLUMNS, self.subjects_infos, PIVOT_ON_TASKS)
+
+            # Do profiling of current dataset
+            module_exporter.change_current_directory([variation.generate_code(), 'Data Profiling'])
+            print("🚀 Running profiling ...")
+            profiler = module_profiling.DatasetProfiling(dataframe_X, dataframe_Y)
+            profiler.make_profiling()
+
+            # Running the classifier itself
+            module_exporter.change_current_directory([variation.generate_code(), 'Classifier'])
+            print("🚀 Running model ...")
+            data_splits = list(module_classifier.leave_one_out(dataframe_X))
+            classifier = variation.classifier(['Psychosis', 'Control'])
+            for (train_index, test_index) in tqdm(data_splits, desc="👉 Running classifier:", leave=False):
+                X_train, X_test = dataframe_X.iloc[train_index], dataframe_X.iloc[test_index]
+                y_train, y_test = dataframe_Y.iloc[train_index], dataframe_Y.iloc[test_index]
+
+                classifier.process_iteration(X_train, y_train, X_test, y_test)
+            # Export Classifier Variations Results
+            variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 
+                'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code }
+            classifier.export_variations_results(variation_summary, self.TARGET_METRIC)
+            # Export Best Classifier Variation Results
+            _, best_scorer = classifier.get_best_scorer(self.TARGET_METRIC)
+            best_scorer.export_results('results')
+
+            print("✅ Completed variation")
+
+            # Update General Scores
+            best_scorer_key, best_scorer = classifier.get_best_scorer(self.TARGET_METRIC)
+            variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 'Classifier Variation': best_scorer_key,
+                'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code }
+            for score in best_scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
+            self.variations_results.append(variation_summary)
+
+    def export_final_results(self):
+        module_exporter.change_current_directory()
+        # Summary of All Variations
+        variations_results_df = pd.DataFrame(self.variations_results)
+        module_exporter.export_csv(variations_results_df, 'results', False)
