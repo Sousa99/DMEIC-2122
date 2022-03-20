@@ -54,6 +54,11 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
     GENERAL_DROP_COLUMNS = ['Subject', 'Task']
 
     # =================================== PROPERTIES ===================================
+
+    parser : argparse.ArgumentParser = argparse.ArgumentParser()
+    arguments_requirements : List[Dict[str, Any]] = []
+    arguments : argparse.Namespace
+    features_infos : Dict[str, Dict[str, Any]] = {}
     
     subjects_loads : Tuple[pd.DataFrame, pd.DataFrame]
     subjects_infos : pd.DataFrame
@@ -62,16 +67,43 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
 
     variations_results : List[Dict[str, Any]] = []
 
-    # =================================== ABSTRACT - PROPERTIES ===================================
-
-    @abc.abstractproperty
-    @abc.abstractmethod
-    def arguments(self) -> argparse.Namespace: raise("🚨 Property 'arguments' not defined")
-    @abc.abstractproperty
-    @abc.abstractmethod
-    def features_infos(self) -> Dict[str, Dict[str, Any]]: raise("🚨 Property 'features_infos' not defined")
-
     # =================================== FUNCTIONS ===================================
+
+    @abc.abstractmethod
+    def define_arguments(self):
+        # Required Arguments
+        self.parser.add_argument("-info_controls",   help="path to info file from controls")
+        self.parser.add_argument("-info_psychosis",  help="path to info file from psychosis")
+        self.parser.add_argument("-audio_controls",  help="path to audio segments from controls")
+        self.parser.add_argument("-audio_psychosis", help="path to audio segments from psychosis")
+        self.parser.add_argument("-trans_controls",  help="path to transcription files from controls")
+        self.parser.add_argument("-trans_psychosis", help="path to transcription files from psychosis")
+        # Optional Arguments
+        self.parser.add_argument("-variations_key",  help="key for the generation of variations, by default all are created")
+
+        self.arguments_requirements.extend([
+            { 'key': 'info_controls',     'help': 'path to info file from controls'},
+            { 'key': 'info_psychosis',    'help': 'path to info file from psychosis'},
+            { 'key': 'audio_controls',    'help': 'path to audio segments from controls'},
+            { 'key': 'audio_psychosis',   'help': 'path to audio segments from psychosis'},
+            { 'key': 'trans_controls',    'help': 'path to transcriptions files from controls'},
+            { 'key': 'trans_psychosis',   'help': 'path to transcriptions files from psychosis'},
+        ])
+
+    def parse_arguments(self):
+
+        self.arguments = self.parser.parse_args()
+
+        # Convert requirements
+        arguments_dict = vars(self.arguments)
+        for requirement in self.arguments_requirements:
+            requirement['arg'] = arguments_dict[requirement['key']]
+
+        if ( any(not req['arg'] for req in self.arguments_requirements) ):
+            print("🙏 Please provide a:")
+            for requirement in self.arguments_requirements:
+                print('\t\'{}\': {}'.format(requirement['key'], requirement['help']))
+            exit(1)
 
     def load_subjects(self):
         # Load Datasets and Paths
@@ -125,57 +157,22 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
 
     def __init__(self) -> None:
         # Specific Initialization
+        self.define_arguments()
         self.parse_arguments()
         self.load_subjects()
         self.load_subjects_info()
         self.load_subjects_paths()
 
-    # =================================== ABSTRACT - FUNCTIONS ===================================
-    @abc.abstractmethod
-    def parse_arguments(self): raise("🚨 Method 'parse_arguments' not defined")
-    @abc.abstractmethod
-    def parse_arguments(self): raise("🚨 Method 'parse_arguments' not defined")
-
 # =================================== PUBLIC CLASSES ===================================
 
 class SequentialModel(ModelAbstraction):
 
-    arguments : argparse.Namespace = None
-    features_infos : Dict[str, Dict[str, Any]] = {}
-
-    def parse_arguments(self):
-
-        parser = argparse.ArgumentParser()
-        # Required Arguments
-        parser.add_argument("-info_controls",   help="path to info file from controls")
-        parser.add_argument("-info_psychosis",  help="path to info file from psychosis")
-        parser.add_argument("-audio_controls",  help="path to audio segments from controls")
-        parser.add_argument("-audio_psychosis", help="path to audio segments from psychosis")
-        parser.add_argument("-trans_controls",  help="path to transcription files from controls")
-        parser.add_argument("-trans_psychosis", help="path to transcription files from psychosis")
-        # Optional Arguments
-        parser.add_argument("-variations_key",  help="key for the generation of variations, by default all are created")
-
-        self.arguments = parser.parse_args()
-
-        requirements = [
-            { 'arg': self.arguments.info_controls,      'key': 'info_controls',     'help': 'path to info file from controls'},
-            { 'arg': self.arguments.info_psychosis,     'key': 'info_psychosis',    'help': 'path to info file from psychosis'},
-            { 'arg': self.arguments.audio_controls,     'key': 'audio_controls',    'help': 'path to audio segments from controls'},
-            { 'arg': self.arguments.audio_psychosis,    'key': 'audio_psychosis',   'help': 'path to audio segments from psychosis'},
-            { 'arg': self.arguments.trans_controls,     'key': 'trans_controls',    'help': 'path to transcriptions files from controls'},
-            { 'arg': self.arguments.trans_psychosis,    'key': 'trans_psychosis',   'help': 'path to transcriptions files from psychosis'},
-        ]
-
-        if ( any(not req['arg'] for req in requirements) ):
-            print("🙏 Please provide a:")
-            for requirement in requirements:
-                print('\t\'{}\': {}'.format(requirement['key'], requirement['help']))
-            exit(1)
-
     def __init__(self) -> None:
         # Run Super Initialization
         super().__init__()
+
+    def define_arguments(self):
+        return super().define_arguments()
 
     def study_feature_sets(self):
 
