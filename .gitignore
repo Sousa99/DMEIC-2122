@@ -10,5 +10,8 @@
 # PyCache should not be sent
 __pycache__
 
+# Temp Files should not be sent
+tmp
+
 # Virtual environments should not be sent
 venv

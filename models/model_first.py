@@ -60,4 +60,6 @@ elif parallelization is not None:
         model.load_feature_sets()
         model.run_variations()
     elif parallelization == module_models.PARALLEL_RUN_FINAL:
+        model.load_feature_sets()
+        model.load_variations_results()
         model.export_final_results()

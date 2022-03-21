@@ -82,20 +82,20 @@ class Classifier(metaclass=abc.ABCMeta):
 
     @abc.abstractproperty
     @abc.abstractmethod
-    def scorers(self) -> Dict[str, module_scorer.Scorer]: raise("🚨 Property 'scorers' not defined")
+    def scorers(self) -> Dict[str, module_scorer.Scorer]: exit("🚨 Property 'scorers' not defined")
     @abc.abstractproperty
     @abc.abstractmethod
-    def variations(self) -> Dict[str, Dict[str, Any]]: raise("🚨 Property 'variations' not defined")
+    def variations(self) -> Dict[str, Dict[str, Any]]: exit("🚨 Property 'variations' not defined")
 
     @abc.abstractmethod
     def compute_variations(self) -> Dict[str, Dict[str, Any]]:
-        raise("🚨 Method 'compute_variations' not defined")
+        exit("🚨 Method 'compute_variations' not defined")
     @abc.abstractmethod
     def make_prediction(self, params: Dict[str, Dict[str, Any]], train_X: pd.DataFrame, train_Y: pd.Series, test_X: pd.DataFrame) -> Tuple[pd.Series]:
-        raise("🚨 Method 'make_prediction' not defined")
+        exit("🚨 Method 'make_prediction' not defined")
     @abc.abstractmethod
     def export_variations_results(self, variation_summary: pd.DataFrame, metric: str) -> None:
-        raise("🚨 Method 'export_variations_results' not defined")
+        exit("🚨 Method 'export_variations_results' not defined")
 
     def process_iteration(self, train_X: pd.DataFrame, train_Y: pd.Series, test_X: pd.DataFrame, test_Y: pd.Series):
         for scorer_key in self.scorers:
@@ -162,7 +162,7 @@ class NaiveBayes(Classifier):
         if algorithm == 'Gaussian': nb_classifier = GaussianNB(**params_copy)
         elif algorithm == 'Multinomial': nb_classifier = MultinomialNB(**params_copy)
         elif algorithm == 'Bernoulli': nb_classifier = BernoulliNB(**params_copy)
-        else: raise(f"🚨 Naive Bayes algorithm '{algorithm}' not recognized")
+        else: exit(f"🚨 Naive Bayes algorithm '{algorithm}' not recognized")
         nb_classifier.fit(train_X, train_Y)
 
         prd_train_Y = nb_classifier.predict(train_X)

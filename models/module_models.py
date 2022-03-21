@@ -31,8 +31,10 @@ VARIATIONS_FILTER_BY_INDEX  :   Optional[List[int]] = None
 
 # =================================== CONSTANTS ===================================
 
-PARALLEL_TMP_DIRECTORY          = '/tmp/'
-PARALLEL_FEATURE_SETS_FILE      = 'tmp_feature_set.pkl'
+PICKLE_EXTENSION = '.pkl'
+
+PARALLEL_TMP_DIRECTORY          = './tmp/'
+PARALLEL_FEATURE_SETS_FILE      = 'tmp_feature_set' + PICKLE_EXTENSION
 PARALLEL_NUMBER_VARIATIONS_FILE = 'tmp_number_variations.txt'
 
 PARALLEL_FEATURE_EXTRACTION = 'FEATURE_EXTRACTION'
@@ -74,7 +76,7 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
     subjects_infos : pd.DataFrame
     subjects_paths : pd.DataFrame
     variations_to_test : List[module_variations.Variation] = []
-
+    
     variations_results : List[Dict[str, Any]] = []
 
     # =================================== FUNCTIONS ===================================
@@ -141,6 +143,45 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
         self.load_subjects_info()
         self.load_subjects_paths()
 
+    def run_variation(self, variation: module_variations.Variation) -> Tuple[str, module_scorer.Scorer]:
+
+        print("🚀 Running variation '{0}'".format(variation.generate_code()))
+        dataframe_X, dataframe_Y = variation.get_treated_dataset(self.GENERAL_DROP_COLUMNS, self.subjects_infos, PIVOT_ON_TASKS)
+
+        # Do profiling of current dataset
+        module_exporter.change_current_directory([variation.generate_code(), 'Data Profiling'])
+        print("🚀 Running profiling ...")
+        profiler = module_profiling.DatasetProfiling(dataframe_X, dataframe_Y)
+        profiler.make_profiling()
+
+        # Running the classifier itself
+        module_exporter.change_current_directory([variation.generate_code(), 'Classifier'])
+        print("🚀 Running model ...")
+        data_splits = list(module_classifier.leave_one_out(dataframe_X))
+        classifier = variation.classifier(['Psychosis', 'Control'])
+        for (train_index, test_index) in tqdm(data_splits, desc="👉 Running classifier:", leave=False):
+            X_train, X_test = dataframe_X.iloc[train_index], dataframe_X.iloc[test_index]
+            y_train, y_test = dataframe_Y.iloc[train_index], dataframe_Y.iloc[test_index]
+
+            classifier.process_iteration(X_train, y_train, X_test, y_test)
+        # Export Classifier Variations Results
+        variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 
+            'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code }
+        classifier.export_variations_results(variation_summary, self.TARGET_METRIC)
+        # Export Best Classifier Variation Results
+        _, best_scorer = classifier.get_best_scorer(self.TARGET_METRIC)
+        best_scorer.export_results('results')
+
+        print("✅ Completed variation")
+        return classifier.get_best_scorer(self.TARGET_METRIC)
+
+    def export_final_results(self):
+        module_exporter.change_current_directory()
+        # Summary of All Variations
+        variations_results_df = pd.DataFrame(self.variations_results)
+        module_exporter.export_csv(variations_results_df, 'results', False)
+
+
 # =================================== PUBLIC CLASSES ===================================
 
 class SequentialModel(ModelAbstraction):
@@ -172,47 +213,12 @@ class SequentialModel(ModelAbstraction):
 
         for variation in self.variations_to_test:
 
-            print("🚀 Running variation '{0}'".format(variation.generate_code()))
-            dataframe_X, dataframe_Y = variation.get_treated_dataset(self.GENERAL_DROP_COLUMNS, self.subjects_infos, PIVOT_ON_TASKS)
-
-            # Do profiling of current dataset
-            module_exporter.change_current_directory([variation.generate_code(), 'Data Profiling'])
-            print("🚀 Running profiling ...")
-            profiler = module_profiling.DatasetProfiling(dataframe_X, dataframe_Y)
-            profiler.make_profiling()
-
-            # Running the classifier itself
-            module_exporter.change_current_directory([variation.generate_code(), 'Classifier'])
-            print("🚀 Running model ...")
-            data_splits = list(module_classifier.leave_one_out(dataframe_X))
-            classifier = variation.classifier(['Psychosis', 'Control'])
-            for (train_index, test_index) in tqdm(data_splits, desc="👉 Running classifier:", leave=False):
-                X_train, X_test = dataframe_X.iloc[train_index], dataframe_X.iloc[test_index]
-                y_train, y_test = dataframe_Y.iloc[train_index], dataframe_Y.iloc[test_index]
-
-                classifier.process_iteration(X_train, y_train, X_test, y_test)
-            # Export Classifier Variations Results
-            variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 
-                'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code }
-            classifier.export_variations_results(variation_summary, self.TARGET_METRIC)
-            # Export Best Classifier Variation Results
-            _, best_scorer = classifier.get_best_scorer(self.TARGET_METRIC)
-            best_scorer.export_results('results')
-
-            print("✅ Completed variation")
-
+            best_scorer_key, best_scorer = self.run_variation(variation)
             # Update General Scores
-            best_scorer_key, best_scorer = classifier.get_best_scorer(self.TARGET_METRIC)
             variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 'Classifier Variation': best_scorer_key,
                 'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code }
             for score in best_scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
             self.variations_results.append(variation_summary)
-
-    def export_final_results(self):
-        module_exporter.change_current_directory()
-        # Summary of All Variations
-        variations_results_df = pd.DataFrame(self.variations_results)
-        module_exporter.export_csv(variations_results_df, 'results', False)
 
 class ParallelModel(ModelAbstraction):
 
@@ -268,51 +274,39 @@ class ParallelModel(ModelAbstraction):
         file.write(str(len(self.variations_to_test)))
         file.close()
     
-    def run_variations(self):
+    def run_variation_by_index(self, index: int):
 
-        print()
-        print("🚀 Running solution variations ...")
+        variation = self.variations_to_test[index]
+        best_scorer_key, best_scorer = self.run_variation(variation)
 
+        # Update General Scores
+        variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 'Classifier Variation': best_scorer_key,
+            'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code }
+        for score in best_scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
+
+        # Save Temporarily Variation Summary
+        directory_path = PARALLEL_TMP_DIRECTORY
+        if self.arguments.timestamp is not None: directory_path = os.path.join(directory_path, self.arguments.timestamp)
+        if not os.path.exists(directory_path): os.makedirs(directory_path)
+        full_path = os.path.join(directory_path, variation.generate_code() + PICKLE_EXTENSION)
+
+        file = open(full_path, 'wb')
+        pickle.dump(variation_summary, file)
+        file.close()
+
+    def load_variations_results(self):
+
+        # Iterate Variation Summaries which should have been created
+        directory_path = PARALLEL_TMP_DIRECTORY
+        if self.arguments.timestamp is not None: directory_path = os.path.join(directory_path, self.arguments.timestamp)
         for variation in self.variations_to_test:
+            full_path = os.path.join(directory_path, variation.generate_code() + PICKLE_EXTENSION)
 
-            print("🚀 Running variation '{0}'".format(variation.generate_code()))
-            dataframe_X, dataframe_Y = variation.get_treated_dataset(self.GENERAL_DROP_COLUMNS, self.subjects_infos, PIVOT_ON_TASKS)
+            if not os.path.exists(full_path):
+                exit(f"🚨 File for variation '{variation.generate_code()}' not found in '{directory_path}'")
 
-            # Do profiling of current dataset
-            module_exporter.change_current_directory([variation.generate_code(), 'Data Profiling'])
-            print("🚀 Running profiling ...")
-            profiler = module_profiling.DatasetProfiling(dataframe_X, dataframe_Y)
-            profiler.make_profiling()
-
-            # Running the classifier itself
-            module_exporter.change_current_directory([variation.generate_code(), 'Classifier'])
-            print("🚀 Running model ...")
-            data_splits = list(module_classifier.leave_one_out(dataframe_X))
-            classifier = variation.classifier(['Psychosis', 'Control'])
-            for (train_index, test_index) in tqdm(data_splits, desc="👉 Running classifier:", leave=False):
-                X_train, X_test = dataframe_X.iloc[train_index], dataframe_X.iloc[test_index]
-                y_train, y_test = dataframe_Y.iloc[train_index], dataframe_Y.iloc[test_index]
-
-                classifier.process_iteration(X_train, y_train, X_test, y_test)
-            # Export Classifier Variations Results
-            variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 
-                'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code }
-            classifier.export_variations_results(variation_summary, self.TARGET_METRIC)
-            # Export Best Classifier Variation Results
-            _, best_scorer = classifier.get_best_scorer(self.TARGET_METRIC)
-            best_scorer.export_results('results')
-
-            print("✅ Completed variation")
-
-            # Update General Scores
-            best_scorer_key, best_scorer = classifier.get_best_scorer(self.TARGET_METRIC)
-            variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 'Classifier Variation': best_scorer_key,
-                'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code }
-            for score in best_scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
+            file = open(full_path, 'rb')
+            variation_summary = pickle.load(file)
+            file.close()
+            # Save back variation summary
             self.variations_results.append(variation_summary)
-
-    def export_final_results(self):
-        module_exporter.change_current_directory()
-        # Summary of All Variations
-        variations_results_df = pd.DataFrame(self.variations_results)
-        module_exporter.export_csv(variations_results_df, 'results', False)

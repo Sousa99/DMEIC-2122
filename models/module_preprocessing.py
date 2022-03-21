@@ -8,9 +8,9 @@ from typing import List
 
 class PreprocessingStage(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def fitting(self, dataframe: pd.DataFrame) -> None: raise("🚨 Method 'fitting' not defined")
+    def fitting(self, dataframe: pd.DataFrame) -> None: exit("🚨 Method 'fitting' not defined")
     @abc.abstractmethod
-    def transform(self, dataframe: pd.DataFrame) -> pd.DataFrame: raise("🚨 Method 'transform' not defined")
+    def transform(self, dataframe: pd.DataFrame) -> pd.DataFrame: exit("🚨 Method 'transform' not defined")
 
 class PreprocessingDropRowsNan(PreprocessingStage):
 
@@ -23,7 +23,7 @@ class PreprocessingDropRowsNan(PreprocessingStage):
 
 def convert_key(key: str) -> PreprocessingStage:
     if key == 'DROP_ROWS_NAN': return PreprocessingDropRowsNan()
-    else: raise("🚨 Preprocessing key '{0}' not recognized".format(key))
+    else: exit("🚨 Preprocessing key '{0}' not recognized".format(key))
 
 # =================================== PUBLIC FUNCTIONS ===================================
 
