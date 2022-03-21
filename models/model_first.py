@@ -10,6 +10,7 @@ import module_speech_features
 
 arguments = module_parser.get_arguments()
 parallelization = arguments.parallelization_key
+parallelization_index = arguments.parallelization_index
 
 if parallelization is None: model = module_models.SequentialModel(arguments)
 else: model = module_models.ParallelModel(arguments)
@@ -58,7 +59,7 @@ elif parallelization is not None:
         model.save_number_of_variations()
     elif parallelization == module_models.PARALLEL_RUN_MODELS:
         model.load_feature_sets()
-        model.run_variations()
+        model.run_variation_by_index(int(parallelization_index))
     elif parallelization == module_models.PARALLEL_RUN_FINAL:
         model.load_feature_sets()
         model.load_variations_results()

@@ -17,12 +17,18 @@ python3 model_first.py                                                          
     -parallelization_key="FEATURE_EXTRACTION"                                                   \
     -timestamp="${NOW}"
 
-python3 model_first.py                                                                          \
-    -info_controls=${CONTROL_INFO}              -info_psychosis=${PSYCHOSIS_INFO}               \
-    -audio_controls=${CONTROL_AUDIOS}           -audio_psychosis=${PSYCHOSIS_AUDIOS}            \
-    -trans_controls=${CONTROL_TRANSCRIPTIONS}   -trans_psychosis=${PSYCHOSIS_TRANSCRIPTIONS}    \
-    -parallelization_key="RUN_MODELS"                                                           \
-    -timestamp="${NOW}"
+echo
+echo "🚀 Running solution variations ..."
+typeset -i number_of_variations=$(cat "./tmp/${NOW}/tmp_number_variations.txt")
+for parallel_index in $(seq 0 $(expr $number_of_variations - 1)); do
+    python3 model_first.py                                                                          \
+        -info_controls=${CONTROL_INFO}              -info_psychosis=${PSYCHOSIS_INFO}               \
+        -audio_controls=${CONTROL_AUDIOS}           -audio_psychosis=${PSYCHOSIS_AUDIOS}            \
+        -trans_controls=${CONTROL_TRANSCRIPTIONS}   -trans_psychosis=${PSYCHOSIS_TRANSCRIPTIONS}    \
+        -parallelization_key="RUN_MODELS"           -parallelization_index=${parallel_index}        \
+        -timestamp="${NOW}"
+
+done
 
 python3 model_first.py                                                                          \
     -info_controls=${CONTROL_INFO}              -info_psychosis=${PSYCHOSIS_INFO}               \
