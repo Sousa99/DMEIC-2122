@@ -189,7 +189,6 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
     def execute(self, feature_infos: Optional[Dict[str, Dict[str, Any]]] = None):
         exit("🚨 Method 'execute' not defined")
 
-
 # =================================== PUBLIC CLASSES ===================================
 
 class SequentialModel(ModelAbstraction):
