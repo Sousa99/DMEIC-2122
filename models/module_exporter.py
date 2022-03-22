@@ -6,6 +6,7 @@ import matplotlib
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import networkx as nx
 import matplotlib.pyplot as plt
 
 from datetime import datetime
@@ -223,6 +224,18 @@ def multiple_lines_chart(filename: str, dataframe: pd.DataFrame, x_key: str, y_k
 
     if margins: plt.subplots_adjust(bottom=margins['bottom'], left=margins['left'],
         top=margins['top'], right=margins['right'])
+
+    plt.savefig(complete_path)
+    plt.close('all')
+
+def export_word_graph(filename: str, graph: nx.DiGraph,
+    figsize: Tuple[int] = (10, 4), with_labels: Optional[bool] = None, node_color : Optional[str] = None) -> None:
+
+    complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
+
+    plt.figure(figsize=figsize)
+
+    nx.draw(graph, with_labels=with_labels, node_color=node_color)
 
     plt.savefig(complete_path)
     plt.close('all')

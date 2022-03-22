@@ -48,15 +48,15 @@ class TranscriptionInfoItem():
 
     def __init__(self, info_line: str):
         line_split = info_line.split()
-        info_words = " ".join(line_split[3: ])
-        info_start = float(line_split[1])
-        info_end = float(line_split[2])
+        info_words = " ".join(line_split[4: ])
+        info_start = float(line_split[2])
+        info_end = float(line_split[3])
 
         self.start = info_start
         self.end = info_end
         self.words = info_words
 
-    def get_words(self) -> List[str]: return self.words
+    def get_words(self) -> str: return self.words
 
 # =================================== PUBLIC CLASS DEFINITIONS ===================================
 

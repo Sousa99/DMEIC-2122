@@ -67,7 +67,7 @@ def speech_analysis(paths_df: pd.DataFrame, preference_audio_tracks: List[str], 
     # Process Transcriptions
     speech_df['Trans Info'] = speech_df['Trans File Path'].apply(lambda file_path: module_load.TranscriptionInfo(file_path))
 
-    # Speaking Rate
+    # Features
     speech_df['Number Words'] = speech_df['Trans Info'].progress_apply(compute_number_of_words).astype(int)
     speech_df['Number Syllables'] = speech_df['Trans Info'].progress_apply(compute_number_of_syllables).astype(int)
     speech_df['Audio Duration (s)'] = speech_df['Audio File Path'].progress_apply(compute_duration_track).astype(int)
