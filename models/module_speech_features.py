@@ -4,7 +4,6 @@ import pyphen
 import pandas as pd
 
 from typing import List
-from numpy import number
 from pydub import AudioSegment
 
 # Local Modules
