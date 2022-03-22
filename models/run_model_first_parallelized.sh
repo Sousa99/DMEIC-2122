@@ -35,13 +35,13 @@ for parallel_index in $(seq 0 $(expr $number_of_variations - 1)); do
     script_file="${TEMP_CONDOR_SCRIPTS_DIRECTORY}${process_id}.sh"
 
     echo "#!/bin/bash" > "${script_file}"
-    echo "source ./venv/bin/activate"                                                                         >> "${script_file}"
-    echo "python3 model_first.py		                                                          \\" >> "${script_file}"
-    echo "    -info_controls=${CONTROL_INFO}              -info_psychosis=${PSYCHOSIS_INFO}               \\" >> "${script_file}"
-    echo "    -audio_controls=${CONTROL_AUDIOS}           -audio_psychosis=${PSYCHOSIS_AUDIOS}            \\" >> "${script_file}"
-    echo "    -trans_controls=${CONTROL_TRANSCRIPTIONS}   -trans_psychosis=${PSYCHOSIS_TRANSCRIPTIONS}    \\" >> "${script_file}"
-    echo "    -parallelization_key=\"RUN_MODELS\"         -parallelization_index=${parallel_index}        \\" >> "${script_file}"
-    echo "    -timestamp=\"${NOW}\""                                                                          >> "${script_file}"
+    echo "source ./venv/bin/activate"                                                                           >> "${script_file}"
+    echo "python3 model_first.py		                                                                    \\" >> "${script_file}"
+    echo "      -info_controls=${CONTROL_INFO}              -info_psychosis=${PSYCHOSIS_INFO}               \\" >> "${script_file}"
+    echo "      -audio_controls=${CONTROL_AUDIOS}           -audio_psychosis=${PSYCHOSIS_AUDIOS}            \\" >> "${script_file}"
+    echo "      -trans_controls=${CONTROL_TRANSCRIPTIONS}   -trans_psychosis=${PSYCHOSIS_TRANSCRIPTIONS}    \\" >> "${script_file}"
+    echo "      -parallelization_key=\"RUN_MODELS\"         -parallelization_index=${parallel_index}        \\" >> "${script_file}"
+    echo "      -timestamp=\"${NOW}\""                                                                          >> "${script_file}"
 
     chmod a+x "${script_file}"
 

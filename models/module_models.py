@@ -185,6 +185,10 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
         variations_results_df = pd.DataFrame(self.variations_results)
         module_exporter.export_csv(variations_results_df, 'results', False)
 
+    @abc.abstractmethod
+    def execute(self, feature_infos: Optional[Dict[str, Dict[str, Any]]] = None):
+        exit("🚨 Method 'execute' not defined")
+
 
 # =================================== PUBLIC CLASSES ===================================
 
@@ -223,6 +227,16 @@ class SequentialModel(ModelAbstraction):
                 'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code }
             for score in best_scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
             self.variations_results.append(variation_summary)
+
+    def execute(self, feature_sets: Optional[Dict[str, Dict[str, Any]]] = None):
+        
+        if feature_sets is None:
+            exit("🚨 Execute on 'SequentialModel' requires 'feature_sets'")
+
+        self.load_features_infos(feature_sets)
+        self.study_feature_sets()
+        self.run_variations()
+        self.export_final_results()
 
 class ParallelModel(ModelAbstraction):
 
@@ -314,3 +328,28 @@ class ParallelModel(ModelAbstraction):
             file.close()
             # Save back variation summary
             self.variations_results.append(variation_summary)
+
+    def execute(self, feature_sets: Optional[Dict[str, Dict[str, Any]]] = None):
+
+        # Get pertinent arguments
+        parallelization = self.arguments.parallelization_key
+        parallelization_index = self.arguments.parallelization_index
+
+        if parallelization == PARALLEL_FEATURE_EXTRACTION:
+
+            if feature_sets is None:
+                exit("🚨 Execute on 'SequentialModel' requires 'feature_sets'")
+
+            self.load_features_infos(feature_sets)
+            self.study_feature_sets()
+            self.save_feature_sets()
+            self.save_number_of_variations()
+
+        elif parallelization == PARALLEL_RUN_MODELS:
+            self.load_feature_sets()
+            self.run_variation_by_index(int(parallelization_index))
+
+        elif parallelization == PARALLEL_RUN_FINAL:
+            self.load_feature_sets()
+            self.load_variations_results()
+            self.export_final_results()

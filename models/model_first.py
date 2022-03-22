@@ -10,13 +10,13 @@ import module_speech_features
 
 arguments = module_parser.get_arguments()
 parallelization = arguments.parallelization_key
-parallelization_index = arguments.parallelization_index
 
 if parallelization is None: model = module_models.SequentialModel(arguments)
 else: model = module_models.ParallelModel(arguments)
 
 # =================================== COMPUTE FEATURES ===================================
 
+features_infos = None
 if parallelization is None or parallelization == module_models.PARALLEL_FEATURE_EXTRACTION:
     # Get Features Dataframes
     sound_features_df = module_sound_features.sound_analysis(model.subjects_paths, model.PREFERENCE_AUDIO_TRACKS)
@@ -43,24 +43,4 @@ if parallelization is None or parallelization == module_models.PARALLEL_FEATURE_
 
 # ============================================ MAIN EXECUTION ============================================
 
-if parallelization is None:
-    # Sequential Model
-    model.load_features_infos(features_infos)
-    model.study_feature_sets()
-    model.run_variations()
-    model.export_final_results()
-
-elif parallelization is not None:
-    # Parallel Model
-    if parallelization == module_models.PARALLEL_FEATURE_EXTRACTION:
-        model.load_features_infos(features_infos)
-        model.study_feature_sets()
-        model.save_feature_sets()
-        model.save_number_of_variations()
-    elif parallelization == module_models.PARALLEL_RUN_MODELS:
-        model.load_feature_sets()
-        model.run_variation_by_index(int(parallelization_index))
-    elif parallelization == module_models.PARALLEL_RUN_FINAL:
-        model.load_feature_sets()
-        model.load_variations_results()
-        model.export_final_results()
+model.execute(features_infos)
