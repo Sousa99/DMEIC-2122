@@ -3,8 +3,11 @@
 # Folder to specify
 CONTROL_TRANSCRIPTIONS_PATH="../recordings_transcribed_results/controls/"
 PSYCHOSIS_TRANSCRIPTIONS_PATH="../recordings_transcribed_results/psychosis/"
+BIPOLARS_TRANSCRIPTIONS_PATH="../recordings_transcribed_results/bipolars/"
+
 CONTROL_TRANSCRIPTIONS_FIX_PATH="../fixed_transcriptions/controls/"
 PSYCHOSIS_TRANSCRIPTIONS_FIX_PATH="../fixed_transcriptions/psychosis/"
+BIPOLARS_TRANSCRIPTIONS_FIX_PATH="../fixed_transcriptions/bipolars/"
 
 # Function to print percentage
 prog() {
@@ -67,3 +70,30 @@ done
 current_prog=$(( $count * 100 / $count_psychosis ))
 prog $current_prog
 echo "( ${count} out of ${count_psychosis} )"
+
+if [ ! -d "${BIPOLARS_TRANSCRIPTIONS_FIX_PATH}" ]; then mkdir -p "${BIPOLARS_TRANSCRIPTIONS_FIX_PATH}"; fi
+
+echo "🔎 Checking Bipolars ..."
+BIPOLARS=( $(ls ${BIPOLARS_TRANSCRIPTIONS_PATH}))
+count_bipolars=0
+count=0
+for subject_folder in "${BIPOLARS[@]}"; do
+	subject_path="${BIPOLARS_TRANSCRIPTIONS_PATH}${subject_folder}/"
+
+    for task_folder in `ls ${subject_path}`; do
+        task_path="${subject_path}${task_folder}/"
+        check_path_audio="${BIPOLARS_AUDIOS}${subject_folder}/${task_folder}/"
+        check_path_trans="${BIPOLARS_TRANSCRIPTIONS_FIX_PATH}${subject_folder}/${task_folder}/"
+
+        (( count_bipolars++ ))
+        if [ -d "${check_path_trans}" ]; then
+            (( count++ ))
+        fi
+
+
+    done
+
+done
+current_prog=$(( $count * 100 / $count_bipolars ))
+prog $current_prog
+echo "( ${count} out of ${count_bipolars} )"

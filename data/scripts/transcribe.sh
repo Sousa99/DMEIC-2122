@@ -10,6 +10,10 @@ RECORDINGS_PSYCHOSIS_PATH=../recordings/psychosis/
 TRANSCRIBE_PSYCHOSIS_PATH=../recordings_transcribed/psychosis/
 TRANSCRIBE_RESULTS_PSYCHOSIS_PATH=../recordings_transcribed_results/psychosis/
 
+RECORDINGS_BIPOLARS_PATH=../recordings/bipolars/
+TRANSCRIBE_BIPOLARS_PATH=../recordings_transcribed/bipolars/
+TRANSCRIBE_RESULTS_BIPOLARS_PATH=../recordings_transcribed_results/bipolars/
+
 prog() {
     local w=80 p=$1;  shift
     # create a string of spaces, then change them to dots
@@ -71,6 +75,34 @@ for subject_folder in "${PSYCHOSIS[@]}"; do
 
         (( count++ ))
         current_prog=$(( $count * 100 / $NUMBER_PSYCHOSIS ))
+        prog $current_prog
+done
+echo
+
+if [ ! -d "$TRANSCRIBE_RESULTS_BIPOLARS_PATH" ]; then mkdir $TRANSCRIBE_BIPOLARS_PATH; fi
+
+echo "🚀 Processing Bipolars ..."
+BIPOLARS=( $(ls ${RECORDINGS_BIPOLARS_PATH}))
+NUMBER_BIPOLARS=${#BIPOLARS[@]}
+count=0
+prog 0
+for subject_folder in "${BIPOLARS[@]}"; do
+
+        if [ ! -d "${TRANSCRIBE_RESULTS_BIPOLARS_PATH}${subject_folder}" ]
+        then
+                for task_folder in `ls ${RECORDINGS_BIPOLARS_PATH}${subject_folder}`; do
+
+                        for file in `ls ${RECORDINGS_BIPOLARS_PATH}${subject_folder}/${task_folder}`; do
+
+                                INPUT_FILE=${RECORDINGS_BIPOLARS_PATH}${subject_folder}/${task_folder}/$file
+                                $TRIBUS_LOC --dir $TRANSCRIBE_BIPOLARS_PATH $INPUT_FILE > /dev/null
+
+                        done
+                done
+        fi
+
+        (( count++ ))
+        current_prog=$(( $count * 100 / $NUMBER_BIPOLARS ))
         prog $current_prog
 done
 echo

@@ -3,10 +3,15 @@
 # Folder to specify
 CONTROL_TRANSCRIPTIONS_PATH="../recordings_transcribed_results/controls/"
 PSYCHOSIS_TRANSCRIPTIONS_PATH="../recordings_transcribed_results/psychosis/"
+BIPOLARS_TRANSCRIPTIONS_PATH="../recordings_transcribed_results/bipolars/"
+
 CONTROL_TRANSCRIPTIONS_FIX_PATH="../fixed_transcriptions/controls/"
 PSYCHOSIS_TRANSCRIPTIONS_FIX_PATH="../fixed_transcriptions/psychosis/"
+BIPOLARS_TRANSCRIPTIONS_FIX_PATH="../fixed_transcriptions/bipolars/"
+
 CONTROL_AUDIOS="../recordings_converted/controls/"
 PSYCHOSIS_AUDIOS="../recordings_converted/psychosis/"
+BIPOLARS_AUDIOS="../recordings_converted/bipolars/"
 
 if [ ! -d "${CONTROL_TRANSCRIPTIONS_FIX_PATH}" ]; then mkdir -p "${CONTROL_TRANSCRIPTIONS_FIX_PATH}"; fi
 
@@ -52,7 +57,33 @@ for subject_folder in `ls ${PSYCHOSIS_TRANSCRIPTIONS_PATH}`; do
 
             python3 ./fix_transcription.py -audio "${check_path_audio}" -trans "${check_path_trans}"
 
-            echo "🖨️  Fixed task '${task_folder}' of 'control' subject '${subject_folder}' ..."
+            echo "🖨️  Fixed task '${task_folder}' of 'psychosis' subject '${subject_folder}' ..."
+            exit 0
+        fi
+
+    done
+
+done
+
+if [ ! -d "${BIPOLARS_TRANSCRIPTIONS_FIX_PATH}" ]; then mkdir -p "${BIPOLARS_TRANSCRIPTIONS_FIX_PATH}"; fi
+
+echo "Checking Bipolars ..."
+for subject_folder in `ls ${BIPOLARS_TRANSCRIPTIONS_PATH}`; do
+	subject_path="${BIPOLARS_TRANSCRIPTIONS_PATH}${subject_folder}/"
+
+    for task_folder in `ls ${subject_path}`; do
+        task_path="${subject_path}${task_folder}/"
+        check_path_audio="${BIPOLARS_AUDIOS}${subject_folder}/${task_folder}/"
+        check_path_trans="${BIPOLARS_TRANSCRIPTIONS_FIX_PATH}${subject_folder}/${task_folder}/"
+
+        if [ ! -d "${check_path_trans}" ]; then
+            mkdir -p "${check_path_trans}"
+            cp -a "${task_path}/"*.ctm "${check_path_trans}"
+            echo "🖨️  Copied task '${task_folder}' of 'bipolar' subject '${subject_folder}' ..."
+
+            python3 ./fix_transcription.py -audio "${check_path_audio}" -trans "${check_path_trans}"
+
+            echo "🖨️  Fixed task '${task_folder}' of 'bipolar' subject '${subject_folder}' ..."
             exit 0
         fi
 
