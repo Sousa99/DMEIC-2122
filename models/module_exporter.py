@@ -45,6 +45,16 @@ def optimal_grid(number: int) -> Tuple[int, int]:
     columns = math.ceil(number / rows)
     return (rows, columns)
 
+def convert_multi_graph_to_weighted(multi_graph: nx.MultiDiGraph) -> nx.DiGraph:
+
+    new_graph = nx.DiGraph()
+    for from_node, to_node, edge_data in multi_graph.edges(data=True):
+        weight = edge_data['weight'] if 'weight' in edge_data else 1.0
+        if new_graph.has_edge(from_node, to_node): new_graph[from_node][to_node]['weight'] += weight
+        else: new_graph.add_edge(from_node, to_node, weight = weight)
+
+    return new_graph
+
 # =================================== PUBLIC FUNCTIONS - CHANGE GLOBAL PARAMETERS ===================================
 
 def change_execution_timestamp(timestamp: str):
@@ -228,14 +238,18 @@ def multiple_lines_chart(filename: str, dataframe: pd.DataFrame, x_key: str, y_k
     plt.savefig(complete_path)
     plt.close('all')
 
-def export_word_graph(filename: str, graph: nx.DiGraph,
+def export_word_graph(filename: str, multi_graph: nx.MultiDiGraph, weight_edges: Optional[bool] = True,
     figsize: Tuple[int] = (10, 4), with_labels: Optional[bool] = None, node_color : Optional[str] = None) -> None:
 
     complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
+    graph = convert_multi_graph_to_weighted(multi_graph)
 
     plt.figure(figsize=figsize)
 
-    nx.draw(graph, with_labels=with_labels, node_color=node_color)
+    pos = nx.spring_layout(graph)
+    nx.draw_networkx(graph, pos, with_labels=with_labels, node_color=node_color)
+    labels = nx.get_edge_attributes(graph, 'weight')
+    if weight_edges: nx.draw_networkx_edge_labels(graph, pos, edge_labels=labels)
 
     plt.savefig(complete_path)
     plt.close('all')

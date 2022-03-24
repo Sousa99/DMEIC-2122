@@ -19,7 +19,7 @@ import module_variations
 
 # =================================== PACKAGES PARAMETERS ===================================
 
-tqdm.pandas(desc='🐼 Pandas DataFrame apply', mininterval=0.1, maxinterval=10.0, leave=True)
+tqdm.pandas(desc='🐼 Pandas DataFrame apply', mininterval=0.1, maxinterval=10.0, leave=False)
 warnings.filterwarnings('ignore', category = UserWarning, module = 'openpyxl')
 warnings.filterwarnings('ignore', category = UserWarning, module = 'opensmile')
 
