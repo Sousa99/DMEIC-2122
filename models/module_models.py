@@ -52,6 +52,7 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
 
     CODE_CONTROL = { 'code': 'Control', 'target': False, 'file_system': 'c' }
     CODE_PSYCHOSIS = { 'code': 'Psychosis', 'target': True, 'file_system': 'p' }
+    CODE_BIPOLAR = { 'code': 'Bipolar', 'target': False, 'file_system': 'b' }
 
     PREFERENCE_AUDIO_TRACKS = ['Tr1', 'Tr2', 'Tr3', 'Tr4', 'LR']
     PREFERENCE_TRANS = ['Fix', 'Tr1', 'Tr2', 'Tr3', 'Tr4', 'LR']
@@ -87,12 +88,14 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
             self.arguments.info_controls, self.arguments.audio_controls, self.arguments.trans_controls, self.TASKS)
         psychosis_load = module_load.load_dataset(self.CODE_PSYCHOSIS['file_system'],
             self.arguments.info_psychosis, self.arguments.audio_psychosis, self.arguments.trans_psychosis, self.TASKS)
+        bipolar_load = module_load.load_dataset(self.CODE_BIPOLAR['file_system'],
+            self.arguments.info_bipolars, self.arguments.audio_bipolars, self.arguments.trans_bipolars, self.TASKS)
         # Store Load
-        self.subjects_loads = (control_load, psychosis_load)
+        self.subjects_loads = (control_load, psychosis_load, bipolar_load)
 
     def load_subjects_info(self):
         # Get Loads
-        control_load, psychosis_load = self.subjects_loads
+        control_load, psychosis_load, bipolar_load = self.subjects_loads
         # Control Info
         control_info = control_load['info']
         control_info_columns = list(control_info.columns.values)
@@ -105,18 +108,26 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
         psychosis_info['Type'] = self.CODE_PSYCHOSIS['code']
         psychosis_info['Target'] = self.CODE_PSYCHOSIS['target']
         psychosis_info = psychosis_info[['Type', 'Target'] + psychosis_info_columns]
+        # Bipolar Info
+        bipolar_info = bipolar_load['info']
+        bipolar_info_columns = list(bipolar_info.columns.values)
+        bipolar_info['Type'] = self.CODE_BIPOLAR['code']
+        bipolar_info['Target'] = self.CODE_BIPOLAR['target']
+        bipolar_info = bipolar_info[['Type', 'Target'] + bipolar_info_columns]
         # Store Info
-        self.subjects_infos = pd.concat([control_info, psychosis_info])
+        self.subjects_infos = pd.concat([control_info, psychosis_info, bipolar_info])
 
     def load_subjects_paths(self) -> pd.DataFrame:
         # Get Loads
-        control_load, psychosis_load = self.subjects_loads
+        control_load, psychosis_load, bipolar_load = self.subjects_loads
         # Control Info
         control_paths = control_load['paths'].sample(frac=DATASET_SAMPLE)
         # Psychosis Info
         psychosis_paths = psychosis_load['paths'].sample(frac=DATASET_SAMPLE)
+        # Bipolar Info
+        bipolar_paths = bipolar_load['paths'].sample(frac=DATASET_SAMPLE)
         # Store Paths
-        self.subjects_paths = pd.concat([control_paths, psychosis_paths])
+        self.subjects_paths = pd.concat([control_paths, psychosis_paths, bipolar_paths])
 
     def load_features_infos(self, features_infos : Dict[str, Dict[str, Any]]):
         self.features_infos = features_infos
