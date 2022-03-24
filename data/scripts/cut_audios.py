@@ -51,7 +51,7 @@ if not os.path.exists(args.output) and os.path.isdir(args.output):
     os.mkdir(args.output)
 
 # Iteratively iterate each row
-for index_value, (index, row) in tqdm(enumerate(cut_times_dataframe.iterrows()), desc="🚀 Processing subjects", leave=True):
+for index_value, (index, row) in tqdm(list(enumerate(cut_times_dataframe.iterrows())), desc="🚀 Processing subjects", leave=True):
     current_folder = args.tag + '_' + index
     current_subject_path = os.path.join(args.output, current_folder)
     if os.path.exists(current_subject_path): continue
