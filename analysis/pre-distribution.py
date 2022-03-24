@@ -19,23 +19,29 @@ warnings.filterwarnings('ignore', category = UserWarning, module = 'openpyxl')
 # =================================== FLAGS PARSING ===================================
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-save",            help="prefix of saved files")
-parser.add_argument("-controls_data",   help="controls data path")
-parser.add_argument("-psychosis_data",  help="psychosis data path")
-parser.add_argument("-controls_rec",    help="controls recordings path")
-parser.add_argument("-psychosis_rec",   help="psychosis recordings path")
-parser.add_argument("-controls_trans",    help="controls transcriptions path")
-parser.add_argument("-psychosis_trans",   help="psychosis transcriptions path")
+parser.add_argument("-save",                help="prefix of saved files")
+parser.add_argument("-controls_data",       help="controls data path")
+parser.add_argument("-psychosis_data",      help="psychosis data path")
+parser.add_argument("-bipolars_data",       help="bipolars data path")
+parser.add_argument("-controls_rec",        help="controls recordings path")
+parser.add_argument("-psychosis_rec",       help="psychosis recordings path")
+parser.add_argument("-bipolars_rec",        help="bipolars recordings path")
+parser.add_argument("-controls_trans",      help="controls transcriptions path")
+parser.add_argument("-psychosis_trans",     help="psychosis transcriptions path")
+parser.add_argument("-bipolars_trans",      help="bipolars transcriptions path")
 args = parser.parse_args()
 
 requirements = [
     { 'arg': args.save, 'key': 'save', 'help': 'save file name prefix'},
     { 'arg': args.controls_data, 'key': 'controls_data', 'help': 'path to \'controls\' data'},
     { 'arg': args.psychosis_data, 'key': 'psychosis_data', 'help': 'path to \'psychosis\' data'},
+    { 'arg': args.bipolars_data, 'key': 'bipolars_data', 'help': 'path to \'bipolars\' data'},
     { 'arg': args.controls_rec, 'key': 'controls_rec', 'help': 'path to \'controls\' recordings'},
     { 'arg': args.psychosis_rec, 'key': 'psychosis_rec', 'help': 'path to \'psychosis\' recordings'},
+    { 'arg': args.bipolars_rec, 'key': 'bipolars_rec', 'help': 'path to \'bipolars\' recordings'},
     { 'arg': args.controls_trans, 'key': 'controls_trans', 'help': 'path to \'controls\' transcriptions'},
     { 'arg': args.psychosis_trans, 'key': 'psychosis_trans', 'help': 'path to \'psychosis\' transcriptions'},
+    { 'arg': args.bipolars_trans, 'key': 'bipolars_trans', 'help': 'path to \'bipolars\' transcriptions'},
 ]
 
 if ( any(not req['arg'] for req in requirements) ):
@@ -49,9 +55,8 @@ if ( any(not req['arg'] for req in requirements) ):
 def retrieveByTaskInformation(path: str, type: str, tasks: List[str], information_key: str, callback):
     information = []
     subjects_dirs = os.listdir(path)
-    number_of_subjects = len(subjects_dirs)
 
-    for index_value, current_subject in tqdm(enumerate(subjects_dirs), desc="🚀 Processing subjects", leave=True):
+    for current_subject in tqdm(subjects_dirs, desc="🚀 Processing subjects", leave=True):
 
         current_subject_path = os.path.join(path, current_subject)
 
@@ -139,6 +144,7 @@ def mergeTasksInformation(info_df, type: str, tasks: List[str], infos, infos_col
 TASKS = [ "Task 1", "Task 2", "Task 3", "Task 4", "Task 5", "Task 6", "Task 7" ]
 TYPE_CONTROL = 'Control'
 TYPE_PSYCHOSIS = 'Psychosis'
+TYPE_BIPOLAR = 'Control'
 TYPES = [TYPE_CONTROL, TYPE_PSYCHOSIS]
 WORD_FREQUENCIES_LARGEST = 10
 
@@ -162,9 +168,18 @@ psychosis_word_freq_information = retrieveByTaskInformation(args.psychosis_trans
 psychosis_info = mergeTasksInformation(dataframe_psychosis, TYPE_PSYCHOSIS, TASKS,
     [psychosis_duration_information, psychosis_word_count_information, psychosis_word_freq_information],
     ['duration', 'word count', 'word frequencies'])
+# Retrieve Psychosis Data
+worksheet_name = args.bipolars_data.split('/')[-1].replace('.xlsx', '')
+dataframe_bipolars = pd.read_excel(args.bipolars_data, sheet_name = worksheet_name, index_col = 0, engine = 'openpyxl')
+bipolars_duration_information = retrieveByTaskInformation(args.bipolars_rec, TYPE_BIPOLAR, TASKS, 'duration', callbackDuration)
+bipolars_word_count_information = retrieveByTaskInformation(args.bipolars_trans, TYPE_BIPOLAR, TASKS, 'word count', callbackWordLength)
+bipolars_word_freq_information = retrieveByTaskInformation(args.bipolars_trans, TYPE_BIPOLAR, TASKS, 'word frequencies', callbackWordFrequency)
+bipolars_info = mergeTasksInformation(dataframe_bipolars, TYPE_BIPOLAR, TASKS,
+    [bipolars_duration_information, bipolars_word_count_information, bipolars_word_freq_information],
+    ['duration', 'word count', 'word frequencies'])
 
 # Merge information into dataframe
-full_task_information = controls_info + psychosis_info
+full_task_information = controls_info + psychosis_info + bipolars_info
 task_df = pd.DataFrame(full_task_information)
 task_df.set_index('id') 
 #print(task_df)

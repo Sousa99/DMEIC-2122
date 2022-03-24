@@ -17,15 +17,17 @@ warnings.filterwarnings('ignore', category = UserWarning, module = 'openpyxl')
 # =================================== FLAGS PARSING ===================================
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-save",            help="prefix of saved files")
-parser.add_argument("-controls_trans",   help="controls transcriptions path")
-parser.add_argument("-psychosis_trans",  help="psychosis transcriptions path")
+parser.add_argument("-save",                help="prefix of saved files")
+parser.add_argument("-controls_trans",      help="controls transcriptions path")
+parser.add_argument("-psychosis_trans",     help="psychosis transcriptions path")
+parser.add_argument("-bipolars_trans",      help="bipolars transcriptions path")
 args = parser.parse_args()
 
 requirements = [
     { 'arg': args.save, 'key': 'save', 'help': 'save file name prefix'},
     { 'arg': args.controls_trans, 'key': 'controls_trans', 'help': 'path to controls\' transcriptions'},
     { 'arg': args.psychosis_trans, 'key': 'psychosis_trans', 'help': 'path to psychosis\' transcriptions'},
+    { 'arg': args.bipolars_trans, 'key': 'bipolars_trans', 'help': 'path to bipolars\' transcriptions'},
 ]
 
 if ( any(not req['arg'] for req in requirements) ):
@@ -106,11 +108,11 @@ FOCUS_EXTENSION_PARSING_FUNCTION = parse_ctm_file
 
 similarities = []
 
-for type, transcription_path in zip(['Controls', 'Psychosis'], [args.controls_trans, args.psychosis_trans]): 
+for type, transcription_path in zip(['Controls', 'Psychosis', 'Bipolars'], [args.controls_trans, args.psychosis_trans, args.bipolars_trans]): 
 
     subjects_dirs = os.listdir(transcription_path)
     number_of_subjects = len(subjects_dirs)
-    for index_value, subject in tqdm(enumerate(subjects_dirs), desc="🚀 Processing subjects", leave=True):
+    for index_value, subject in tqdm(list(enumerate(subjects_dirs)), desc="🚀 Processing subjects", leave=True):
         subject_path = os.path.join(transcription_path, subject)
 
         for task in os.listdir(subject_path):

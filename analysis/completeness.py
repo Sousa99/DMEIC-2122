@@ -16,12 +16,14 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-save",            help="prefix of saved files")
 parser.add_argument("-controls_data",   help="controls data path")
 parser.add_argument("-psychosis_data",  help="psychosis data path")
+parser.add_argument("-bipolars_data",   help="bipolars data path")
 args = parser.parse_args()
 
 requirements = [
     { 'arg': args.save, 'key': 'save', 'help': 'save file name prefix'},
     { 'arg': args.controls_data, 'key': 'controls_data', 'help': 'path to controls\' data'},
     { 'arg': args.psychosis_data, 'key': 'psychosis_data', 'help': 'path to psychosis\' data'},
+    { 'arg': args.bipolars_data, 'key': 'bipolars_data', 'help': 'path to bipolars\' data'},
 ]
 
 if ( any(not req['arg'] for req in requirements) ):
@@ -52,9 +54,14 @@ worksheet_name = args.psychosis_data.split('/')[-1].replace('.xlsx', '')
 dataframe_psychosis = pd.read_excel(args.psychosis_data, sheet_name = worksheet_name, index_col = 0, engine = 'openpyxl')
 dataframe_psychosis["Type"] = 'Psychosis'
 dataframe_psychosis["Diagnosis"] = 'Psychosis'
+# Retrieve Bipolar Data
+worksheet_name = args.bipolars_data.split('/')[-1].replace('.xlsx', '')
+dataframe_bipolar = pd.read_excel(args.bipolars_data, sheet_name = worksheet_name, index_col = 0, engine = 'openpyxl')
+dataframe_bipolar["Type"] = 'Control'
+dataframe_bipolar["Diagnosis"] = 'Bipolar'
 
 # Merge information into dataframe
-full_dataframe = pd.concat([dataframe_control, dataframe_psychosis])
+full_dataframe = pd.concat([dataframe_control, dataframe_psychosis, dataframe_bipolar])
 sns.set_theme(palette="deep")
 
 # Gender Distribution
