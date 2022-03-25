@@ -53,8 +53,8 @@ for taskFolder in `ls ${CONTROL_TRANSCRIPTIONS_PATH}${TRIBUS_EXPORT_PATH}`; do
 	if [ ! -d "${dir_out_path}" ]; then mkdir -p "${dir_out_path}"; fi
 
         if [ ! -f "${file_out_trans_path}" ]; then cp ${file_in_trans_path} ${file_out_trans_path}; fi
-        if [ ! -f "${file_out_ctm_path}" ];cp ${file_in_ctm_path} ${file_out_ctm_path}; fi
-        if [ ! -f "${file_out_pctm_path}" ];cp ${file_in_pctm_path} ${file_out_pctm_path}; fi
+        if [ ! -f "${file_out_ctm_path}" ]; then cp ${file_in_ctm_path} ${file_out_ctm_path}; fi
+        if [ ! -f "${file_out_pctm_path}" ]; then cp ${file_in_pctm_path} ${file_out_pctm_path}; fi
 done
 
 echo "Extracting results from Psychosis ..."
@@ -92,8 +92,8 @@ for taskFolder in `ls ${PSYCHOSIS_TRANSCRIPTIONS_PATH}${TRIBUS_EXPORT_PATH}`; do
         if [ ! -d "${dir_out_path}" ]; then mkdir -p "${dir_out_path}"; fi
 
         if [ ! -f "${file_out_trans_path}" ]; then cp ${file_in_trans_path} ${file_out_trans_path}; fi
-        if [ ! -f "${file_out_ctm_path}" ];cp ${file_in_ctm_path} ${file_out_ctm_path}; fi
-        if [ ! -f "${file_out_pctm_path}" ];cp ${file_in_pctm_path} ${file_out_pctm_path}; fi
+        if [ ! -f "${file_out_ctm_path}" ]; then cp ${file_in_ctm_path} ${file_out_ctm_path}; fi
+        if [ ! -f "${file_out_pctm_path}" ]; then cp ${file_in_pctm_path} ${file_out_pctm_path}; fi
 done
 
 echo "Extracting results from Bipolars ..."
@@ -131,6 +131,6 @@ for taskFolder in `ls ${BIPOLARS_TRANSCRIPTIONS_PATH}${TRIBUS_EXPORT_PATH}`; do
         if [ ! -d "${dir_out_path}" ]; then mkdir -p "${dir_out_path}"; fi
 
         if [ ! -f "${file_out_trans_path}" ]; then cp ${file_in_trans_path} ${file_out_trans_path}; fi
-        if [ ! -f "${file_out_ctm_path}" ];cp ${file_in_ctm_path} ${file_out_ctm_path}; fi
-        if [ ! -f "${file_out_pctm_path}" ];cp ${file_in_pctm_path} ${file_out_pctm_path}; fi
+        if [ ! -f "${file_out_ctm_path}" ]; then cp ${file_in_ctm_path} ${file_out_ctm_path}; fi
+        if [ ! -f "${file_out_pctm_path}" ]; then cp ${file_in_pctm_path} ${file_out_pctm_path}; fi
 done
