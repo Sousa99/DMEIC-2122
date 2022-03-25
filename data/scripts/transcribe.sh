@@ -37,7 +37,7 @@ for subject_folder in "${CONTROLS[@]}"; do
                         if [ ! -d "${TRANSCRIBE_CONTROLS_PATH}data_tribus/${FILE_WITHOUT_EXT}" ]
 		        then
 
-				INPUT_FILE=${RECORDINGS_CONTROLS_PATH}${subject_folder}/${task_folder}/$file
+			        INPUT_FILE=${RECORDINGS_CONTROLS_PATH}${subject_folder}/${task_folder}/$file
                         	$TRIBUS_LOC --dir $TRANSCRIBE_CONTROLS_PATH $INPUT_FILE > /dev/null
 
 			fi
