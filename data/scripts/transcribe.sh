@@ -2,13 +2,13 @@
 
 TRIBUS_LOC=/tmp/miamoto/tribus.sh
 
-RECORDINGS_CONTROLS_PATH=../recordings/controls/
+RECORDINGS_CONTROLS_PATH=../recordings_converted/controls/
 TRANSCRIBE_CONTROLS_PATH=../recordings_transcribed/controls/
 
-RECORDINGS_PSYCHOSIS_PATH=../recordings/psychosis/
+RECORDINGS_PSYCHOSIS_PATH=../recordings_converted/psychosis/
 TRANSCRIBE_PSYCHOSIS_PATH=../recordings_transcribed/psychosis/
 
-RECORDINGS_BIPOLARS_PATH=../recordings/bipolars/
+RECORDINGS_BIPOLARS_PATH=../recordings_converted/bipolars/
 TRANSCRIBE_BIPOLARS_PATH=../recordings_transcribed/bipolars/
 
 prog() {
@@ -34,7 +34,7 @@ for subject_folder in "${CONTROLS[@]}"; do
                 for file in `ls ${RECORDINGS_CONTROLS_PATH}${subject_folder}/${task_folder}`; do
 
                         FILE_WITHOUT_EXT=$(echo "$file" | cut -f 1 -d '.')
-                        if [ ! -d "${TRANSCRIBE_CONTROLS_PATH}data_tribus/${FILE_WITHOUT_EXT}" ]
+                        if [ ! -d "${TRANSCRIBE_CONTROLS_PATH}exp_tribus/${FILE_WITHOUT_EXT}" ]
                         then
 
                                 INPUT_FILE=${RECORDINGS_CONTROLS_PATH}${subject_folder}/${task_folder}/$file
@@ -64,7 +64,7 @@ for subject_folder in "${PSYCHOSIS[@]}"; do
                 for file in `ls ${RECORDINGS_PSYCHOSIS_PATH}${subject_folder}/${task_folder}`; do
 
                         FILE_WITHOUT_EXT=$(echo "$file" | cut -f 1 -d '.')
-                        if [ ! -d "${TRANSCRIBE_PSYCHOSIS_PATH}data_tribus/${FILE_WITHOUT_EXT}" ]
+                        if [ ! -d "${TRANSCRIBE_PSYCHOSIS_PATH}exp_tribus/${FILE_WITHOUT_EXT}" ]
                         then
 
                                 INPUT_FILE=${RECORDINGS_PSYCHOSIS_PATH}${subject_folder}/${task_folder}/$file
@@ -94,7 +94,7 @@ for subject_folder in "${BIPOLARS[@]}"; do
                 for file in `ls ${RECORDINGS_BIPOLARS_PATH}${subject_folder}/${task_folder}`; do
 
                         FILE_WITHOUT_EXT=$(echo "$file" | cut -f 1 -d '.')
-                        if [ ! -d "${TRANSCRIBE_BIPOLARS_PATH}data_tribus/${FILE_WITHOUT_EXT}" ]
+                        if [ ! -d "${TRANSCRIBE_BIPOLARS_PATH}exp_tribus/${FILE_WITHOUT_EXT}" ]
                         then
 			        
                                 INPUT_FILE=${RECORDINGS_BIPOLARS_PATH}${subject_folder}/${task_folder}/$file
