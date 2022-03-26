@@ -74,9 +74,19 @@ class TranscriptionInfo():
 
 # =================================== PUBLIC METHODS ===================================
 
+def filter_info_dataset(info_subjects: pd.DataFrame) -> pd.DataFrame:
+    # Filter By No Repetitions
+    info_subjects = info_subjects[info_subjects['Already Recorded Before'] == 'No']
+    # Filter By European Portuguese Language
+    info_subjects = info_subjects[info_subjects['Language'] == 'European Portuguese']
+
+    return info_subjects
+
 LoadedDataset = TypedDict('LoadedDataset', { 'info': pd.DataFrame, 'paths': pd.DataFrame })
 def load_dataset(subjects_code_file_system: str, info_file: str, audio_path: str, trans_path: str, tasks: List[str], delimiter: str = '_') -> LoadedDataset:
     info_subjects = load_info_subjects(info_file, subjects_code_file_system, delimiter)
+    info_subjects = filter_info_dataset(info_subjects)
+
     subject_by_task_paths = subdivide_info_for_task(info_subjects, audio_path, trans_path, tasks, delimiter)
     
     valid_paths = subject_by_task_paths.apply(filter_path_exists, axis=1)
