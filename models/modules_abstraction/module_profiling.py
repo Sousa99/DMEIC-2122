@@ -4,8 +4,8 @@ import pandas as pd
 from typing import Dict, List, Optional
 from pandas.api.types import is_numeric_dtype
 
-# Local Modules
-import module_exporter
+# Local Modules - Auxiliary
+import modules_aux.module_exporter  as module_exporter
 
 # =================================== PRIVATE METHODS ===================================
 

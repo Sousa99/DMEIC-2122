@@ -1,10 +1,11 @@
 import pandas as pd
 
-# Local Modules
-import module_parser
-import module_models
-import module_sound_features
-import module_speech_features
+# Local Modules - Abstraction
+import modules_abstraction.module_parser    as module_parser
+import modules_abstraction.module_models    as module_models
+# Local Modules - Features
+import modules_features.module_sound_features   as module_sound_features
+import modules_features.module_speech_features  as module_speech_features
 
 # =================================== INITIALIZE MODEL ===================================
 

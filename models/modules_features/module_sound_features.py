@@ -5,7 +5,7 @@ import pandas as pd
 from typing import List
 
 # Local Modules
-import module_gemaps
+import modules_features.module_gemaps   as module_gemaps
 
 # =================================== PRIVATE METHODS ===================================
 

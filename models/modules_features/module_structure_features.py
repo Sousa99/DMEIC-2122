@@ -8,9 +8,9 @@ import networkx as nx
 from tqdm import tqdm
 from typing import Dict, List, Optional, Set, Tuple
 
-# Local Modules
-import module_load
-import module_exporter
+# Local Modules - Auxiliary
+import modules_aux.module_load as module_load
+import modules_aux.module_exporter as module_exporter
 
 # =================================== DEFINITION OF CONSTS ===================================
 

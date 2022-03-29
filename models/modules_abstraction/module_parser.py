@@ -1,5 +1,4 @@
 import argparse
-from typing import Dict
 
 # Define Parser
 parser = argparse.ArgumentParser()

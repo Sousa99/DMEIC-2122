@@ -6,8 +6,8 @@ import pandas as pd
 from typing import List
 from pydub import AudioSegment
 
-# Local Modules
-import module_load
+# Local Modules - Auxiliary
+import modules_aux.module_load  as module_load
 
 # =================================== PRIVATE METHODS ===================================
 

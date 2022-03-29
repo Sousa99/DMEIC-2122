@@ -10,12 +10,13 @@ from typing import Any, Dict, List, Optional, Tuple
 import pandas as pd
 
 # Local Modules
-import module_load
-import module_scorer
-import module_exporter
-import module_profiling
-import module_classifier
-import module_variations
+import modules_abstraction.module_scorer        as module_scorer
+import modules_abstraction.module_profiling     as module_profiling
+import modules_abstraction.module_classifier    as module_classifier
+import modules_abstraction.module_variations    as module_variations
+# Local Modules - Auxiliary
+import modules_aux.module_load      as module_load
+import modules_aux.module_exporter  as module_exporter
 
 # =================================== PACKAGES PARAMETERS ===================================
 

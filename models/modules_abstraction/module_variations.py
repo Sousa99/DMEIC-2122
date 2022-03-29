@@ -5,9 +5,10 @@ import pandas as pd
 from typing import Any, Dict, List, Optional, Tuple
 
 # Local Modules
-import module_classifier
-import module_preprocessing
-import module_aux
+import modules_abstraction.module_classifier    as module_classifier
+import modules_abstraction.module_preprocessing as module_preprocessing
+# Local Modules - Auxiliary
+import modules_aux.module_aux   as module_aux
 
 # =================================== PRIVATE METHODS ===================================
 

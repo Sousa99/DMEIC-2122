@@ -2,10 +2,10 @@ import numpy as np
 import pandas as pd
 
 from enum import Enum
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
-# Local Modules
-import module_exporter
+# Local Modules - Auxiliary
+import modules_aux.module_exporter  as module_exporter
 
 # =================================== PRIVATE CLASS DEFINITIONS ===================================
 

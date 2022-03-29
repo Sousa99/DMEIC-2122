@@ -1,11 +1,12 @@
 import pandas as pd
 
-# Local Modules
-import module_parser
-import module_models
-import module_structure_features
-import module_content_features
-import module_exporter
+# Local Modules - Abstraction
+import modules_abstraction.module_parser    as module_parser
+import modules_abstraction.module_models    as module_models
+import modules_aux.module_exporter          as module_exporter
+# Local Modules - Features
+import modules_features.module_structure_features   as module_structure_features
+import modules_features.module_content_features     as module_content_features
 
 # =================================== INITIALIZE MODEL ===================================
 

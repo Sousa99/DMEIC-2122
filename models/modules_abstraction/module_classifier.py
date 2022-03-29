@@ -18,8 +18,9 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.exceptions import ConvergenceWarning
 
 # Local Modules
-import module_scorer
-import module_exporter
+import modules_abstraction.module_scorer    as module_scorer
+# Local Modules - Auxiliary
+import modules_aux.module_exporter  as module_exporter
 
 # =================================== PACKAGES PARAMETERS ===================================
 
