@@ -5,6 +5,7 @@ import module_parser
 import module_models
 import module_structure_features
 import module_content_features
+import module_exporter
 
 # =================================== INITIALIZE MODEL ===================================
 
@@ -28,7 +29,8 @@ if parallelization is None or parallelization == module_models.PARALLEL_FEATURE_
     # all_features_df = all_features_df.drop(all_features_df.filter(regex='_duplicate$').columns.tolist(), axis=1)
 
     # Specify specific drop features
-    structure_drop_columns = ['Trans Path', 'Trans File', 'Trans File Path', 'Trans Info', 'Word Graph', 'Word Graph - WCC', 'Word Graph - SCC']
+    structure_drop_columns = ['Trans Path', 'Trans File', 'Trans File Path', 'Trans Info',
+        'Word Graph', 'Word Graph - WCC', 'Word Graph - SCC', 'Word Graph - LWCC', 'Word Graph - LSCC']
     # content_drop_columns = ['Audio Path', 'Audio File', 'Audio File Path', 'Trans Path', 'Trans File', 'Trans File Path', 'Trans Info']
     # all_features_drop_columns = ['Audio Path', 'Audio File', 'Audio File Path', 'Trans Path', 'Trans File', 'Trans File Path', 'Trans Info']
 
@@ -46,6 +48,8 @@ if parallelization is None or parallelization == module_models.PARALLEL_FEATURE_
 # ============================================ TEST ZONE ============================================
 
 print(structure_features_df[structure_features])
+print(list(structure_features_df.columns))
+module_exporter.export_csv(structure_features_df[structure_features], "features")
 
 # ============================================ MAIN EXECUTION ============================================
 
