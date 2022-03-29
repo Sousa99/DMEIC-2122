@@ -50,6 +50,7 @@ if parallelization is None or parallelization == module_models.PARALLEL_FEATURE_
 
 print(structure_features_df[structure_features])
 print(list(structure_features_df.columns))
+module_exporter.change_current_directory()
 module_exporter.export_csv(structure_features_df[structure_features], "features")
 
 # ============================================ MAIN EXECUTION ============================================
