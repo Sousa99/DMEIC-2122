@@ -1,6 +1,7 @@
 # Data should remain confidential
 /data/*
 /analysis/records/*
+/models_support/exports/*
 # Scripts are exception
 !/data/scripts
 
