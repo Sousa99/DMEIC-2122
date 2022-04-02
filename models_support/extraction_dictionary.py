@@ -4,6 +4,7 @@ import sys
 import nltk
 import pickle
 import gensim
+import argparse
 
 # ================================================= NLTK DOWNLOADS  =================================================
 '''
@@ -22,7 +23,17 @@ import NLPyPort as nlport
 
 # ===================================================== SETUP  =====================================================
 
+parser = argparse.ArgumentParser()
+parser.add_argument("-parallelization_key",     help="key for the parallelized model, if not given is executed sequentially")
+parser.add_argument("-parallelization_index",   help="key index for the parallelized model, must be given if task is to be parallelized")
+arguments = parser.parse_args()
+arguments_dict = vars(arguments)
+
+PARALLELIZATION_EXTRACT = "extract"
+PARALLELIZATION_FINAL = "final"
+
 if not os.path.exists('./exports/'): os.makedirs('./exports')
+if arguments_dict['parallelization_key'] is not None and not os.path.exists('./tmp/'): os.makedirs('./tmp/')
 NUMBER_EXTRACTS_PRINT : int = 1
 NUMBER_EXTRACTS_BREAK : Optional[int] = None
 
@@ -45,6 +56,131 @@ def lemmatize_text(input_text: str) -> nlport.Text:
     text_return = nlport.FullPipeline.new_full_pipe(input_text, options=options)
     sys.stdout = old_stdout
     return text_return
+
+def read_lines() -> None:
+
+    file = open('./corpora/CETEMPublico/CETEMPublico1.7.txt', 'r', encoding='latin-1')
+    queu_of_elements : List[Any] = []
+    count_extracts : int = 0
+    count_line : int = 0
+
+    line = file.readline()
+    while line:
+
+        count_line = count_line + 1
+        # If running parallelized skip until correct line
+        if arguments_dict['parallelization_index'] is not None and int(arguments_dict['parallelization_index']) > count_line:
+            line = file.readline()
+            continue
+
+        line = line.strip()
+        if line.startswith('</'):
+            # Closing Tag
+            line = line.replace('</', '', 1).replace('>', '', 1)
+
+            # Closing an Extract
+            if line.startswith(EXTRACT_TAG):
+                extract : Extract = queu_of_elements.pop()
+                extract_words : List[Word] = extract.get_words()
+                extract_entire : str = ' '.join(extract_words)
+
+                lemmatized : List[str] = lemmatize_text(extract_entire).lemas
+                lemmatized_filtered : List[str] = list(filter(lambda word: word.isalpha() and word != 'EOS', lemmatized))
+                lemmatized_filtered : List[str] = list(filter(lambda word: word not in nltk.corpus.stopwords.words('portuguese'), lemmatized_filtered))
+
+                extract_code : str = extract.get_code()
+
+                if arguments_dict['parallelization_key'] is None:
+                    documents_clean.append(lemmatized_filtered)
+                    for word in lemmatized_filtered:
+                        if word not in corpora_dictionary: corpora_dictionary[word] = { extract_code: 1 }
+                        elif word in corpora_dictionary and extract_code not in corpora_dictionary[word]: corpora_dictionary[word][extract_code] = 1
+                        else: corpora_dictionary[word][extract_code] = corpora_dictionary[word][extract_code] + 1
+
+                    if count_extracts % NUMBER_EXTRACTS_PRINT == 0: print(f'🚀 \'{count_extracts}\' extracts have already been processed', end="\r")
+                    if NUMBER_EXTRACTS_BREAK is not None and count_extracts == NUMBER_EXTRACTS_BREAK: break
+                
+                else:
+                    print('🚀 Extract was processed')
+                    file_save = open(f'./tmp/lemmatized_{extract_code}.pkl', 'wb')
+                    pickle.dump(lemmatized_filtered, file_save)
+                    file_save.close()
+                    break
+
+            # Closing others
+            else:
+                last_element = queu_of_elements.pop()
+                queu_of_elements[-1].add_element(last_element)
+
+        elif line.startswith('<'):
+            # Opening Tag
+            line = line.replace('<', '', 1).replace('>', '', 1)
+            if line.startswith(EXTRACT_TAG):
+                line = line.replace(EXTRACT_TAG, '', 1).strip()
+                line_splits = line.split()
+
+                number, section, semester = 'UNKNOWN', 'UNKNOWN', 'UNKNOWN'
+                for line_split in line_splits:
+                    code_splits = line_split.split('=')
+                    if code_splits[0] == 'n':       number = code_splits[1]
+                    elif code_splits[0] == 'sec':   section = code_splits[1]
+                    elif code_splits[0] == 'sem':   semester = code_splits[1]
+                
+                extract = Extract(number, section, semester)
+                count_extracts = count_extracts + 1
+                queu_of_elements.append(extract)
+
+            elif line.startswith(PARAGRAPH_TAG): queu_of_elements.append(Paragraph())
+            elif line.startswith(SENTENCE_TAG): queu_of_elements.append(Sentence())
+            elif line.startswith(AUTHOR_TAG): queu_of_elements.append(Author())
+            elif line.startswith(TITLE_TAG): queu_of_elements.append(Title())
+            elif line.startswith(LIST_TAG): queu_of_elements.append(ListItem())
+
+        elif line != "":
+            for word in line.split(): queu_of_elements[-1].add_word(word)
+
+        
+        line = file.readline()
+
+    file.close()
+    print()
+
+def load_information() -> None:
+    global documents_clean, corpora_dictionary
+    
+    count_extracts : int = 0
+    for filename in os.listdir('./tmp/'):
+        file_path = os.path.join('./tmp/', filename)
+        if not os.path.isfile(file_path): continue
+
+        extract_code : str = filename.replace('lemmatized_', '').replace('.pkl', '')
+        file_save = open(file_path, 'rb')
+        lemmatized_filtered : List[str] = pickle.load(file_save)
+        file_save.close()
+
+        documents_clean.append(lemmatized_filtered)
+
+        for word in lemmatized_filtered:
+            if word not in corpora_dictionary: corpora_dictionary[word] = { extract_code: 1 }
+            elif word in corpora_dictionary and extract_code not in corpora_dictionary[word]: corpora_dictionary[word][extract_code] = 1
+            else: corpora_dictionary[word][extract_code] = corpora_dictionary[word][extract_code] + 1
+
+        count_extracts = count_extracts + 1
+        if count_extracts % NUMBER_EXTRACTS_PRINT == 0: print(f'🚀 \'{count_extracts}\' extracts have already been processed', end="\r")
+    print()
+
+def save_information() -> None:
+    file = open('./exports/corpora_documents_clean.pkl', 'wb')
+    pickle.dump(documents_clean, file)
+    file.close()
+
+    corpora_dataset = pd.DataFrame.from_dict(corpora_dictionary)
+    corpora_dataset = corpora_dataset.fillna(0)
+    corpora_dataset = corpora_dataset.astype(int)
+    corpora_dataset.to_csv('./exports/corpora_dataset.cvs')
+
+    dictionary = gensim.corpora.Dictionary(documents_clean)
+    dictionary.save('./exports/corpora_dictionary.bin')
 
 # =========================================== DEFINITION OF CONSTANTS ===========================================
 
@@ -181,84 +317,6 @@ class Paragraph(Element):
 corpora_dictionary : Dict[Word, Dict[str, int]] = {}
 documents_clean : List[List[str]] = []
 
-file = open('./corpora/CETEMPublico/CETEMPublico1.7.txt', 'r', encoding='latin-1')
-queu_of_elements : List[Any] = []
-count_extracts : int = 0
-
-line = file.readline()
-while line:
-    line = line.strip()
-    if line.startswith('</'):
-        # Closing Tag
-        line = line.replace('</', '', 1).replace('>', '', 1)
-
-        # Closing an Extract
-        if line.startswith(EXTRACT_TAG):
-            extract : Extract = queu_of_elements.pop()
-            extract_words : List[Word] = extract.get_words()
-            extract_entire : str = ' '.join(extract_words)
-
-            lemmatized : List[str] = lemmatize_text(extract_entire).lemas
-            lemmatized_filtered : List[str] = list(filter(lambda word: word.isalpha() and word != 'EOS', lemmatized))
-            lemmatized_filtered : List[str] = list(filter(lambda word: word not in nltk.corpus.stopwords.words('portuguese'), lemmatized_filtered))
-
-            extract_code : str = extract.get_code()
-            for word in lemmatized_filtered:
-                if word not in corpora_dictionary: corpora_dictionary[word] = { extract_code: 1 }
-                elif word in corpora_dictionary and extract_code not in corpora_dictionary[word]: corpora_dictionary[word][extract_code] = 1
-                else: corpora_dictionary[word][extract_code] = corpora_dictionary[word][extract_code] + 1
-
-            documents_clean.append(lemmatized_filtered)
-
-            if count_extracts % NUMBER_EXTRACTS_PRINT == 0: print(f'🚀 \'{count_extracts}\' extracts have already been processed', end="\r")
-            if NUMBER_EXTRACTS_BREAK is not None and count_extracts == NUMBER_EXTRACTS_BREAK: break
-
-        # Closing others
-        else:
-            last_element = queu_of_elements.pop()
-            queu_of_elements[-1].add_element(last_element)
-
-    elif line.startswith('<'):
-        # Opening Tag
-        line = line.replace('<', '', 1).replace('>', '', 1)
-        if line.startswith(EXTRACT_TAG):
-            line = line.replace(EXTRACT_TAG, '', 1).strip()
-            line_splits = line.split()
-
-            number, section, semester = 'UNKNOWN', 'UNKNOWN', 'UNKNOWN'
-            for line_split in line_splits:
-                code_splits = line_split.split('=')
-                if code_splits[0] == 'n':       number = code_splits[1]
-                elif code_splits[0] == 'sec':   section = code_splits[1]
-                elif code_splits[0] == 'sem':   semester = code_splits[1]
-            
-            extract = Extract(number, section, semester)
-            count_extracts = count_extracts + 1
-            queu_of_elements.append(extract)
-
-        elif line.startswith(PARAGRAPH_TAG): queu_of_elements.append(Paragraph())
-        elif line.startswith(SENTENCE_TAG): queu_of_elements.append(Sentence())
-        elif line.startswith(AUTHOR_TAG): queu_of_elements.append(Author())
-        elif line.startswith(TITLE_TAG): queu_of_elements.append(Title())
-        elif line.startswith(LIST_TAG): queu_of_elements.append(ListItem())
-
-    elif line != "":
-        for word in line.split(): queu_of_elements[-1].add_word(word)
-
-    
-    line = file.readline()
-
-file.close()
-print()
-
-file = open('./exports/corpora_documents_clean.pkl', 'wb')
-pickle.dump(documents_clean, file)
-file.close()
-
-corpora_dataset = pd.DataFrame.from_dict(corpora_dictionary)
-corpora_dataset = corpora_dataset.fillna(0)
-corpora_dataset = corpora_dataset.astype(int)
-corpora_dataset.to_csv('./exports/corpora_dataset.cvs')
-
-dictionary = gensim.corpora.Dictionary(documents_clean)
-dictionary.save('./exports/corpora_dictionary.bin')
+if arguments_dict['parallelization_key'] is None or arguments_dict['parallelization_key'] == PARALLELIZATION_EXTRACT: read_lines()
+if arguments_dict['parallelization_key'] is not None and arguments_dict['parallelization_key'] == PARALLELIZATION_FINAL: load_information()
+if arguments_dict['parallelization_key'] is None or arguments_dict['parallelization_key'] == PARALLELIZATION_FINAL: save_information()
