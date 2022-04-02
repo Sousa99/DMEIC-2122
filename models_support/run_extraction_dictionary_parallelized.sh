@@ -33,6 +33,6 @@ for extract_line in "${extract_lines[@]}"; do
 done
 
 echo "🚀 Waiting for extractions to finish ..."
-condor_wait condor.log
+condor_wait "${TEMP_CONDOR_DIRECTORY}extracts_condor.log"
 
 python3 extraction_dictionary.py -parallelization_key final

@@ -65,7 +65,7 @@ for parallel_index in $(seq 0 $(expr $number_of_variations - 1)); do
 done
 
 echo "🚀 Waiting for models to finish ..."
-condor_wait condor.log
+condor_wait "${TEMP_CONDOR_DIRECTORY}variations_condor.log"
 
 python3 model_first.py                                                                                                                      \
     -info_controls=${CONTROL_INFO}              -info_psychosis=${PSYCHOSIS_INFO}               -info_bipolars=${BIPOLAR_INFO}              \
