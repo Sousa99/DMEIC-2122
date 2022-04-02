@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Optional
 import pandas as pd
 import NLPyPort as nlport
 
-# ===================================================== SETUP  =====================================================
+# ===================================================== SETUP =====================================================
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-parallelization_key",     help="key for the parallelized model, if not given is executed sequentially")
@@ -36,6 +36,11 @@ if not os.path.exists('./exports/'): os.makedirs('./exports')
 if arguments_dict['parallelization_key'] is not None and not os.path.exists('./tmp/'): os.makedirs('./tmp/')
 NUMBER_EXTRACTS_PRINT : int = 1
 NUMBER_EXTRACTS_BREAK : Optional[int] = None
+
+# ================================================== SAVE VARIABLE ==================================================
+
+corpora_dictionary : Dict[Word, Dict[str, int]] = {}
+documents_clean : List[List[str]] = []
 
 # ============================================ DEFINITION OF FUNCTIONS  ============================================
 
@@ -313,9 +318,6 @@ class Paragraph(Element):
     def add_word(self, word: Word) -> None: exit(f'🚨 Words are not addable to {self.__class__.__name__}')
     
 # ================================================ MAIN EXECUTION ================================================
-
-corpora_dictionary : Dict[Word, Dict[str, int]] = {}
-documents_clean : List[List[str]] = []
 
 if arguments_dict['parallelization_key'] is None or arguments_dict['parallelization_key'] == PARALLELIZATION_EXTRACT: read_lines()
 if arguments_dict['parallelization_key'] is not None and arguments_dict['parallelization_key'] == PARALLELIZATION_FINAL: load_information()
