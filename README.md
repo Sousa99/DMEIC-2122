@@ -64,6 +64,20 @@ General profilling of the corpus.
 
 ---
 
+## Models 👨‍💻
+**Directory:** `./models/`
+
+Definition of the various models and their abstractions in order to develop classifiers and export the results.
+
+---
+
+## Models Support 👨‍💻
+**Directory:** `./models_support/`
+
+Side-projects that although necessary, do not need to be re-executed with each model. Such tasks include corpus acquisition and treatment for the acquisition of word embeddings.
+
+---
+
 ## Results 🎉
 **Directory:** `./results/`
 
