@@ -94,6 +94,11 @@ Results achieved with classifiers on the existent corpus.
 <br/>
 
 6.  After the various recordings have been propperly sorted out and correctly placed in their individual folders they need now to be split up, as to have one recording for each subject and task. For this purpose, the script [scripts/cut_audios.py](./data/scripts/cut_audios.py), must be executed, one time for each one of the groups of subjects.
+```bash
+python3 ./cut_audios.py -data ../recordings/controls_uncut/ -times ../recordings/controls_cutting_times.json -output ../recordings/controls/ -tag "c"
+python3 ./cut_audios.py -data ../recordings/bipolars_uncut/ -times ../recordings/bipolars_cutting_times.json -output ../recordings/bipolars/ -tag "b"
+python3 ./cut_audios.py -data ../recordings/psychosis_uncut/ -times ../recordings/psychosis_cutting_times.json -output ../recordings/psychosis/ -tag "p"
+```
 
 <br/>
 
@@ -101,7 +106,7 @@ Results achieved with classifiers on the existent corpus.
 
 <br/>
 
-8.  Send the exported recordings and information to the secured INESC-ID servers. Unpack the contents of the compressed folder and correcctly merge the already existent information with these new information. In this very specific case you may delete the recordings that exist already in the servers, and simply move this new information.
+8.  Send the exported recordings and information to the secured INESC-ID servers. Unpack the contents of the compressed folder and correctly merge the already existent information with these new information. In this very specific case you may delete the recordings that exist already in the servers, and simply move this new information.
 
 <br/>
 

@@ -3,7 +3,6 @@ import pandas as pd
 # Local Modules - Abstraction
 import modules_abstraction.module_parser    as module_parser
 import modules_abstraction.module_models    as module_models
-import modules_aux.module_exporter          as module_exporter
 # Local Modules - Features
 import modules_features.module_structure_features   as module_structure_features
 import modules_features.module_content_features     as module_content_features
@@ -44,15 +43,11 @@ if parallelization is None or parallelization == module_models.PARALLEL_FEATURE_
     # content_features_info = { 'features': content_features_df, 'drop_columns': content_drop_columns, 'feature_columns': content_features }
     # all_features_info = { 'features': all_features_df, 'drop_columns': all_features_drop_columns, 'feature_columns': all_features }
 
+    features_infos = { 'Structure': structure_features_info }
     #features_infos = { 'Structure': structure_features_info, 'Content': content_features_info, 'Structure + Content': all_features_info }
 
 # ============================================ TEST ZONE ============================================
 
-print(structure_features_df[structure_features])
-print(list(structure_features_df.columns))
-module_exporter.change_current_directory()
-module_exporter.export_csv(structure_features_df[structure_features], "features")
-
 # ============================================ MAIN EXECUTION ============================================
 
-#model.execute(features_infos)
+model.execute(features_infos)
