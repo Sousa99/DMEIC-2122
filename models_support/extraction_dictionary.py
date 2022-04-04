@@ -23,7 +23,10 @@ import NLPyPort as nlport
 
 # ===================================================== SETUP =====================================================
 
+config_list : List[any] = nlport.load_congif_to_list()
+
 parser = argparse.ArgumentParser()
+parser.add_argument("-extracts_per_run",        help="the number of extracts that should executed")
 parser.add_argument("-parallelization_key",     help="key for the parallelized model, if not given is executed sequentially")
 parser.add_argument("-parallelization_index",   help="key index for the parallelized model, must be given if task is to be parallelized")
 arguments = parser.parse_args()
@@ -35,10 +38,12 @@ PARALLELIZATION_FINAL = "final"
 if not os.path.exists('./exports/'): os.makedirs('./exports')
 if arguments_dict['parallelization_key'] is not None and not os.path.exists('./tmp/'): os.makedirs('./tmp/')
 NUMBER_EXTRACTS_PRINT : int = 1
-NUMBER_EXTRACTS_BREAK : Optional[int] = None
+if arguments_dict['extracts_per_run'] is None: NUMBER_EXTRACTS_BREAK : Optional[int] = None
+else: NUMBER_EXTRACTS_BREAK : Optional[int] = int(arguments_dict['extracts_per_run'])
 
 # ================================================== SAVE VARIABLE ==================================================
 
+Word = str
 corpora_dictionary : Dict[Word, Dict[str, int]] = {}
 documents_clean : List[List[str]] = []
 
@@ -58,7 +63,7 @@ def lemmatize_text(input_text: str) -> nlport.Text:
 
     old_stdout = sys.stdout
     sys.stdout = open(os.devnull, "w")
-    text_return = nlport.FullPipeline.new_full_pipe(input_text, options=options)
+    text_return = nlport.FullPipeline.new_full_pipe(input_text, options=options, config_list=config_list)
     sys.stdout = old_stdout
     return text_return
 
@@ -102,15 +107,13 @@ def read_lines() -> None:
                         elif word in corpora_dictionary and extract_code not in corpora_dictionary[word]: corpora_dictionary[word][extract_code] = 1
                         else: corpora_dictionary[word][extract_code] = corpora_dictionary[word][extract_code] + 1
 
-                    if count_extracts % NUMBER_EXTRACTS_PRINT == 0: print(f'🚀 \'{count_extracts}\' extracts have already been processed', end="\r")
-                    if NUMBER_EXTRACTS_BREAK is not None and count_extracts == NUMBER_EXTRACTS_BREAK: break
-                
                 else:
-                    print('🚀 Extract was processed')
                     file_save = open(f'./tmp/lemmatized_{extract_code}.pkl', 'wb')
                     pickle.dump(lemmatized_filtered, file_save)
                     file_save.close()
-                    break
+
+                if count_extracts % NUMBER_EXTRACTS_PRINT == 0: print(f'🚀 \'{count_extracts}\' extracts have already been processed', end="\r")
+                if NUMBER_EXTRACTS_BREAK is not None and count_extracts == NUMBER_EXTRACTS_BREAK: break
 
             # Closing others
             else:
@@ -231,8 +234,6 @@ EXTRACT_SEMESTER_MAP = {
 }
 
 # ============================================ DEFINITION OF CLASSES ============================================
-
-Word = str
 
 class Element(abc.ABC):
 

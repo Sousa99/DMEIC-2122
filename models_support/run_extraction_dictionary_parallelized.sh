@@ -3,6 +3,8 @@ TEMP_CONDOR_DIRECTORY="./tmp_condor/${NOW_WITHOUT_SPACE}"
 TEMP_CONDOR_LOGS_DIRECTORY="./tmp_condor/${NOW_WITHOUT_SPACE}/logs/"
 TEMP_CONDOR_SCRIPTS_DIRECTORY="./tmp_condor/${NOW_WITHOUT_SPACE}/scripts/"
 
+CONDOR_PROCESSES_PER_OWNER="10000"
+
 # Deal with Condor Directories
 if [ ! -d "${TEMP_CONDOR_DIRECTORY}" ]; then mkdir -p "${TEMP_CONDOR_DIRECTORY}"; fi
 if [ ! -d "${TEMP_CONDOR_LOGS_DIRECTORY}" ]; then mkdir -p "${TEMP_CONDOR_LOGS_DIRECTORY}"; fi
@@ -10,13 +12,19 @@ if [ ! -d "${TEMP_CONDOR_SCRIPTS_DIRECTORY}" ]; then mkdir -p "${TEMP_CONDOR_SCR
 
 echo "🚀 Running extract extractions ..."
 extract_lines=( `grep -n "<ext" ./corpora/CETEMPublico/CETEMPublico1.7.txt | cut -f1 -d:` )
-for extract_line in "${extract_lines[@]}"; do
+number_extracts=${#extract_lines[@]}
+
+extracts_per_run=$(( ( ${number_extracts} + ${CONDOR_PROCESSES_PER_OWNER} - 1 ) / ${CONDOR_PROCESSES_PER_OWNER} ))
+
+for ((extract_index = 0; extract_index < ${#extract_lines[@]} ; extract_index += ${extracts_per_run} )); do
+    extract_line=${extract_lines[extract_index]}
     process_id=$(printf "extract_%05d" $extract_line)
     script_file="${TEMP_CONDOR_SCRIPTS_DIRECTORY}${process_id}.sh"
 
     echo "#!/bin/bash" > "${script_file}"
-    echo "source ./venv/bin/activate"                                                                               >> "${script_file}"
-    echo "python3 ./extraction_dictionary.py -parallelization_key extract -parallelization_index ${extract_line}"   >> "${script_file}"
+    echo "source ./venv/bin/activate"                                                   >> "${script_file}"
+    echo "python3 ./extraction_dictionary.py -extracts_per_run ${extracts_per_run}  \\" >> "${script_file}"
+    echo "    -parallelization_key extract -parallelization_index ${extract_line}"      >> "${script_file}"
     chmod a+x "${script_file}"
 
     # Fix Files for Condor Old Syntax
