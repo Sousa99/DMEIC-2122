@@ -231,7 +231,7 @@ class Word():
             lemas_correct.append(lema.split('&')[0])
 
         self.word_raw = word_raw
-        self.lemas = lemas.split('+')
+        self.lemas = lemas_correct
         self.pos = pos
         self.temcagr = temcagr
         self.pessnum = pessnum
