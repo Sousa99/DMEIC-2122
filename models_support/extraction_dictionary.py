@@ -225,6 +225,11 @@ class Word():
     fun         :   str
 
     def __init__(self, word_raw: str, lemas: str, pos: str, temcagr: str, pessnum: str, gen: str, fun: str) -> None:
+
+        lemas_correct = []
+        for lema in lemas.split('+'):
+            lemas_correct.append(lema.split('&')[0])
+
         self.word_raw = word_raw
         self.lemas = lemas.split('+')
         self.pos = pos
