@@ -1,6 +1,5 @@
 import os
 import abc
-import sys
 import nltk
 import pickle
 import gensim
@@ -19,14 +18,11 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
-import NLPyPort as nlport
 
 # ===================================================== SETUP =====================================================
 
-config_list : List[any] = nlport.load_congif_to_list()
-
 parser = argparse.ArgumentParser()
-parser.add_argument("-extracts_per_run",        help="the number of extracts that should executed")
+parser.add_argument("-extracts_per_run",        help="the number of extracts that should execute")
 parser.add_argument("-parallelization_key",     help="key for the parallelized model, if not given is executed sequentially")
 parser.add_argument("-parallelization_index",   help="key index for the parallelized model, must be given if task is to be parallelized")
 arguments = parser.parse_args()
@@ -43,33 +39,14 @@ else: NUMBER_EXTRACTS_BREAK : Optional[int] = int(arguments_dict['extracts_per_r
 
 # ================================================== SAVE VARIABLE ==================================================
 
-Word = str
-corpora_dictionary : Dict[Word, Dict[str, int]] = {}
+corpora_dictionary : Dict[str, Dict[str, int]] = {}
 documents_clean : List[List[str]] = []
 
 # ============================================ DEFINITION OF FUNCTIONS  ============================================
 
-def lemmatize_text(input_text: str) -> nlport.Text:
-    
-    options = {
-			"tokenizer" :           True,
-			"pos_tagger" :          False,
-			"lemmatizer" :          True,
-			"entity_recognition" :  False,
-			"np_chunking" :         False,
-			"pre_load" :            False,
-			"string_or_array" :     True
-    }
-
-    old_stdout = sys.stdout
-    sys.stdout = open(os.devnull, "w")
-    text_return = nlport.FullPipeline.new_full_pipe(input_text, options=options, config_list=config_list)
-    sys.stdout = old_stdout
-    return text_return
-
 def read_lines() -> None:
 
-    file = open('./corpora/CETEMPublico/CETEMPublico1.7.txt', 'r', encoding='latin-1')
+    file = open('./corpora/CETEMPublico/CETEMPublicoAnotado2019.txt', 'r', encoding='latin-1')
     queu_of_elements : List[Any] = []
     count_extracts : int = 0
     count_line : int = 0
@@ -92,10 +69,10 @@ def read_lines() -> None:
             if line.startswith(EXTRACT_TAG):
                 extract : Extract = queu_of_elements.pop()
                 extract_words : List[Word] = extract.get_words()
-                extract_entire : str = ' '.join(extract_words)
 
-                lemmatized : List[str] = lemmatize_text(extract_entire).lemas
-                lemmatized_filtered : List[str] = list(filter(lambda word: word.isalpha() and word != 'EOS', lemmatized))
+                lemmatized : List[List[str]] = list(map(lambda word: word.get_lemma(), extract_words))
+                lemmatized_flattened : List[str] = [item for sublist in lemmatized for item in sublist]
+                lemmatized_filtered : List[str] = list(filter(lambda word: word.isalpha(), lemmatized_flattened))
                 lemmatized_filtered : List[str] = list(filter(lambda word: word not in nltk.corpus.stopwords.words('portuguese'), lemmatized_filtered))
 
                 extract_code : str = extract.get_code()
@@ -116,7 +93,7 @@ def read_lines() -> None:
                 if NUMBER_EXTRACTS_BREAK is not None and count_extracts == NUMBER_EXTRACTS_BREAK: break
 
             # Closing others
-            else:
+            elif not any(map(lambda blacklisted_tag: line.startswith(blacklisted_tag), BLACKLISTED_TAGS)):
                 last_element = queu_of_elements.pop()
                 queu_of_elements[-1].add_element(last_element)
 
@@ -145,8 +122,9 @@ def read_lines() -> None:
             elif line.startswith(LIST_TAG): queu_of_elements.append(ListItem())
 
         elif line != "":
-            for word in line.split(): queu_of_elements[-1].add_word(word)
-
+            line_splitted = line.split()
+            word : Word = Word(line_splitted[0], line_splitted[3], line_splitted[4], line_splitted[5], line_splitted[6], line_splitted[7], line_splitted[8])
+            queu_of_elements[-1].add_word(word)
         
         line = file.readline()
 
@@ -192,12 +170,14 @@ def save_information() -> None:
 
 # =========================================== DEFINITION OF CONSTANTS ===========================================
 
-EXTRACT_TAG = 'ext'
-PARAGRAPH_TAG = 'p'
-SENTENCE_TAG = 's'
-AUTHOR_TAG = 'a'
-TITLE_TAG = 't'
-LIST_TAG = 'li'
+EXTRACT_TAG : str = 'ext'
+PARAGRAPH_TAG : str = 'p'
+SENTENCE_TAG : str = 's'
+AUTHOR_TAG : str = 'a'
+TITLE_TAG : str = 't'
+LIST_TAG : str = 'li'
+
+BLACKLISTED_TAGS : List[str] = ['mwe']
 
 # ========================================== DEFINITION OF ENUMERATORS ==========================================
 
@@ -234,6 +214,26 @@ EXTRACT_SEMESTER_MAP = {
 }
 
 # ============================================ DEFINITION OF CLASSES ============================================
+
+class Word():
+    word_raw    :   str
+    lemas       :   List[str]
+    pos         :   str
+    temcagr     :   str
+    pessnum     :   str
+    gen         :   str
+    fun         :   str
+
+    def __init__(self, word_raw: str, lemas: str, pos: str, temcagr: str, pessnum: str, gen: str, fun: str) -> None:
+        self.word_raw = word_raw
+        self.lemas = lemas.split('+')
+        self.pos = pos
+        self.temcagr = temcagr
+        self.pessnum = pessnum
+        self.gen = gen
+        self.fun = fun
+
+    def get_lemma(self) -> List[str]: return self.lemas
 
 class Element(abc.ABC):
 
