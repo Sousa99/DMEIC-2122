@@ -17,7 +17,7 @@ tmp_condor
 condor.log
 
 # Corpora should not be sent
-/models_support/corpora/*
+corpora
 
 # Virtual environments should not be sent
 venv
