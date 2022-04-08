@@ -154,7 +154,7 @@ def compute_probability_component(trans_info: module_load.TranscriptionInfo, con
 # =================================== PUBLIC METHODS ===================================
 
 def word_graph_analysis(structure_df: pd.DataFrame) -> pd.DataFrame:
-    print("🚀 Processing 'structure' analysis ...")
+    print("🚀 Processing 'word graph' analysis ...")
 
     # ===================================================== FEATURES - WORD GRAPH - ACQUIRE STRUCTURES =====================================================
     structure_df['Word Graph'] = structure_df['Trans Info'].progress_apply(compute_word_graph)
