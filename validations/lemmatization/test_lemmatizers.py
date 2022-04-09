@@ -1,6 +1,11 @@
 import os
+import abc
+import sys
 import nltk
+import time
+import stanza
 import subprocess
+import editdistance
 
 # ================================================= NLTK DOWNLOADS  =================================================
 '''
@@ -8,14 +13,18 @@ nltk.download('floresta')
 nltk.download('punkt')
 nltk.download('stopwords')
 print()
+
+stanza.download('pt')
+print()
 '''
 # ================================================= NLTK DOWNLOADS  =================================================
 
 from enum import Enum
 from random import sample
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Type
 
 import pandas as pd
+import NLPyPort.FullPipeline as nlpyport
 
 # ===================================================== SETUP =====================================================
 
@@ -27,8 +36,7 @@ CORPORA_FILE : str = "./corpora/CETEMPublico/CETEMPublicoAnotado2019.txt"
 
 # ================================================== SAVE VARIABLE ==================================================
 
-corpora_dictionary : Dict[str, Dict[str, int]] = {}
-documents_clean : List[List[str]] = []
+extracts_information : List[Dict[str, Any]] = []
 
 # ============================================ DEFINITION OF FUNCTIONS  ============================================
 
@@ -59,6 +67,44 @@ EXTRACT_SEMESTER_MAP = {
 
 # ============================================ DEFINITION OF CLASSES ============================================
 
+class Lemmatizer(abc.ABC):
+
+    @abc.abstractmethod
+    def __init__(self) -> None: super().__init__()
+    @abc.abstractmethod
+    def get_name(self) -> str: exit(f"🚨 Method 'get_name' not defined for '{self.__class__.__name__}'")
+    @abc.abstractmethod
+    def process_words(self, words: List[str]) -> List[str]: exit(f"🚨 Method 'process_words' not defined for '{self.__class__.__name__}'")
+
+class LemmatizerNLPyPort(Lemmatizer):
+
+    options = { "tokenizer" : True, "pos_tagger" : True, "lemmatizer" : True, "entity_recognition" : False,
+        "np_chunking" : False, "pre_load" : True, "string_or_array" : True }
+    config_list = nlpyport.load_congif_to_list()
+
+    def __init__(self) -> None: super().__init__()
+    def get_name(self) -> str: return "NLPyPort"
+    def process_words(self, words: List[str]) -> List[str]:
+        words_as_string : str = ' '.join(words)
+
+        old_stdout = sys.stdout
+        sys.stdout = open(os.devnull, "w")
+        processed = nlpyport.new_full_pipe(words_as_string, options=self.options, config_list=self.config_list)
+        sys.stdout = old_stdout
+
+        return processed.lemas
+
+class LemmatizerStanza(Lemmatizer):
+
+    pipeline = stanza.Pipeline('pt', verbose=False)
+
+    def __init__(self) -> None: super().__init__()
+    def get_name(self) -> str: return "Stanza"
+    def process_words(self, words: List[str]) -> List[str]:
+        words_as_string : str = ' '.join(words)
+        processed = self.pipeline(words_as_string)
+        return [ word.lemma for sentence in processed.sentences for word in sentence.words ]
+
 class Extract():
 
     words   :   List[str] = []
@@ -78,6 +124,25 @@ class Extract():
     def get_lemmas(self) -> List[str]: return self.lemmas
     def get_code(self) -> str: return f'{self.year}.{self.semester.value}.{self.number}'
 
+    def test_lemmatizers(self) -> List[Dict[str, Any]]:
+
+        information : List[Dict[str, Any]] = []
+        lemmatizers : List[Type[Lemmatizer]] = [ LemmatizerNLPyPort, LemmatizerStanza ]
+        for lemmatizer in lemmatizers:
+
+            words = self.get_words()
+
+            start_time : float = time.time()
+            lemmatizer_initialized = lemmatizer()
+            lemmas_achieved = lemmatizer_initialized.process_words(words)
+            end_time : float = time.time()
+
+            information_entry : Dict[str, Any] = { 'extract': self.get_code(), 'lemmatizer': lemmatizer_initialized.get_name(),
+                'score': 1.0 - (editdistance.eval(self.lemmas, lemmas_achieved) / max(len(self.lemmas), len(lemmas_achieved))), 'duration': end_time - start_time }
+            information.append(information_entry)
+
+        return information
+
 # ================================================ MAIN EXECUTION ================================================
 
 command_to_run : str = f'grep -n "<ext" {CORPORA_FILE} | cut -f1 -d:'
@@ -88,9 +153,8 @@ lines_with_extracts = filter(lambda line: line != "", lines_with_extracts)
 lines_with_extracts : List[int] = list(map(lambda line: int(line), lines_with_extracts))
 
 chosen_extracts : List[int] = sample(lines_with_extracts, NUMBER_EXTRACTS_TO_USE)
+chosen_extracts = lines_with_extracts[0:2]
 chosen_extracts.sort(reverse=True)
-
-print(chosen_extracts)
 
 file = open(CORPORA_FILE, 'r', encoding='latin-1')
 queu_of_elements : List[str] = []
@@ -98,17 +162,18 @@ current_extract : Optional[Extract] = None
 count_extracts : int = 0
 count_line : int = 0
 
+last_lemma : Optional[str] = None
 line = file.readline()
 while line and (len(chosen_extracts) > 0 or current_extract is not None):
 
     count_line = count_line + 1
     line = line.strip()
-    if current_extract is None and len(chosen_extracts) > 0 and chosen_extracts[0] != count_line:
+    if current_extract is None and len(chosen_extracts) > 0 and chosen_extracts[-1] != count_line:
         line = file.readline()
         continue
 
     # Reached Line of Start of Extract
-    if len(chosen_extracts) > 0 and chosen_extracts[0] == count_line:
+    if len(chosen_extracts) > 0 and chosen_extracts[-1] == count_line:
         line = line.replace('<', '', 1).replace('>', '', 1)
         if line.startswith(EXTRACT_TAG):
             chosen_extracts.pop()
@@ -132,8 +197,7 @@ while line and (len(chosen_extracts) > 0 or current_extract is not None):
             line = line.replace('</', '', 1).replace('>', '', 1)
             # Closing an Extract
             if line.startswith(EXTRACT_TAG):
-                print("\t Words:", current_extract.get_words())
-                print("\t Lemmas:", current_extract.get_lemmas())
+                extracts_information.extend(current_extract.test_lemmatizers())
                 current_extract = None
                 if count_extracts % NUMBER_EXTRACTS_PRINT == 0:
                     print(f'🚀 \'{count_extracts}\' extracts have already been processed', end="\r")
@@ -154,11 +218,19 @@ while line and (len(chosen_extracts) > 0 or current_extract is not None):
         elif line != "" and queu_of_elements[-1] not in SKIP_TAGS:
             line_splitted = line.split()
             current_extract.add_word(line_splitted[0])
-            for lema in line_splitted[3].split('+'):
-                word = lema.split('&')[0]
-                current_extract.add_lemma(word)
+            if '=' not in line_splitted[3] or last_lemma is None or last_lemma != line_splitted[3]:
+                last_lemma = line_splitted[3]
+                for lema in line_splitted[3].split('+'):
+                    word = lema.split('&')[0]
+                    for word_splitted in word.split('='):
+                        current_extract.add_lemma(word_splitted)
 
     line = file.readline()
 
 file.close()
 print()
+
+extracts_information_df = pd.DataFrame.from_dict(extracts_information)
+extracts_information_df.set_index(['extract', 'lemmatizer'], inplace=True)
+analysis_df = extracts_information_df.groupby(['lemmatizer'], as_index=True).agg({ 'score': ['mean','std'], 'duration': ['mean','std'] })
+print(analysis_df)

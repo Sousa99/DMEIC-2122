@@ -1,11 +1,12 @@
 certifi==2021.10.8
 charset-normalizer==2.0.12
 click==8.1.2
+editdistance==0.6.0
 emoji==1.7.0
 idna==3.3
 joblib==1.1.0
 NLPyPort==2.2.5
-nltk==3.7
+nltk==3.4.5
 numpy==1.22.3
 pandas==1.4.2
 protobuf==3.20.0
