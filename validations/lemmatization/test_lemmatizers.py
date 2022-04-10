@@ -19,12 +19,16 @@ print()
 '''
 # ================================================= NLTK DOWNLOADS  =================================================
 
-from enum import Enum
-from random import sample
-from typing import Any, Dict, List, Optional, Tuple, Type
+from enum       import Enum
+from pprint     import pprint
+from random     import sample
+from datetime   import datetime
+from typing     import Any, Dict, List, Optional, Tuple, Type
 
-import pandas as pd
-import NLPyPort.FullPipeline as nlpyport
+import pandas                   as pd
+import seaborn                  as sns
+import matplotlib.pyplot        as plt
+import NLPyPort.FullPipeline    as nlpyport
 
 # ===================================================== SETUP =====================================================
 
@@ -34,11 +38,28 @@ NUMBER_EXTRACTS_PRINT : int = 1
 NUMBER_EXTRACTS_TO_USE : int = 1
 CORPORA_FILE : str = "./corpora/CETEMPublico/CETEMPublicoAnotado2019.txt"
 
+EXPORT_DIRECTORY = './exports/'
+EXECUTION_TIMESTAMP = datetime.now()
+EXPORT_CSV_EXTENSION = '.csv'
+EXPORT_TXT_EXTENSION = '.txt'
+EXPORT_IMAGE_EXTENSION = '.png'
+
+CURRENT_DIRECTORIES = []
+
 # ================================================== SAVE VARIABLE ==================================================
 
 extracts_information : List[Dict[str, Any]] = []
 
 # ============================================ DEFINITION OF FUNCTIONS  ============================================
+
+def compute_path(filename: str, extension: str) -> str:
+
+    timestampStr = EXECUTION_TIMESTAMP.strftime("%Y.%m.%d %H.%M.%S")
+    directory_path = os.path.join(EXPORT_DIRECTORY, timestampStr, *CURRENT_DIRECTORIES)
+    filename_full = filename + extension
+
+    if not os.path.exists(directory_path): os.makedirs(directory_path)
+    return os.path.join(directory_path, filename_full)
 
 # =========================================== DEFINITION OF CONSTANTS ===========================================
 
@@ -124,7 +145,10 @@ class Extract():
     def get_lemmas(self) -> List[str]: return self.lemmas
     def get_code(self) -> str: return f'{self.year}.{self.semester.value}.{self.number}'
 
-    def test_lemmatizers(self) -> List[Dict[str, Any]]:
+    def test_lemmatizers(self, export_information: bool = False) -> List[Dict[str, Any]]:
+        global CURRENT_DIRECTORIES
+
+        export_information : Dict[str, List[str]] = { 'words': self.words, 'lemmas_correct': self.lemmas }
 
         information : List[Dict[str, Any]] = []
         lemmatizers : List[Type[Lemmatizer]] = [ LemmatizerNLPyPort, LemmatizerStanza ]
@@ -137,9 +161,15 @@ class Extract():
             lemmas_achieved = lemmatizer_initialized.process_words(words)
             end_time : float = time.time()
 
+            export_information[f'lemmas_{lemmatizer_initialized.get_name()}'] = lemmas_achieved
             information_entry : Dict[str, Any] = { 'extract': self.get_code(), 'lemmatizer': lemmatizer_initialized.get_name(),
                 'score': 1.0 - (editdistance.eval(self.lemmas, lemmas_achieved) / max(len(self.lemmas), len(lemmas_achieved))), 'duration': end_time - start_time }
             information.append(information_entry)
+
+            CURRENT_DIRECTORIES = ['extracts_information']
+            file = open(compute_path(self.get_code(), EXPORT_TXT_EXTENSION), 'w')
+            pprint(export_information, stream=file, compact=True, sort_dicts=False, width=150)
+            file.close()
 
         return information
 
@@ -197,7 +227,7 @@ while line and (len(chosen_extracts) > 0 or current_extract is not None):
             line = line.replace('</', '', 1).replace('>', '', 1)
             # Closing an Extract
             if line.startswith(EXTRACT_TAG):
-                extracts_information.extend(current_extract.test_lemmatizers())
+                extracts_information.extend(current_extract.test_lemmatizers(export_information=True))
                 current_extract = None
                 if count_extracts % NUMBER_EXTRACTS_PRINT == 0:
                     print(f'🚀 \'{count_extracts}\' extracts have already been processed', end="\r")
@@ -232,5 +262,14 @@ print()
 
 extracts_information_df = pd.DataFrame.from_dict(extracts_information)
 extracts_information_df.set_index(['extract', 'lemmatizer'], inplace=True)
-analysis_df = extracts_information_df.groupby(['lemmatizer'], as_index=True).agg({ 'score': ['mean','std'], 'duration': ['mean','std'] })
-print(analysis_df)
+analysis_information_df = extracts_information_df.groupby(['lemmatizer'], as_index=True).agg({ 'score': ['mean','std'], 'duration': ['mean','std'] })
+
+CURRENT_DIRECTORIES = []
+
+extracts_information_df.to_csv(compute_path('information_extracts', EXPORT_CSV_EXTENSION))
+analysis_information_df.to_csv(compute_path('information_analysis', EXPORT_CSV_EXTENSION))
+
+sns.boxplot(x="score", y="lemmatizer", orient='h', data=extracts_information_df.reset_index())
+plt.savefig(compute_path('boxplot_score', EXPORT_IMAGE_EXTENSION))
+sns.boxplot(x="duration", y="lemmatizer", orient='h', data=extracts_information_df.reset_index())
+plt.savefig(compute_path('boxplot_duration', EXPORT_IMAGE_EXTENSION))
