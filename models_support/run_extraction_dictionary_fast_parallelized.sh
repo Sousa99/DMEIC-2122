@@ -11,7 +11,7 @@ if [ ! -d "${TEMP_CONDOR_LOGS_DIRECTORY}" ]; then mkdir -p "${TEMP_CONDOR_LOGS_D
 if [ ! -d "${TEMP_CONDOR_SCRIPTS_DIRECTORY}" ]; then mkdir -p "${TEMP_CONDOR_SCRIPTS_DIRECTORY}"; fi
 
 echo "🚀 Running extract extractions ..."
-extract_lines=( `grep -n "<ext" ./corpora/CETEMPublico/CETEMPublico1.7.txt | cut -f1 -d:` )
+extract_lines=( `grep -n "<ext" ./corpora/CETEMPublico/CETEMPublicoAnotado2019.txt | cut -f1 -d:` )
 number_extracts=${#extract_lines[@]}
 
 extracts_per_run=$(( ( ${number_extracts} + ${CONDOR_PROCESSES_PER_OWNER} - 1 ) / ${CONDOR_PROCESSES_PER_OWNER} ))
