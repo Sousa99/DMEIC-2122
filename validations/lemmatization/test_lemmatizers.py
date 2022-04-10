@@ -126,6 +126,18 @@ class LemmatizerStanza(Lemmatizer):
         processed = self.pipeline(words_as_string)
         return [ word.lemma for sentence in processed.sentences for word in sentence.words ]
 
+class LemmatizerSTRING(Lemmatizer):
+    
+    def __init__(self) -> None: super().__init__()
+    def get_name(self) -> str: return "STRING"
+    def process_words(self, words: List[str]) -> List[str]:
+        words_as_string : str = ' '.join(words)
+        command_call : str = f'echo "{words_as_string}" | ~/share/STRING/string.sh -prexip2'
+        process_return = subprocess.run(command_call, shell=True, check=True, universal_newlines=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        lines_with_extracts : List[str] = process_return.stdout.decode().splitlines()
+        return list(map(lambda sentence: sentence.split('|')[1], lines_with_extracts))
+
 class Extract():
 
     words   :   List[str] = []
@@ -151,7 +163,7 @@ class Extract():
         export_information : Dict[str, List[str]] = { 'words': self.words, 'lemmas_correct': self.lemmas }
 
         information : List[Dict[str, Any]] = []
-        lemmatizers : List[Type[Lemmatizer]] = [ LemmatizerNLPyPort, LemmatizerStanza ]
+        lemmatizers : List[Type[Lemmatizer]] = [ LemmatizerNLPyPort, LemmatizerStanza, LemmatizerSTRING ]
         for lemmatizer in lemmatizers:
 
             words = self.get_words()
@@ -168,7 +180,7 @@ class Extract():
 
             CURRENT_DIRECTORIES = ['extracts_information']
             file = open(compute_path(self.get_code(), EXPORT_TXT_EXTENSION), 'w')
-            pprint(export_information, stream=file, compact=True, sort_dicts=False, width=150)
+            pprint(export_information, stream=file, compact=True, width=150)
             file.close()
 
         return information
@@ -176,9 +188,9 @@ class Extract():
 # ================================================ MAIN EXECUTION ================================================
 
 command_to_run : str = f'grep -n "<ext" {CORPORA_FILE} | cut -f1 -d:'
-process_return = subprocess.run(command_to_run, capture_output=True, text=True, shell=True)
+process_return = subprocess.run(command_to_run, shell=True, check=True, universal_newlines=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-lines_with_extracts : List[str] = process_return.stdout.splitlines()
+lines_with_extracts : List[str] = process_return.stdout.decode().splitlines()
 lines_with_extracts = filter(lambda line: line != "", lines_with_extracts)
 lines_with_extracts : List[int] = list(map(lambda line: int(line), lines_with_extracts))
 
