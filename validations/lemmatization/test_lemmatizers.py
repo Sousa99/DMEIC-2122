@@ -35,7 +35,7 @@ import NLPyPort.FullPipeline    as nlpyport
 if not os.path.exists('./exports/'): os.makedirs('./exports')
 NUMBER_EXTRACTS_PRINT : int = 1
 
-NUMBER_EXTRACTS_TO_USE : int = 1
+NUMBER_EXTRACTS_TO_USE : int = 2500
 CORPORA_FILE : str = "./corpora/CETEMPublico/CETEMPublicoAnotado2019.txt"
 
 EXPORT_DIRECTORY = './exports/'
@@ -113,7 +113,7 @@ class LemmatizerNLPyPort(Lemmatizer):
         processed = nlpyport.new_full_pipe(words_as_string, options=self.options, config_list=self.config_list)
         sys.stdout = old_stdout
 
-        return processed.lemas
+        return list(filter(lambda lemma: lemma != 'EOS', processed.lemas))
 
 class LemmatizerStanza(Lemmatizer):
 
@@ -131,8 +131,16 @@ class LemmatizerSTRING(Lemmatizer):
     def __init__(self) -> None: super().__init__()
     def get_name(self) -> str: return "STRING"
     def process_words(self, words: List[str]) -> List[str]:
+        global CURRENT_DIRECTORIES
         words_as_string : str = ' '.join(words)
-        command_call : str = f'echo "{words_as_string}" | ~/share/STRING/string.sh -prexip2'
+        
+        CURRENT_DIRECTORIES = ['tmp']
+        file_path : str = compute_path('current_lemmatization', EXPORT_TXT_EXTENSION)
+        file = open(file_path, 'w')
+        file.write(words_as_string)
+        file.close()
+
+        command_call : str = f'cat "{file_path}" | ~/share/STRING/string.sh -prexip2'
         process_return = subprocess.run(command_call, shell=True, check=True, universal_newlines=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         lines_with_extracts : List[str] = process_return.stdout.decode().splitlines()
@@ -195,7 +203,6 @@ lines_with_extracts = filter(lambda line: line != "", lines_with_extracts)
 lines_with_extracts : List[int] = list(map(lambda line: int(line), lines_with_extracts))
 
 chosen_extracts : List[int] = sample(lines_with_extracts, NUMBER_EXTRACTS_TO_USE)
-chosen_extracts = lines_with_extracts[0:2]
 chosen_extracts.sort(reverse=True)
 
 file = open(CORPORA_FILE, 'r', encoding='latin-1')
@@ -264,8 +271,7 @@ while line and (len(chosen_extracts) > 0 or current_extract is not None):
                 last_lemma = line_splitted[3]
                 for lema in line_splitted[3].split('+'):
                     word = lema.split('&')[0]
-                    for word_splitted in word.split('='):
-                        current_extract.add_lemma(word_splitted)
+                    current_extract.add_lemma(word.replace('=', ' '))
 
     line = file.readline()
 
