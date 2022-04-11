@@ -38,9 +38,6 @@ else: NUMBER_EXTRACTS_BREAK : Optional[int] = int(arguments_dict['extracts_per_r
 
 # ================================================== SAVE VARIABLE ==================================================
 
-corpora_dictionary : Dict[str, Dict[str, int]] = {}
-documents_clean : List[List[str]] = []
-
 # ============================================ DEFINITION OF FUNCTIONS  ============================================
 
 def read_lines() -> None:
@@ -70,18 +67,10 @@ def read_lines() -> None:
             if line.startswith(EXTRACT_TAG):
                 extract_words : List[str] = current_extract.get_words()
                 extract_code : str = current_extract.get_code()
-
-                if arguments_dict['parallelization_key'] is None:
-                    documents_clean.append(extract_words)
-                    for word in extract_words:
-                        if word not in corpora_dictionary: corpora_dictionary[word] = { extract_code: 1 }
-                        elif word in corpora_dictionary and extract_code not in corpora_dictionary[word]: corpora_dictionary[word][extract_code] = 1
-                        else: corpora_dictionary[word][extract_code] = corpora_dictionary[word][extract_code] + 1
-
-                else:
-                    file_save = open(f'./tmp/lemmatized_{extract_code}.pkl', 'wb')
-                    pickle.dump(extract_words, file_save)
-                    file_save.close()
+                
+                file_save = open(f'./tmp/lemmatized_{extract_code}.pkl', 'wb')
+                pickle.dump(extract_words, file_save)
+                file_save.close()
 
                 if count_extracts % NUMBER_EXTRACTS_PRINT == 0: print(f'🚀 \'{count_extracts}\' extracts have already been processed', end="\r")
                 if NUMBER_EXTRACTS_BREAK is not None and count_extracts == NUMBER_EXTRACTS_BREAK: break
@@ -118,6 +107,7 @@ def read_lines() -> None:
             lemas : str = line_splitted[3]
             for lema in lemas.split('+'):
                 word = lema.split('&')[0]
+                word = word.replace('=', ' ')
                 if word.isalpha() and word not in nltk.corpus.stopwords.words('portuguese'):
                     current_extract.add_word(word)
         
@@ -126,9 +116,11 @@ def read_lines() -> None:
     file.close()
     print()
 
-def load_information() -> None:
-    global documents_clean, corpora_dictionary
-    
+def save_information() -> None:
+
+    corpora_dictionary : Dict[str, Dict[str, int]] = {}
+    gensim_dictionary : gensim.corpora.Dictionary = gensim.corpora.Dictionary()
+
     count_extracts : int = 0
     for filename in os.listdir('./tmp/'):
         file_path = os.path.join('./tmp/', filename)
@@ -139,29 +131,25 @@ def load_information() -> None:
         lemmatized_filtered : List[str] = pickle.load(file_save)
         file_save.close()
 
-        documents_clean.append(lemmatized_filtered)
-
+        # Add to Corpora Dictionary
         for word in lemmatized_filtered:
             if word not in corpora_dictionary: corpora_dictionary[word] = { extract_code: 1 }
             elif word in corpora_dictionary and extract_code not in corpora_dictionary[word]: corpora_dictionary[word][extract_code] = 1
             else: corpora_dictionary[word][extract_code] = corpora_dictionary[word][extract_code] + 1
+        # Add to Gensim Dictionary
+        gensim_dictionary.add_documents([lemmatized_filtered])
 
         count_extracts = count_extracts + 1
         if count_extracts % NUMBER_EXTRACTS_PRINT == 0: print(f'🚀 \'{count_extracts}\' extracts have already been processed', end="\r")
-    print()
 
-def save_information() -> None:
-    file = open('./exports/corpora_documents_clean.pkl', 'wb')
-    pickle.dump(documents_clean, file)
-    file.close()
+    print()
 
     corpora_dataset = pd.DataFrame.from_dict(corpora_dictionary)
     corpora_dataset = corpora_dataset.fillna(0)
     corpora_dataset = corpora_dataset.astype(int)
     corpora_dataset.to_csv('./exports/corpora_dataset.cvs')
 
-    dictionary = gensim.corpora.Dictionary(documents_clean)
-    dictionary.save('./exports/corpora_dictionary.bin')
+    gensim_dictionary.save('./exports/corpora_dictionary.bin')
 
 # =========================================== DEFINITION OF CONSTANTS ===========================================
 
@@ -209,5 +197,4 @@ class Extract():
 # ================================================ MAIN EXECUTION ================================================
 
 if arguments_dict['parallelization_key'] is None or arguments_dict['parallelization_key'] == PARALLELIZATION_EXTRACT: read_lines()
-if arguments_dict['parallelization_key'] is not None and arguments_dict['parallelization_key'] == PARALLELIZATION_FINAL: load_information()
 if arguments_dict['parallelization_key'] is None or arguments_dict['parallelization_key'] == PARALLELIZATION_FINAL: save_information()
