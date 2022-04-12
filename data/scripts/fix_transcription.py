@@ -129,7 +129,9 @@ JOIN_NEXT_ID = 4
 JOIN_NEXT = '🙏\t Join with next Track'
 SPLIT_ID = 5
 SPLIT = '✂️\t Split this Track'
-MENU = [ REPEAT, NEXT, GO_BACK, CHANGE, JOIN_NEXT, SPLIT ]
+END_SENTENCE_ID = 6
+END_SENTENCE = '🔚\t End Sentence after last word'
+MENU = [ REPEAT, NEXT, GO_BACK, CHANGE, JOIN_NEXT, SPLIT, END_SENTENCE ]
 # ===================================================== MENU POSSIBILITIES =====================================================
 
 memory = []
@@ -227,6 +229,10 @@ while current_start_time != end_time:
         current_input_line_index = memory_item['current_input_line_index']
         heard = memory_item['heard']
         output_lines = memory_item['output_lines']
+
+    elif selected_action_index == END_SENTENCE_ID:
+        if len(heard) > 0: heard.pop()
+        output_lines.append({'start': current_start_time, 'duration': 0, 'word': '.' })
 
     elif selected_action_index == REPEAT_ID:
         if len(heard) > 0: heard.pop()
