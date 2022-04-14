@@ -183,7 +183,7 @@ class Extract():
 
             export_information[f'lemmas_{lemmatizer_initialized.get_name()}'] = lemmas_achieved
             information_entry : Dict[str, Any] = { 'extract': self.get_code(), 'lemmatizer': lemmatizer_initialized.get_name(),
-                'score': 1.0 - (editdistance.eval(self.lemmas, lemmas_achieved) / max(len(self.lemmas), len(lemmas_achieved))), 'duration': end_time - start_time }
+                'score': 1.0 - (editdistance.eval(self.lemmas, lemmas_achieved) / max(len(self.lemmas), len(lemmas_achieved))), 'duration': (end_time - start_time) / len(self.words) }
             information.append(information_entry)
 
             CURRENT_DIRECTORIES = ['extracts_information']
