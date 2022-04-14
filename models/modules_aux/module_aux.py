@@ -16,7 +16,7 @@ def pivot_on_column(data: pd.DataFrame, index: List[str], pivot_column: str, fea
 
     return data_pivot
 
-def compute_file_paths(file_path: str, extension_preference_order: List[str], extension: str) -> str:
+def compute_file_paths(file_path: str, extension_preference_order: List[str], extension: str = None) -> str:
 
     _, _, files_full = list(os.walk(file_path))[0]
     if extension != None: files_full = list(filter(lambda file: os.path.splitext(file)[1] == extension, files_full))
