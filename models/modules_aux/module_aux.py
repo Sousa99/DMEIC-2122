@@ -32,3 +32,4 @@ def compute_file_paths(file_path: str, extension_preference_order: List[str], ex
 def join_dataframes(dataframe1: pd.DataFrame, dataframe2: pd.DataFrame) -> pd.DataFrame:
     joined_df = pd.merge(dataframe1, dataframe2, left_index=True, right_index=True, how='outer', suffixes=('', '_duplicate'))
     joined_df = joined_df.drop(joined_df.filter(regex='_duplicate$').columns.tolist(), axis=1)
+    return joined_df

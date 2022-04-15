@@ -6,6 +6,8 @@ import modules_abstraction.module_models    as module_models
 # Local Modules - Features
 import modules_features.module_structure_features   as module_structure_features
 import modules_features.module_content_features     as module_content_features
+# Local Modules - Auxiliary
+import modules_aux.module_aux   as module_aux
 
 # =================================== INITIALIZE MODEL ===================================
 
@@ -25,8 +27,7 @@ if parallelization is None or parallelization == module_models.PARALLEL_FEATURE_
     #content_features_df = module_content_features.content_analysis(model.subjects_paths, model.PREFERENCE_TRANS, model.EXTENSION_TRANS)
     # All Features Dataframe
     all_features_df = pd.DataFrame()
-    # all_features_df = pd.merge(structure_features_df, content_features_df, left_index=True, right_index=True, how='outer', suffixes=('', '_duplicate'))
-    # all_features_df = all_features_df.drop(all_features_df.filter(regex='_duplicate$').columns.tolist(), axis=1)
+    # all_features_df = module_aux.join_dataframes(structure_features_df, content_features_df)
 
     # Specify specific drop features
     structure_drop_columns = ['Trans Path', 'Trans File', 'Trans File Path', 'Trans Info',
