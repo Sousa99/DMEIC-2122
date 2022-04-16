@@ -21,7 +21,7 @@ for num_topics in tqdm.trange(2500, 625001, 2500, desc='🚀 Creating LSA models
 
     # Create LSA Model
     model = gensim.models.LsiModel([], num_topics = num_topics, id2word = dictionary)
-    coherencemodel = gensim.models.CoherenceModel(model = None, texts = [], dictionary = dictionary, coherence='c_v')
+    coherencemodel = gensim.models.CoherenceModel(model = model, texts = [], dictionary = dictionary, coherence='c_v')
     # Update Models with every document
     for filename in tqdm.tqdm(os.listdir('./exports/documents_clean/'), desc='🚀 Reading Documents', leave=False):
         file_path = os.path.join('./exports/documents_clean/', filename)
