@@ -19,11 +19,12 @@ dictionary : gensim.corpora.Dictionary = gensim.corpora.Dictionary.load('./expor
 model_list : List[Dict[str, Any]] = []
 for num_topics in tqdm.trange(2500, 625001, 2500, desc='🚀 Creating LSA models', leave=True):
 
+    documents_clean : List[List[str]] = []
+
     # Create LSA Model
-    model = gensim.models.LsiModel([], num_topics = num_topics, id2word = dictionary)
-    coherencemodel = gensim.models.CoherenceModel(model = model, texts = [], dictionary = dictionary, coherence='c_v')
-    # Update Models with every document
-    for filename in tqdm.tqdm(os.listdir('./exports/documents_clean/'), desc='🚀 Reading Documents', leave=False):
+    model = gensim.models.LsiModel(None, num_topics = num_topics, id2word = dictionary)
+    # Update LSA Model with every document
+    for filename in tqdm.tqdm(os.listdir('./exports/documents_clean/'), desc='🚀 Reading Documents for LSI Model', leave=False):
         file_path = os.path.join('./exports/documents_clean/', filename)
         if not os.path.isfile(file_path): continue
 
@@ -32,8 +33,10 @@ for num_topics in tqdm.trange(2500, 625001, 2500, desc='🚀 Creating LSA models
         file_save.close()
 
         model.add_documents([dictionary.doc2bow(lemmatized_filtered)])
-        coherencemodel.texts.append(lemmatized_filtered)
-    coherencemodel.model = model
+        documents_clean.append(lemmatized_filtered)
+
+    # Create Coherence Model
+    coherencemodel = gensim.models.CoherenceModel(model = model, texts = documents_clean, dictionary = dictionary, coherence='c_v')
 
     # Save Back Information
     model_information : Dict[str, Any] = { 'model': model, 'number_topics': num_topics, 'coherence_score': coherencemodel.get_coherence() }
