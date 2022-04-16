@@ -26,8 +26,7 @@ for num_topics in tqdm.trange(2500, 2500, 625001, desc='🚀 Creating LSA models
     for filename in tqdm.tqdm(os.listdir('./exports/documents_clean/'), desc='🚀 Reading Documents', leave=False):
         file_path = os.path.join('./exports/documents_clean/', filename)
         if not os.path.isfile(file_path): continue
-
-        extract_code : str = filename.replace('lemmatized_', '').replace('.pkl', '')
+        
         file_save = open(file_path, 'rb')
         lemmatized_filtered : List[str] = pickle.load(file_save)
         file_save.close()

@@ -118,25 +118,16 @@ def read_lines() -> None:
     print()
 
 def save_information() -> None:
-
-    corpora_dictionary : Dict[str, Dict[str, int]] = {}
     gensim_dictionary : gensim.corpora.Dictionary = gensim.corpora.Dictionary()
 
     count_extracts : int = 0
     for filename in os.listdir('./exports/documents_clean/'):
         file_path = os.path.join('./exports/documents_clean/', filename)
         if not os.path.isfile(file_path): continue
-
-        extract_code : str = filename.replace('lemmatized_', '').replace('.pkl', '')
+        
         file_save = open(file_path, 'rb')
         lemmatized_filtered : List[str] = pickle.load(file_save)
         file_save.close()
-
-        # Add to Corpora Dictionary
-        for word in lemmatized_filtered:
-            if word not in corpora_dictionary: corpora_dictionary[word] = { extract_code: 1 }
-            elif word in corpora_dictionary and extract_code not in corpora_dictionary[word]: corpora_dictionary[word][extract_code] = 1
-            else: corpora_dictionary[word][extract_code] = corpora_dictionary[word][extract_code] + 1
         # Add to Gensim Dictionary
         gensim_dictionary.add_documents([lemmatized_filtered])
 
@@ -144,11 +135,6 @@ def save_information() -> None:
         if count_extracts % NUMBER_EXTRACTS_PRINT == 0: print(f'🚀 \'{count_extracts}\' extracts have already been processed', end="\r")
 
     print()
-
-    corpora_dataset = pd.DataFrame.from_dict(corpora_dictionary)
-    corpora_dataset = corpora_dataset.fillna(0)
-    corpora_dataset = corpora_dataset.astype(int)
-    corpora_dataset.to_csv('./exports/corpora_dataset.cvs')
 
     gensim_dictionary.save('./exports/corpora_dictionary.bin')
 
