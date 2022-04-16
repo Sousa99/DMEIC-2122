@@ -1,5 +1,7 @@
 import os
 import math
+import nltk
+import stanza
 import argparse
 import warnings
 
@@ -11,6 +13,17 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from typing import List
 from pydub import AudioSegment
+
+# ================================================= NLTK DOWNLOADS  =================================================
+'''
+nltk.download('floresta')
+nltk.download('punkt')
+nltk.download('stopwords')
+print()
+
+stanza.download('pt')
+print()
+'''
 
 # =================================== IGNORE CERTAIN ERRORS ===================================
 
@@ -91,27 +104,34 @@ def callbackWordLength(paths):
     total_words = 0
     for file_path in paths:
         file = open(file_path, 'r')
-        total_words = total_words + len(file.read().split())
+        for line in file.readline():
+            line_split = line.split()
+            for _ in line_split[4:]: total_words = total_words + 1
         file.close()
 
     return total_words / len(paths)
 
 def callbackWordFrequency(paths):
 
-    STOP_WORDS = []
-
     word_frequencies = {}
     for file_path in paths:
+        
+        text : str = ''
         file = open(file_path, 'r')
-        text = file.read()
+        for line in file.readline():
+            line_split = line.split()
+            for word in line_split[4:]:
+                text = text + ' ' + word
         file.close()
 
         # Pre processing done to the text
-        text = text.lower()
+        stanza_pipeline = stanza.Pipeline('pt', verbose=False)
+        processed = stanza_pipeline(text)
+        processed_lemmas : List[str] = [ word.lemma for sentence in processed.sentences for word in sentence.words ]
 
         # Add to dict
-        for word in text.split():
-            if word in STOP_WORDS: continue
+        for word in processed_lemmas:
+            if not word.isalpha() or word in nltk.corpus.stopwords.words('portuguese'): continue
 
             if word not in word_frequencies: word_frequencies[word] = 1
             else: word_frequencies[word] = word_frequencies[word] + 1
