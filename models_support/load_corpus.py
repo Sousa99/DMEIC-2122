@@ -12,9 +12,9 @@ from typing import Iterable, List, Optional
 class CorpusNotLoaded(abc.ABC):
 
     @abc.abstractmethod
-    def __init__(self) -> None:
-        if not os.path.exists('./exports/documents_clean/'):
-            exit(f'🚨 The folder \'./exports/documents_clean/\' must exist')
+    def __init__(self, path_to_corpora_files: str) -> None:
+        if not os.path.exists(path_to_corpora_files):
+            exit(f'🚨 The folder \'{path_to_corpora_files}\' must exist')
 
     @abc.abstractmethod
     def __iter__(self):
@@ -24,7 +24,7 @@ class CorpusNotLoaded(abc.ABC):
 class LemmatizedCorpusNotLoaded(CorpusNotLoaded):
 
     def __init__(self, path_to_corpora_files: str, number_of_documents_to_use: Optional[int] = None, debug_iteration: bool = False) -> None:
-        super().__init__()
+        super().__init__(path_to_corpora_files)
         
         self.path_to_corpora : str = path_to_corpora_files
         self.filenames : List[str] = os.listdir(path_to_corpora_files)
@@ -53,7 +53,7 @@ class LemmatizedCorpusNotLoaded(CorpusNotLoaded):
 class BOWCorpusNotLoaded(CorpusNotLoaded):
 
     def __init__(self, path_to_corpora_files: str, dictionary: gensim.corpora.Dictionary, number_of_documents_to_use: Optional[int] = None, debug_iteration: bool = False) -> None:
-        super().__init__()
+        super().__init__(path_to_corpora_files)
 
         self.path_to_corpora : str = path_to_corpora_files
         self.dictionary : gensim.corpora.Dictionary = dictionary
