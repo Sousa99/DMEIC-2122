@@ -2,49 +2,37 @@ import os
 import tqdm
 import gensim
 import pprint
-import pickle
-import random
+import load_corpus
 
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional
 
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-# ========================================== DEBUG CONSTANTS ==========================================
+# =============================================== DEBUG CONSTANTS ================================================
 
-NUMBER_DOCUMENTS : int = 100000
+NUMBER_DOCUMENTS : Optional[int] = 5000
 
-# ========================================== DEFINITION OF ENUMERATORS ==========================================
+# ================================================== CONSTANTS ===================================================
 
-if not os.path.exists('./exports/documents_clean/'): exit(f'🚨 The folder \'./exports/documents_clean/\' must exist')
-if not os.path.exists('./exports/corpora_dictionary.bin'): exit(f'🚨 The file \'./exports/corpora_dictionary.bin\' must exist')
+PATH_TO_DOCUMENTS : str = './exports/documents_clean/'
+PATH_TO_DICTIONARY : str = './exports/corpora_dictionary.bin'
 
-documents_files : List[str] = os.listdir('./exports/documents_clean/')
-dictionary : gensim.corpora.Dictionary = gensim.corpora.Dictionary.load('./exports/corpora_dictionary.bin')
-documents_clean : List[List[str]] = []
-corpus : List[List[Tuple[int, int]]] = []
+# ================================================== MAIN CODE ==================================================
 
-documents_files_selected = random.sample(documents_files, NUMBER_DOCUMENTS)
+if not os.path.exists(PATH_TO_DICTIONARY): exit(f'🚨 The file \'{PATH_TO_DICTIONARY}\' must exist')
 
-for filename in tqdm.tqdm(documents_files_selected, desc='🚀 Reading Documents for LSI Model', leave=True):
-    file_path = os.path.join('./exports/documents_clean/', filename)
-    if not os.path.isfile(file_path): continue
-
-    file_save = open(file_path, 'rb')
-    lemmatized_filtered : List[str] = pickle.load(file_save)
-    file_save.close()
-    
-    documents_clean.append(lemmatized_filtered)
-    vector = dictionary.doc2bow(lemmatized_filtered)
-    corpus.append(vector)
+dictionary : gensim.corpora.Dictionary = gensim.corpora.Dictionary.load(PATH_TO_DICTIONARY)
+corpus : load_corpus.LemmatizedCorpusNotLoaded = load_corpus.LemmatizedCorpusNotLoaded(PATH_TO_DOCUMENTS, NUMBER_DOCUMENTS, True)
+bow_corpus : load_corpus.BOWCorpusNotLoaded = load_corpus.BOWCorpusNotLoaded(PATH_TO_DOCUMENTS, dictionary, NUMBER_DOCUMENTS, True)
 
 model_list : List[Dict[str, Any]] = []
-for num_topics in tqdm.trange(2500, min(len(documents_clean), 625001), 2500, desc='🚀 Creating LSA models', leave=True):
+for num_topics in tqdm.trange(2500, min(NUMBER_DOCUMENTS, 625001), 2500, desc='🚀 Creating LSA models', leave=True):
 
     # Create LSA Model
-    model = gensim.models.LsiModel(corpus, num_topics = num_topics, id2word = dictionary)
+    model = gensim.models.LsiModel(bow_corpus, num_topics = num_topics, id2word = dictionary)
     # Create Coherence Model
-    coherencemodel = gensim.models.CoherenceModel(model = model, texts = documents_clean, dictionary = dictionary, coherence='c_v')
+    coherencemodel = gensim.models.CoherenceModel(model = model, texts = corpus, dictionary = dictionary, coherence='c_v')
 
     # Save Back Information
     model_information : Dict[str, Any] = { 'model': model, 'number_topics': num_topics, 'coherence_score': coherencemodel.get_coherence() }

@@ -37,7 +37,7 @@ class LemmatizedCorpusNotLoaded(CorpusNotLoaded):
 
         filename_iterator : Iterable[str] = self.filenames
         if self.debug_iteration:
-            filename_iterator = tqdm.tqdm(filename_iterator, desc="🚀 Reading Documents for Lemmatized Corpus", leave=True)
+            filename_iterator = tqdm.tqdm(filename_iterator, desc="🚀 Reading Documents for Lemmatized Corpus", leave=False)
 
         for filename in filename_iterator:
 
@@ -67,7 +67,7 @@ class BOWCorpusNotLoaded(CorpusNotLoaded):
 
         filename_iterator : Iterable[str] = self.filenames
         if self.debug_iteration:
-            filename_iterator = tqdm.tqdm(filename_iterator, desc="🚀 Reading Documents for BOW Corpus", leave=True)
+            filename_iterator = tqdm.tqdm(filename_iterator, desc="🚀 Reading Documents for BOW Corpus", leave=False)
 
         for filename in filename_iterator:
 
