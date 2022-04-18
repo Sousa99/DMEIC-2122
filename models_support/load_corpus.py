@@ -3,8 +3,8 @@ import abc
 import tqdm
 import gensim
 import pickle
+import random
 
-from random import random
 from typing import Iterable, List, Optional
 
 # ============================================================ MAIN CLASS DEFINITION ============================================================
