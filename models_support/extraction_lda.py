@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 # ========================================== DEBUG CONSTANTS ==========================================
 
-NUMBER_DOCUMENTS : int = 100000
+NUMBER_DOCUMENTS : float = 100000
 
 # ========================================== DEFINITION OF ENUMERATORS ==========================================
 
@@ -26,7 +26,7 @@ corpus : List[List[Tuple[int, int]]] = []
 
 documents_files_selected = random.sample(documents_files, NUMBER_DOCUMENTS)
 
-for filename in tqdm.tqdm(documents_files_selected, desc='🚀 Reading Documents for LSI Model', leave=True):
+for filename in tqdm.tqdm(documents_files_selected, desc='🚀 Reading Documents for LDA Model', leave=True):
     file_path = os.path.join('./exports/documents_clean/', filename)
     if not os.path.isfile(file_path): continue
 
@@ -39,10 +39,10 @@ for filename in tqdm.tqdm(documents_files_selected, desc='🚀 Reading Documents
     corpus.append(vector)
 
 model_list : List[Dict[str, Any]] = []
-for num_topics in tqdm.trange(2500, min(len(documents_clean), 625001), 2500, desc='🚀 Creating LSA models', leave=True):
+for num_topics in tqdm.trange(2500, min(len(documents_clean, 625001)), 2500, desc='🚀 Creating LDA models', leave=True):
 
-    # Create LSA Model
-    model = gensim.models.LsiModel(corpus, num_topics = num_topics, id2word = dictionary)
+    # Create LDA Model
+    model = gensim.models.ldamulticore.LdaMulticore(corpus, num_topics = num_topics, id2word = dictionary)
     # Create Coherence Model
     coherencemodel = gensim.models.CoherenceModel(model = model, texts = documents_clean, dictionary = dictionary, coherence='c_v')
 
@@ -54,11 +54,11 @@ plt.figure(figsize = (10, 4))
 sns.lineplot(x = list(map(lambda elem: elem['number_topics'], model_list)), y = list(map(lambda elem: elem['coherence_score'], model_list)))
 plt.xlabel("Number of Topics")
 plt.ylabel("Coherence score")
-plt.savefig('./exports/lsa_topics_coherence.png')
+plt.savefig('./exports/lda_topics_coherence.png')
 
 best_model : Dict[str, Any] = max(model_list, key = lambda key: key['coherence_score'])
-best_model['model'].save('./exports/lsa_best_model.bin')
+best_model['model'].save('./exports/lda_best_model.bin')
 
-file = open('./exports/lsa_best_model_topics.txt', 'wt')
+file = open('./exports/lda_best_model_topics.txt', 'wt')
 pprint.pprint(best_model['model'].print_topics(num_words = 100), stream = file)
 file.close()
