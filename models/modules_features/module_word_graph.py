@@ -46,12 +46,12 @@ def convert_multi_graph_to_weighted(multi_graph: nx.MultiDiGraph) -> nx.DiGraph:
 def compute_weakly_connected_components(graph: nx.MultiDiGraph) -> List[nx.MultiDiGraph]:
     generator = nx.weakly_connected_components(graph)
     weakly_connected_components_list = sorted(generator, key=len, reverse=True)
-    weakly_connected_components : List[nx.MultiDiGraph] = list(map(lambda wcc_list: graph.subgraph(wcc_list), weakly_connected_components_list))
+    weakly_connected_components : List[nx.MultiDiGraph] = list(map(lambda wcc_list: nx.MultiDiGraph(graph.subgraph(wcc_list)), weakly_connected_components_list))
     return weakly_connected_components
 def compute_strong_connected_components(graph: nx.MultiDiGraph) -> List[nx.MultiDiGraph]:
     generator = nx.strongly_connected_components(graph)
     strong_connected_components_list = sorted(generator, key=len, reverse=True)
-    strong_connected_components : List[nx.MultiDiGraph] = list(map(lambda wcc_list: graph.subgraph(wcc_list), strong_connected_components_list))
+    strong_connected_components : List[nx.MultiDiGraph] = list(map(lambda wcc_list: nx.MultiDiGraph(graph.subgraph(wcc_list)), strong_connected_components_list))
     return strong_connected_components
 
 def get_largest_connected_component(graphs: List[nx.MultiDiGraph]) -> Optional[nx.MultiDiGraph]:
