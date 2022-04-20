@@ -1,8 +1,11 @@
 import os
 import abc
-from typing import List, Optional
 import gensim
 
+from numpy.typing   import NDArray
+from typing         import List, Optional
+
+import numpy    as np
 
 # =================================== CONSTANTS DEFINITIONS ===================================
 
@@ -35,10 +38,10 @@ class ModelLSA(ModelCorpora):
         self.dictionary : gensim.corpora.Dictionary = gensim.corpora.Dictionary.load(filepath_dictionary)
         self.model : gensim.models.LsiModel = gensim.models.LsiModel.load(filepath_model)
 
-    def get_word_embedding(self, word: str) -> Optional[List[float]]:
+    def get_word_embedding(self, word: str) -> Optional[NDArray[np.float64]]:
 
         if word not in self.dictionary.token2id: return None
         word_id = self.dictionary.token2id[word]
         embedding = self.model.projection.u[word_id]
 
-        return embedding
+        return np.array(embedding, dtype=np.float64)

@@ -1,7 +1,12 @@
 import abc
 import stanza
+import warnings
 
 from typing import List
+
+# =================================== IGNORE CERTAIN ERRORS ===================================
+
+warnings.filterwarnings('ignore', module = 'stanza')
 
 # =================================== PRIVATE CLASS DEFINITIONS ===================================
 

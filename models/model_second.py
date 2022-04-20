@@ -30,8 +30,9 @@ if parallelization is None or parallelization == module_models.PARALLEL_FEATURE_
     # all_features_df = module_aux.join_dataframes(structure_features_df, content_features_df)
 
     # Specify specific drop features
-    structure_drop_columns = ['Trans Path', 'Trans File', 'Trans File Path', 'Trans Info',
-        'Word Graph', 'Word Graph - WCC', 'Word Graph - SCC', 'Word Graph - LWCC', 'Word Graph - LSCC']
+    structure_drop_columns = ['Trans Path', 'Trans File', 'Trans File Path', 'Trans Info', 'Lemmatized Text',
+        'Word Graph', 'Word Graph - WCC', 'Word Graph - SCC', 'Word Graph - LWCC', 'Word Graph - LSCC',
+        'LSA - Word Groups', 'LSA - Embedding per Word Groups', 'LSA - Embedding Groups']
     # content_drop_columns = ['Audio Path', 'Audio File', 'Audio File Path', 'Trans Path', 'Trans File', 'Trans File Path', 'Trans Info']
     # all_features_drop_columns = ['Audio Path', 'Audio File', 'Audio File Path', 'Trans Path', 'Trans File', 'Trans File Path', 'Trans Info']
 

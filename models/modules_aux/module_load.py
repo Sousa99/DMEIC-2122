@@ -7,6 +7,9 @@ from typing import Any, List
 if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from typing import TypedDict
 else: from typing_extensions import TypedDict
 
+# Local Modules - Auxiliary
+import modules_aux.module_nlp   as module_nlp
+
 # =================================== PRIVATE METHODS ===================================
 
 def load_info_subjects(info_file: str, subjects_code_file_system: str, delimiter: str) -> pd.DataFrame:
@@ -63,7 +66,7 @@ class TranscriptionInfoItem():
 class TranscriptionInfo():
 
     def __init__(self, file_path: str):
-        self.transcription_info = []
+        self.transcription_info : List[TranscriptionInfoItem] = []
 
         file = open(file_path, 'r')
         for line in file.readlines():
@@ -71,6 +74,12 @@ class TranscriptionInfo():
         file.close()
 
     def get_info_items(self) -> List[TranscriptionInfoItem]: return self.transcription_info
+    def lemmatize_words(self, lemmatizer: module_nlp.Lemmatizer) -> List[str]:
+        original_words : List[str] = []
+        for info_item in self.transcription_info: original_words.extend(info_item.get_words().split())
+        
+        lemmatized_words : List[str] = lemmatizer.process_words(original_words)
+        return lemmatized_words
 
 # =================================== PUBLIC METHODS ===================================
 

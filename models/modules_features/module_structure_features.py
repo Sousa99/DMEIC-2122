@@ -10,6 +10,7 @@ import modules_features.module_lsa          as module_lsa
 import modules_features.module_word_graph   as module_word_graph
 # Local Modules - Auxiliary
 import modules_aux.module_aux   as module_aux
+import modules_aux.module_nlp   as module_nlp
 import modules_aux.module_load  as module_load
 
 # =================================== PRIVATE METHODS ===================================
@@ -18,6 +19,7 @@ import modules_aux.module_load  as module_load
 
 def structure_analysis(paths_df: pd.DataFrame, preference_trans: List[str], trans_extension: str) -> pd.DataFrame:
     print("🚀 Processing 'structure' analysis ...")
+    lemmatizer : module_nlp.LemmatizerStanza = module_nlp.LemmatizerStanza()
 
     # Dataframe to study speech features
     structure_df = paths_df.copy(deep=True)[['Subject', 'Task', 'Trans Path']]
@@ -27,6 +29,7 @@ def structure_analysis(paths_df: pd.DataFrame, preference_trans: List[str], tran
     structure_df['Trans File Path'] = list(map(lambda items: os.path.join(items[0], items[1]), list(zip(structure_df['Trans Path'], structure_df['Trans File']))))
     # Process Transcriptions
     structure_df['Trans Info'] = structure_df['Trans File Path'].apply(lambda file_path: module_load.TranscriptionInfo(file_path))
+    structure_df['Lemmatized Text'] = structure_df['Trans Info'].apply(lambda trans_info: trans_info.lemmatize_words(lemmatizer))
 
     # Word Graph Features
     word_graph_df = module_word_graph.word_graph_analysis(structure_df.copy(deep=True))
