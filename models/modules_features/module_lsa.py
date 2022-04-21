@@ -58,6 +58,7 @@ def lsa_analysis(structure_df: pd.DataFrame) -> pd.DataFrame:
     structure_df['LSA - Word Groups'] = structure_df['Lemmatized Filtered Text'].progress_apply(subdivide_transcription_words)
     structure_df['LSA - Embedding per Word Groups'] = structure_df['LSA - Word Groups'].progress_apply(lambda groups_of_words: convert_groups_of_words_to_embeddings(groups_of_words, lsa_model))
     structure_df['LSA - Embedding Groups'] = structure_df['LSA - Embedding per Word Groups'].progress_apply(average_embedding_per_group)
+    # LSA Coherence scores
     structure_df['LSA - First Order Coherence'] = structure_df['LSA - Embedding Groups'].progress_apply(lambda embeddings: compute_coherence_score(embeddings, 1))
     structure_df['LSA - Second Order Coherence'] = structure_df['LSA - Embedding Groups'].progress_apply(lambda embeddings: compute_coherence_score(embeddings, 2))
     
