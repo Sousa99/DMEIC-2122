@@ -32,7 +32,8 @@ if parallelization is None or parallelization == module_models.PARALLEL_FEATURE_
     # Specify specific drop features
     structure_drop_columns = ['Trans Path', 'Trans File', 'Trans File Path', 'Trans Info', 'Lemmatized Text', 'Lemmatized Filtered Text',
         'Word Graph', 'Word Graph - WCC', 'Word Graph - SCC', 'Word Graph - LWCC', 'Word Graph - LSCC',
-        'LSA - Word Groups', 'LSA - Embedding per Word Groups', 'LSA - Embedding Groups']
+        'LSA - Word Groups', 'LSA - Embedding per Word Groups', 'LSA - Embedding Groups',
+        'Vector Unpacking - Word Groups', 'Vector Unpacking - Embedding per Word Groups', 'Vector Unpacking - Embedding Groups']
     # content_drop_columns = ['Audio Path', 'Audio File', 'Audio File Path', 'Trans Path', 'Trans File', 'Trans File Path', 'Trans Info']
     # all_features_drop_columns = ['Audio Path', 'Audio File', 'Audio File Path', 'Trans Path', 'Trans File', 'Trans File Path', 'Trans Info']
 

@@ -12,6 +12,7 @@ import numpy    as np
 PATH_MODELS_SUPPORT = '../models_support/exports/'
 
 FILENAME_DICTIONARY = 'corpora_dictionary.bin'
+FILENAME_WORD2VEC   = 'word2vec_model.bin'
 FILENAME_LSA        = 'lsa_best_model.bin'
 
 # =================================== PRIVATE CLASS DEFINITIONS ===================================
@@ -45,3 +46,18 @@ class ModelLSA(ModelCorpora):
         embedding = self.model.projection.u[word_id]
 
         return np.array(embedding, dtype=np.float64)
+
+class ModelWord2Vec(ModelCorpora):
+
+    def __init__(self) -> None:
+        filepath_model = os.path.join(PATH_MODELS_SUPPORT, FILENAME_WORD2VEC)
+        if not os.path.exists(filepath_model): exit(f'🚨 The file \'{filepath_model}\' does not exist')
+
+        self.model : gensim.models.Word2Vec = gensim.models.Word2Vec.load(filepath_model)
+
+    def get_word_embedding(self, word: str) -> Optional[NDArray[np.float64]]:
+
+        if word not in self.model.wv: return None
+        embedding : NDArray[np.float32] = self.model.wv[word]
+
+        return embedding.astype(np.float64)

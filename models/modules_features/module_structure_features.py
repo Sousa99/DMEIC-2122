@@ -6,12 +6,13 @@ from typing import List
 from functools import reduce
 
 # Local Modules - Features
-import modules_features.module_lsa          as module_lsa
-import modules_features.module_word_graph   as module_word_graph
+import modules_features.module_lsa                  as module_lsa
+import modules_features.module_word_graph           as module_word_graph
+import modules_features.module_vector_unpacking     as module_vector_unpacking
 # Local Modules - Auxiliary
-import modules_aux.module_aux   as module_aux
-import modules_aux.module_nlp   as module_nlp
-import modules_aux.module_load  as module_load
+import modules_aux.module_aux                       as module_aux
+import modules_aux.module_nlp                       as module_nlp
+import modules_aux.module_load                      as module_load
 
 # =================================== PRIVATE METHODS ===================================
 
@@ -36,9 +37,11 @@ def structure_analysis(paths_df: pd.DataFrame, preference_trans: List[str], tran
     word_graph_df = module_word_graph.word_graph_analysis(structure_df.copy(deep=True))
     # LSA Coherence Features
     lsa_df = module_lsa.lsa_analysis(structure_df.copy(deep=True))
+    # Vector Unpacking Features
+    vector_unpacking_df = module_vector_unpacking.vector_unpacking_analysis(structure_df.copy(deep=True))
     
     # Final Dataframe
-    all_structure_dataframes : List[pd.DataFrame] = [word_graph_df, lsa_df]
+    all_structure_dataframes : List[pd.DataFrame] = [word_graph_df, lsa_df, vector_unpacking_df]
     all_structure_df = reduce(lambda dataset_left, dataset_right: module_aux.join_dataframes(dataset_left, dataset_right), all_structure_dataframes)
 
     print("✅ Finished processing 'structure' analysis!")
