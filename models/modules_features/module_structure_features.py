@@ -30,6 +30,7 @@ def structure_analysis(paths_df: pd.DataFrame, preference_trans: List[str], tran
     # Process Transcriptions
     structure_df['Trans Info'] = structure_df['Trans File Path'].apply(lambda file_path: module_load.TranscriptionInfo(file_path))
     structure_df['Lemmatized Text'] = structure_df['Trans Info'].apply(lambda trans_info: trans_info.lemmatize_words(lemmatizer))
+    structure_df['Lemmatized Filtered Text'] = structure_df['Lemmatized Text'].apply(module_nlp.filter_out_stop_words)
 
     # Word Graph Features
     word_graph_df = module_word_graph.word_graph_analysis(structure_df.copy(deep=True))
