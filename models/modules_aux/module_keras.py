@@ -1,6 +1,5 @@
-from gc import callbacks
 import os
-from tabnanny import verbose
+import math
 
 # =================================== IGNORE CERTAIN ERRORS ===================================
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -10,62 +9,10 @@ import numpy            as np
 import tensorflow       as tf
 import numpy.typing     as npt
 
-from typing             import Any, List
+from typing             import Any, Dict, List
 from tensorflow         import keras
 
-# =================================== CONSTANTS DEFINITIONS ===================================
-
-NUMBER_OF_WORDS : int = 100
-EMBEDDING_DIMENSIONALITY : int = 200
-MAX_EPHOCS : int = 5000
-
-# =================================== CREATION OF WORD EMBEDDINGS ===================================
-
-word_embeddings : List[npt.NDArray[np.float64]] = []
-for _ in range(NUMBER_OF_WORDS):
-    random_array : npt.NDArray[np.float64] = np.random.rand(EMBEDDING_DIMENSIONALITY).astype(np.float64)
-    word_embeddings.append(random_array / np.linalg.norm(random_array))
-#for (index, word_embedding) in enumerate(word_embeddings): print(f"📄 Word Embedding {index}:", word_embedding)
-
-# =================================== ACHIEVE REAL SENTENCE EMBEDDING ===================================
-
-matrix_embeddings : npt.NDArray[np.float64] = np.array(word_embeddings)
-sum_embeddings : npt.NDArray[np.float64] = np.sum(matrix_embeddings, axis=0)
-sentence_embedding : npt.NDArray[np.float64] = sum_embeddings / np.linalg.norm(sum_embeddings)
-#print(f"📄 Sentence Embedding:", sentence_embedding)
-
-# =================================== NEURAL NETWORK DEVELOPMENT - BUILD ===================================
-
-class LayerCustom(keras.layers.Layer):
-
-    def __init__(self):
-        super(LayerCustom, self).__init__()
-
-    def build(self, input_shape):
-        # Attributes for other layer charactheristics
-        self.iteration : int = 0
-        # Weights Initialization
-        self.w = self.add_weight(
-            shape=(input_shape[-1], 1),
-            initializer="random_normal",
-            trainable=True,
-        )
-
-    def call(self, inputs):
-        return tf.matmul(inputs, self.w)
-
-#print()
-model = keras.Sequential()
-model.add(keras.layers.Input(matrix_embeddings.transpose().shape))
-model.add(LayerCustom())
-
-# =================================== NEURAL NETWORK DEVELOPMENT - SAVE ===================================
-
-#model.summary()
-#dot_img_file = './model_1.png'
-#keras.utils.plot_model(model, to_file=dot_img_file, show_shapes=True)
-
-# =================================== NEURAL NETWORK DEVELOPMENT - Compile ===================================
+# ===================================== PRIVATE FUNCTIONS =====================================
 
 def euclidean_distance_loss(y_true, y_pred):
     """
@@ -77,14 +24,24 @@ def euclidean_distance_loss(y_true, y_pred):
     """
     return keras.backend.sqrt(keras.backend.sum(keras.backend.square(y_pred - y_true), axis=-1))
 
-model.compile(
-    optimizer=keras.optimizers.RMSprop(),
-    loss=euclidean_distance_loss,
-    metrics=[keras.metrics.CosineSimilarity()]
-)
+# =================================== PRIVATE CLASS DEFINITIONS ===================================
 
-# =================================== NEURAL NETWORK DEVELOPMENT - TRAIN ===================================
-
+# ----------------------------------------- Custom Layers -----------------------------------------
+class LayerCustomRezaii(keras.layers.Layer):
+    def __init__(self):
+        super(LayerCustomRezaii, self).__init__()
+    def build(self, input_shape):
+        # Attributes for other layer charactheristics
+        self.iteration : int = 0
+        # Weights Initialization
+        self.w = self.add_weight(
+            shape=(input_shape[-1], 1),
+            initializer="random_normal",
+            trainable=True,
+        )
+    def call(self, inputs):
+        return tf.matmul(inputs, self.w)
+# --------------------------------------- Custom Callbacks ---------------------------------------
 class CallbackWeightTreshold(keras.callbacks.Callback):
 
     def __init__(self, max_ephocs: int, constant_tau : int = 100) -> None:
@@ -104,22 +61,47 @@ class CallbackWeightTreshold(keras.callbacks.Callback):
         full_weights[0] = weights
         self.model.set_weights(full_weights)
 
-x_train = np.transpose(matrix_embeddings).reshape((1, EMBEDDING_DIMENSIONALITY, NUMBER_OF_WORDS))
-y_train = sentence_embedding.reshape((1, EMBEDDING_DIMENSIONALITY, 1))
+# =================================== PUBLIC CLASS DEFINITIONS ===================================
 
-callbacks : List[keras.callbacks.Callback] = [tf.keras.callbacks.EarlyStopping(monitor='loss', patience=10, restore_best_weights=True),
-    CallbackWeightTreshold(NUMBER_OF_WORDS, MAX_EPHOCS)]
-history = model.fit(x_train, y_train, epochs=MAX_EPHOCS, callbacks=callbacks, verbose=False)
+class NeuralNetworkRezaii():
 
-number_of_ephocs_ran : int = len(history.history['loss'])
-last_loss : float = history.history['loss'][-1]
-last_cosine_similarity : float = history.history['cosine_similarity'][-1]
+    def __init__(self, matrix_embeddings: npt.NDArray[np.float64], sentence_embedding: npt.NDArray[np.float64], ephocs: int = 5000) -> None:
+        self.matrix_embeddings : npt.NDArray[np.float64] = matrix_embeddings
+        self.sentence_embedding : npt.NDArray[np.float64] = sentence_embedding
 
-number_of_weights : int = model.weights[0].shape[0]
-number_of_zero_weights : int = len(np.where( model.weights != 0.0 ))
+        self.epochs : int = ephocs
+        self.number_of_words : int = self.matrix_embeddings.shape[0]
+        self.embedding_dimensionality : int = self.matrix_embeddings.shape[1]
 
-print(f"💯 Best 'number of epochs ran': {number_of_ephocs_ran}")
-print(f"💯 Best 'loss': {last_loss}")
-print(f"💯 Best 'cosine_similarity': {last_cosine_similarity}")
+        # Develop Model
+        self.model = keras.Sequential()
+        self.model.add(keras.layers.Input(self.matrix_embeddings.transpose().shape))
+        self.model.add(LayerCustomRezaii())
 
-print(f"💯 Count 'Non-zero weights': {number_of_zero_weights} / {number_of_weights}")
+        self.metrics : List[keras.metrics.Metric] = [keras.metrics.CosineSimilarity()]
+        self.callbacks : List[keras.callbacks.Callback] = [tf.keras.callbacks.EarlyStopping(monitor='loss', patience=10, restore_best_weights=True),
+            CallbackWeightTreshold(self.number_of_words, self.epochs)]
+
+        self.model.compile(optimizer=keras.optimizers.Adam(), loss=euclidean_distance_loss, metrics=self.metrics)
+
+    def train_model(self) -> Dict[str, Any]:
+        x_train = np.transpose(self.matrix_embeddings).reshape((1, self.embedding_dimensionality, self.number_of_words))
+        y_train = self.sentence_embedding.reshape((1, self.embedding_dimensionality, 1))
+
+        history = self.model.fit(x_train, y_train, epochs=self.epochs, callbacks=self.callbacks, verbose=False)
+
+        number_of_ephocs_ran : int = len(history.history['loss'])
+
+        history_loss : List[float] = history.history['loss']
+        history_loss_filtered : List[float] = list(filter(lambda loss_value: loss_value is not None and not math.isnan(loss_value), history_loss))
+        last_loss : float = history_loss_filtered[-1]
+
+        history_cosine_similarity : List[float] = history.history['cosine_similarity']
+        history_cosine_similarity_filtered : List[float] = list(filter(lambda cosine_similarity_value: cosine_similarity_value is not None and not math.isnan(cosine_similarity_value), history_cosine_similarity))
+        last_cosine_similarity : float = history_cosine_similarity_filtered[-1]
+
+        number_of_zero_weights : int = len(np.where(self.model.weights[0] != 0.0))
+        ratio_zero_weights : float = number_of_zero_weights / self.model.weights[0].shape[0]
+
+        return { '#ephocs': number_of_ephocs_ran, 'ratio #zero_weights': ratio_zero_weights,
+            'model loss': last_loss, 'model cosine similarity': last_cosine_similarity }
