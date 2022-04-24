@@ -14,7 +14,7 @@ cd ..
 
 echo "📚 Compressing Converted ..."
 7z a -tzip "${EXPORT_CONVERTED_OUTPUT_FILE}" $RECORDINGS_CONVERTED_DIR
-echo "📚 Compressing Transcribed ..."
-7z a -tzip "${EXPORT_TRANSCRIBED_OUTPUT_FILE}" $RECORDINGS_TRANSCRIBED_DIR
+#echo "📚 Compressing Transcribed ..."
+#7z a -tzip "${EXPORT_TRANSCRIBED_OUTPUT_FILE}" $RECORDINGS_TRANSCRIBED_DIR
 echo "📚 Compressing Transcriptions Results..."
 7z a -tzip "${EXPORT_TRANSCRIBED_RESULTS_OUTPUT_FILE}" $RECORDINGS_TRANSCRIBED_RESULTS_DIR
