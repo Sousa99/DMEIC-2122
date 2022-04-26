@@ -81,9 +81,9 @@ class VariationGenerator():
         self.classifier_keys = variation_classifiers
         self.preprocessing_pipeline_keys = variation_preprocessing
 
-    def generate_variations(self, feature_sets: module_featureset.FeatureSetAbstraction) -> List[Variation]:
+    def generate_variations(self) -> List[Variation]:
 
-        if not self.key: return self.generate_default_variations(feature_sets)
+        if not self.key: return self.generate_default_variations()
         # Add specific key for Generation of Variations
         # ...
         else: exit("🚨 Variation key '{0}' not recognized".format(self.key)) 
