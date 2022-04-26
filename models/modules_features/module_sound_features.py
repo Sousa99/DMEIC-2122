@@ -25,14 +25,14 @@ class SoundFeatureSet(module_featureset.FeatureSetAbstraction):
         print(f"🚀 Preparing for '{self.id}' analysis ...")
 
         # Dataframe to study sound features
-        basics_dataframe = self.paths_df.copy(deep=True)[['Subject', 'Task', 'Trans Path', 'Audio Path']]
+        basics_dataframe = self.paths_df.copy(deep=True)[['Subject', 'Task', 'Audio Path']]
         # Choose audio files from dictionary
         basics_dataframe['Audio File'] = basics_dataframe['Audio Path'].apply(module_aux.compute_file_paths, args=(self.preference_audio_tracks, None))
         basics_dataframe['Audio File Path'] = list(map(lambda items: os.path.join(items[0], items[1]), list(zip(basics_dataframe['Audio Path'], basics_dataframe['Audio File']))))
 
         # Save back 'basis dataframe' and 'drop_columns'
         self.basis_dataframe = basics_dataframe
-        self.drop_columns = ['Audio Path', 'Audio File', 'Audio File Path', 'Trans Path']
+        self.drop_columns = ['Audio Path', 'Audio File', 'Audio File Path']
 
     def develop_static_df(self):
         if self.static_dataframe is not None: return
