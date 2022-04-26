@@ -4,10 +4,11 @@ import pickle
 import argparse
 import warnings
 
-from tqdm import tqdm
-from typing import Any, Dict, List, Optional, Tuple
+from tqdm       import tqdm
+from typing     import List, Optional, Tuple
+from functools  import reduce
 
-import pandas as pd
+import pandas   as pd
 
 # Local Modules - Auxiliar
 import modules_aux.module_aux                   as module_aux
@@ -24,7 +25,7 @@ warnings.filterwarnings('ignore', category = UserWarning, module = 'opensmile')
 
 # =================================== PRIVATE FUNCTIONS ===================================
 
-# =================================== PRIVATE CLASSES ===================================
+# =================================== PUBLIC CLASSES ===================================
 
 class FeatureSetAbstraction(abc.ABC):
 
@@ -60,7 +61,7 @@ class FeatureSetAbstraction(abc.ABC):
     def develop_static_df(self):
         exit(f"🚨 Method 'develop_static_df' not defined for '{self.__class__.__name__}'")
     @abc.abstractmethod
-    def develop_dynamic_df(self, train_X: pd.DataFrame, train_Y: pd.Series, test_X: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]: 
+    def develop_dynamic_df(self, train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]: 
         exit(f"🚨 Method 'develop_dynamic_df' not defined for '{self.__class__.__name__}'")
 
     def filter_rows(self, dataframe: pd.DataFrame, variation: module_variations.Variation) -> pd.DataFrame:
@@ -127,9 +128,37 @@ class FeatureSetAbstraction(abc.ABC):
         dataframe_X, dataframe_Y = self.separate_target(current_df)
         if not self.pivot_on_task: dataframe_X = dataframe_X.drop(self.general_drop_columns, axis=1)
 
-        return dataframe_X, dataframe_Y
+        train_X, test_X = self.develop_dynamic_df(dataframe_X, dataframe_Y)
+        return train_X, test_X
 
+class MergedFeatureSetAbstraction(FeatureSetAbstraction):
 
+    def __init__(self, feature_sets: List[FeatureSetAbstraction]) -> None:
+        super().__init__()
 
-# =================================== PUBLIC CLASSES ===================================
+        self.feature_sets   = feature_sets
+        self.id             = ' + '.join(map(lambda feature_set: feature_set.id, self.feature_sets))
+    
+    def develop_basis_df(self):
+        for feature_set in self.feature_sets:
+            feature_set.develop_basis_df()
 
+    def develop_static_df(self):
+        for feature_set in self.feature_sets:
+            feature_set.develop_static_df()
+
+    def develop_dynamic_df(self, train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
+        
+        dynamic_dfs_train : List[pd.DataFrame] = []
+        dynamic_dfs_test : List[pd.DataFrame] = []
+
+        for feature_set in self.feature_sets:
+            train_X, test_X = feature_set.develop_dynamic_df(train_X, train_Y, test_X)
+            dynamic_dfs_train.append(train_X)
+            if test_X is not None: dynamic_dfs_test.append(train_Y)
+
+        final_dynamic_df_train = reduce(lambda dataset_left, dataset_right: module_aux.join_dataframes(dataset_left, dataset_right), dynamic_dfs_train)
+        if test_X is not None: final_dynamic_df_test = reduce(lambda dataset_left, dataset_right: module_aux.join_dataframes(dataset_left, dataset_right), dynamic_dfs_test)
+        
+        if test_X is None: return (final_dynamic_df_train, None)
+        else: return (final_dynamic_df_train, final_dynamic_df_test)
