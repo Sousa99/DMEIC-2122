@@ -5,7 +5,7 @@ import pandas   as pd
 from typing     import List, Optional, Tuple
 
 # Local Modules - Features
-import modules_features.module_gemaps           as module_gemaps
+import modules_features.support.module_gemaps   as module_gemaps
 # Local Modules - Auxiliary
 import modules_aux.module_aux                   as module_aux
 # Local Modules - Abstraction

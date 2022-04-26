@@ -6,13 +6,13 @@ from typing import List
 from functools import reduce
 
 # Local Modules - Features
-import modules_features.module_lsa                  as module_lsa
-import modules_features.module_word_graph           as module_word_graph
-import modules_features.module_vector_unpacking     as module_vector_unpacking
+import modules_features.support.module_lsa                  as module_lsa
+import modules_features.support.module_word_graph           as module_word_graph
+import modules_features.support.module_vector_unpacking     as module_vector_unpacking
 # Local Modules - Auxiliary
-import modules_aux.module_aux                       as module_aux
-import modules_aux.module_nlp                       as module_nlp
-import modules_aux.module_load                      as module_load
+import modules_aux.module_aux                               as module_aux
+import modules_aux.module_nlp                               as module_nlp
+import modules_aux.module_load                              as module_load
 
 # =================================== PRIVATE METHODS ===================================
 
