@@ -5,7 +5,7 @@ import argparse
 import warnings
 
 from tqdm       import tqdm
-from typing     import List, Optional, Tuple
+from typing     import List, Optional, Set, Tuple
 from functools  import reduce
 
 import pandas   as pd
@@ -98,14 +98,14 @@ class FeatureSetAbstraction(abc.ABC):
 
         return ((X_train, y_train), (X_test, y_test))
     
-    def get_df_for_classification(self, variation: module_variations.Variation = None, indexes: Optional[Tuple[List[int], List[int]]] = None) -> Tuple[Tuple[pd.DataFrame, pd.Series], Tuple[pd.DataFrame, pd.Series]]:
+    def get_df_for_classification(self, variation: module_variations.Variation, indexes: Tuple[List[int], List[int]]) -> Tuple[Tuple[pd.DataFrame, pd.Series], Tuple[pd.DataFrame, pd.Series]]:
 
         if self.basis_dataframe is None: self.develop_basis_df()
         if self.static_dataframe is None: self.develop_static_df()
         current_df : pd.DataFrame = self.static_dataframe.copy(deep=True)
 
         current_df = self.filter_rows(current_df, variation)
-        current_df.drop(self.drop_columns)
+        current_df = current_df.drop(self.drop_columns, axis=1)
 
         dataframe_X, dataframe_Y = self.separate_target(current_df)
         if not self.pivot_on_task: dataframe_X = dataframe_X.drop(self.general_drop_columns, axis=1)
@@ -118,44 +118,74 @@ class FeatureSetAbstraction(abc.ABC):
         train_X, test_X = self.develop_dynamic_df(train_X, train_Y, test_X)
         return ((train_X, train_Y), (test_X, test_Y))
 
-    def get_full_df(self) -> Tuple[pd.DataFrame, pd.Series]:
+    def get_full_df(self, variation: Optional[module_variations.Variation] = None) -> Tuple[pd.DataFrame, pd.Series]:
 
         if self.basis_dataframe is None: self.develop_basis_df()
         if self.static_dataframe is None: self.develop_static_df()
         current_df : pd.DataFrame = self.static_dataframe.copy(deep=True)
 
-        current_df.drop(self.drop_columns)
+        if variation is not None:
+            current_df = self.filter_rows(current_df, variation)
+        current_df = current_df.drop(self.drop_columns, axis=1)
+
         dataframe_X, dataframe_Y = self.separate_target(current_df)
         if not self.pivot_on_task: dataframe_X = dataframe_X.drop(self.general_drop_columns, axis=1)
+
+        if variation is not None:
+            dataframe_X = variation.preprocesser.preprocess_train(dataframe_X)
+            dataframe_Y = variation.preprocesser.preprocess_test(dataframe_Y)
 
         train_X, test_X = self.develop_dynamic_df(dataframe_X, dataframe_Y)
         return train_X, test_X
 
 class MergedFeatureSetAbstraction(FeatureSetAbstraction):
 
-    def __init__(self, feature_sets: List[FeatureSetAbstraction]) -> None:
-        super().__init__()
+    def __init__(self, feature_sets: List[FeatureSetAbstraction],
+        paths_df: pd.DataFrame, preference_audio_tracks: List[str], preference_trans: List[str], trans_extension: str,
+        subject_info: pd.DataFrame, general_drop_columns: List[str], pivot_on_task: bool = False) -> None:
 
-        self.feature_sets   = feature_sets
-        self.id             = ' + '.join(map(lambda feature_set: feature_set.id, self.feature_sets))
+        super().__init__(' + '.join(map(lambda feature_set: feature_set.id, feature_sets)),
+            paths_df, preference_audio_tracks, preference_trans, trans_extension,
+            subject_info, general_drop_columns, pivot_on_task)
+        self.feature_sets = feature_sets
     
     def develop_basis_df(self):
+        basis_dfs : List[pd.DataFrame] = []
+        all_drop_columns : Set[str] = set()
         for feature_set in self.feature_sets:
-            feature_set.develop_basis_df()
+            if feature_set.basis_dataframe is None:
+                feature_set.develop_basis_df()
+            basis_dfs.append(feature_set.basis_dataframe)
+            all_drop_columns.update(feature_set.drop_columns)
+        self.drop_columns = list(all_drop_columns)
+
+        final_basis_df = reduce(lambda dataset_left, dataset_right: module_aux.join_dataframes(dataset_left, dataset_right), basis_dfs)
+        self.basis_dataframe = final_basis_df
 
     def develop_static_df(self):
+        static_dfs : List[pd.DataFrame] = []
+        all_drop_columns : Set[str] = set()
         for feature_set in self.feature_sets:
-            feature_set.develop_static_df()
+            if feature_set.static_dataframe is None:
+                feature_set.develop_static_df()
+            static_dfs.append(feature_set.static_dataframe)
+            all_drop_columns.update(feature_set.drop_columns)
+        self.drop_columns = list(all_drop_columns)
+
+        final_static_df = reduce(lambda dataset_left, dataset_right: module_aux.join_dataframes(dataset_left, dataset_right), static_dfs)
+        self.static_dataframe = final_static_df
 
     def develop_dynamic_df(self, train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
         
         dynamic_dfs_train : List[pd.DataFrame] = []
         dynamic_dfs_test : List[pd.DataFrame] = []
-
+        all_drop_columns : Set[str] = set()
         for feature_set in self.feature_sets:
             train_X, test_X = feature_set.develop_dynamic_df(train_X, train_Y, test_X)
             dynamic_dfs_train.append(train_X)
             if test_X is not None: dynamic_dfs_test.append(train_Y)
+            all_drop_columns.update(feature_set.drop_columns)
+        self.drop_columns = list(all_drop_columns)
 
         final_dynamic_df_train = reduce(lambda dataset_left, dataset_right: module_aux.join_dataframes(dataset_left, dataset_right), dynamic_dfs_train)
         if test_X is not None: final_dynamic_df_test = reduce(lambda dataset_left, dataset_right: module_aux.join_dataframes(dataset_left, dataset_right), dynamic_dfs_test)

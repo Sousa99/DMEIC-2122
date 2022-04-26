@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Optional, Tuple
 
 # Local Modules
 import modules_abstraction.module_classifier    as module_classifier
-import modules_abstraction.module_featureset    as module_featureset
 import modules_abstraction.module_preprocessing as module_preprocessing
 
 # =================================== PRIVATE METHODS ===================================

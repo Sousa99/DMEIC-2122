@@ -178,7 +178,7 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
         if len(feature_sets_filter) == 0: exit(f"🚨 Feature set with key '{variation.features_code}' not found in model feature_sets")
         feature_set : module_featureset.FeatureSetAbstraction = feature_sets_filter[0]
 
-        dataframe_X, dataframe_Y = feature_set.get_full_df()
+        dataframe_X, dataframe_Y = feature_set.get_full_df(variation)
 
         # Do profiling of current dataset
         module_exporter.change_current_directory([variation.generate_code(), 'Data Profiling'])
@@ -192,10 +192,9 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
         data_splits = list(module_classifier.leave_one_out(dataframe_X))
         classifier = variation.classifier(['Psychosis', 'Control'])
         for (train_index, test_index) in tqdm(data_splits, desc="👉 Running classifier:", leave=False):
-            X_train, X_test = dataframe_X.iloc[train_index], dataframe_X.iloc[test_index]
-            y_train, y_test = dataframe_Y.iloc[train_index], dataframe_Y.iloc[test_index]
-
+            (X_train, y_train), (X_test, y_test) = feature_set.get_df_for_classification(variation, (train_index, test_index))
             classifier.process_iteration(X_train, y_train, X_test, y_test)
+
         # Export Classifier Variations Results
         variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 
             'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code }
