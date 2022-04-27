@@ -53,16 +53,16 @@ def create_and_train_models(groups_of_embeddings: List[List[npt.NDArray[np.float
 
 # =================================== PUBLIC METHODS ===================================
 
-def vector_unpacking_analysis(structure_df: pd.DataFrame) -> pd.DataFrame:
+def vector_unpacking_analysis(basis_dataframe: pd.DataFrame) -> pd.DataFrame:
     print("🚀 Processing 'Vector Unpacking' analysis ...")
     word2vec_model = module_gensim.ModelWord2Vec()
 
     # Preparation for Vector Unpacking features
-    structure_df['Vector Unpacking - Word Groups'] = structure_df['Lemmatized Filtered Text'].progress_apply(lambda words: module_nlp.subdivide_bags_of_words(words, NUMBER_OF_WORDS_PER_BAG))
-    structure_df['Vector Unpacking - Embedding per Word Groups'] = structure_df['Vector Unpacking - Word Groups'].progress_apply(lambda groups_of_words: module_nlp.convert_groups_of_words_to_embeddings(groups_of_words, word2vec_model))
-    structure_df['Vector Unpacking - Embedding Groups'] = structure_df['Vector Unpacking - Embedding per Word Groups'].progress_apply(module_nlp.sum_normalize_embedding_per_group)
+    basis_dataframe['Vector Unpacking - Word Groups'] = basis_dataframe['Lemmatized Filtered Text'].progress_apply(lambda words: module_nlp.subdivide_bags_of_words(words, NUMBER_OF_WORDS_PER_BAG))
+    basis_dataframe['Vector Unpacking - Embedding per Word Groups'] = basis_dataframe['Vector Unpacking - Word Groups'].progress_apply(lambda groups_of_words: module_nlp.convert_groups_of_words_to_embeddings(groups_of_words, word2vec_model))
+    basis_dataframe['Vector Unpacking - Embedding Groups'] = basis_dataframe['Vector Unpacking - Embedding per Word Groups'].progress_apply(module_nlp.sum_normalize_embedding_per_group)
     # Vector Unpacking features
-    rezaii_model_df : pd.DataFrame = structure_df.progress_apply(lambda row: create_and_train_models(row['Vector Unpacking - Embedding per Word Groups'], row['Vector Unpacking - Embedding Groups']), axis=1)
-    structure_df = structure_df.merge(rezaii_model_df.fillna(DEFAULT_VALUE, inplace=False), left_index=True, right_index=True)
+    rezaii_model_df : pd.DataFrame = basis_dataframe.progress_apply(lambda row: create_and_train_models(row['Vector Unpacking - Embedding per Word Groups'], row['Vector Unpacking - Embedding Groups']), axis=1)
+    basis_dataframe = basis_dataframe.merge(rezaii_model_df.fillna(DEFAULT_VALUE, inplace=False), left_index=True, right_index=True)
     
-    return structure_df
+    return basis_dataframe

@@ -33,16 +33,16 @@ def compute_coherence_score(embeddings: List[NDArray[np.float64]], group_jump: i
 
 # =================================== PUBLIC METHODS ===================================
 
-def lsa_analysis(structure_df: pd.DataFrame) -> pd.DataFrame:
+def lsa_analysis(basis_dataframe: pd.DataFrame) -> pd.DataFrame:
     print("🚀 Processing 'Latent Semantic Analysis' analysis ...")
     lsa_model = module_gensim.ModelLSA()
 
     # Preparation for LSA Coherence computation
-    structure_df['LSA - Word Groups'] = structure_df['Lemmatized Filtered Text'].progress_apply(lambda words: module_nlp.subdivide_bags_of_words(words, NUMBER_OF_WORDS_PER_BAG))
-    structure_df['LSA - Embedding per Word Groups'] = structure_df['LSA - Word Groups'].progress_apply(lambda groups_of_words: module_nlp.convert_groups_of_words_to_embeddings(groups_of_words, lsa_model))
-    structure_df['LSA - Embedding Groups'] = structure_df['LSA - Embedding per Word Groups'].progress_apply(module_nlp.average_embedding_per_group)
+    basis_dataframe['LSA - Word Groups'] = basis_dataframe['Lemmatized Filtered Text'].progress_apply(lambda words: module_nlp.subdivide_bags_of_words(words, NUMBER_OF_WORDS_PER_BAG))
+    basis_dataframe['LSA - Embedding per Word Groups'] = basis_dataframe['LSA - Word Groups'].progress_apply(lambda groups_of_words: module_nlp.convert_groups_of_words_to_embeddings(groups_of_words, lsa_model))
+    basis_dataframe['LSA - Embedding Groups'] = basis_dataframe['LSA - Embedding per Word Groups'].progress_apply(module_nlp.average_embedding_per_group)
     # LSA Coherence scores
-    structure_df['LSA - First Order Coherence'] = structure_df['LSA - Embedding Groups'].progress_apply(lambda embeddings: compute_coherence_score(embeddings, 1)).astype(float)
-    structure_df['LSA - Second Order Coherence'] = structure_df['LSA - Embedding Groups'].progress_apply(lambda embeddings: compute_coherence_score(embeddings, 2)).astype(float)
+    basis_dataframe['LSA - First Order Coherence'] = basis_dataframe['LSA - Embedding Groups'].progress_apply(lambda embeddings: compute_coherence_score(embeddings, 1)).astype(float)
+    basis_dataframe['LSA - Second Order Coherence'] = basis_dataframe['LSA - Embedding Groups'].progress_apply(lambda embeddings: compute_coherence_score(embeddings, 2)).astype(float)
     
-    return structure_df
+    return basis_dataframe
