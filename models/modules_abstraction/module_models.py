@@ -14,6 +14,7 @@ import modules_abstraction.module_scorer        as module_scorer
 import modules_abstraction.module_profiling     as module_profiling
 import modules_abstraction.module_classifier    as module_classifier
 import modules_abstraction.module_variations    as module_variations
+import modules_abstraction.module_featureset    as module_featureset
 # Local Modules - Auxiliary
 import modules_aux.module_load      as module_load
 import modules_aux.module_exporter  as module_exporter
@@ -72,7 +73,7 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
     # =================================== PROPERTIES ===================================
 
     arguments : argparse.Namespace
-    features_infos : Dict[str, Dict[str, Any]] = {}
+    feature_sets : List[module_featureset.FeatureSetAbstraction] = []
     
     subjects_loads : Tuple[pd.DataFrame, pd.DataFrame]
     subjects_infos : pd.DataFrame
@@ -130,16 +131,16 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
         # Store Paths
         self.subjects_paths = pd.concat([control_paths, psychosis_paths, bipolar_paths])
 
-    def load_features_infos(self, features_infos : Dict[str, Dict[str, Any]]):
-        self.features_infos = features_infos
+    def load_feature_sets(self, feature_sets: Optional[List[module_featureset.FeatureSetAbstraction]] = None):
+        self.feature_sets = feature_sets
         self.generate_variations()
 
     def generate_variations(self):
-        variation_features = list(self.features_infos.keys())
+        variation_features = list(map(lambda feature_set: feature_set.id, self.feature_sets))
         variation_generator = module_variations.VariationGenerator(self.arguments.variations_key,
             self.VARIATION_TASKS, self.VARIATION_GENDERS, variation_features, self.VARIATION_CLASSIFIERS, self.VARIATION_PREPROCESSING)
 
-        self.variations_to_test = variation_generator.generate_variations(self.features_infos)
+        self.variations_to_test = variation_generator.generate_variations()
         if VARIATIONS_FILTER_BY_INDEX is not None:
             self.variations_to_test = [ self.variations_to_test[index] for index in VARIATIONS_FILTER_BY_INDEX ]
 
@@ -155,10 +156,29 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
         self.load_subjects_info()
         self.load_subjects_paths()
 
+    def study_feature_sets(self):
+
+        print()
+        print("🚀 Running datasets profiling ...")
+
+        for feature_set in self.feature_sets:
+
+            feature_key : str = feature_set.id
+            print("🚀 Running profiling of '{0}' dataset".format(feature_key))
+            module_exporter.change_current_directory(['Data Profiling', feature_key])
+
+            feature_df, target_df = feature_set.get_full_df()
+            profiler = module_profiling.DatasetProfiling(feature_df, target_df)
+            profiler.make_profiling()
+
     def run_variation(self, variation: module_variations.Variation) -> Tuple[str, module_scorer.Scorer]:
 
         print("🚀 Running variation '{0}'".format(variation.generate_code()))
-        dataframe_X, dataframe_Y = variation.get_treated_dataset(self.GENERAL_DROP_COLUMNS, self.subjects_infos, PIVOT_ON_TASKS)
+        feature_sets_filter = list(filter(lambda feature_set: feature_set.id == variation.features_code, self.feature_sets))
+        if len(feature_sets_filter) == 0: exit(f"🚨 Feature set with key '{variation.features_code}' not found in model feature_sets")
+        feature_set : module_featureset.FeatureSetAbstraction = feature_sets_filter[0]
+
+        dataframe_X, dataframe_Y = feature_set.get_full_df(variation)
 
         # Do profiling of current dataset
         module_exporter.change_current_directory([variation.generate_code(), 'Data Profiling'])
@@ -172,10 +192,9 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
         data_splits = list(module_classifier.leave_one_out(dataframe_X))
         classifier = variation.classifier(['Psychosis', 'Control'])
         for (train_index, test_index) in tqdm(data_splits, desc="👉 Running classifier:", leave=False):
-            X_train, X_test = dataframe_X.iloc[train_index], dataframe_X.iloc[test_index]
-            y_train, y_test = dataframe_Y.iloc[train_index], dataframe_Y.iloc[test_index]
-
+            (X_train, y_train), (X_test, y_test) = feature_set.get_df_for_classification(variation, (train_index, test_index))
             classifier.process_iteration(X_train, y_train, X_test, y_test)
+
         # Export Classifier Variations Results
         variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 
             'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code }
@@ -198,7 +217,7 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
         module_exporter.export_csv(variations_results_df, 'results', False)
 
     @abc.abstractmethod
-    def execute(self, feature_infos: Optional[Dict[str, Dict[str, Any]]] = None):
+    def execute(self, feature_sets: Optional[List[module_featureset.FeatureSetAbstraction]] = None):
         exit("🚨 Method 'execute' not defined")
 
 # =================================== PUBLIC CLASSES ===================================
@@ -208,22 +227,6 @@ class SequentialModel(ModelAbstraction):
     def __init__(self, arguments: argparse.Namespace) -> None:
         # Run Super Initialization
         super().__init__(arguments)
-
-    def study_feature_sets(self):
-
-        print()
-        print("🚀 Running datasets profiling ...")
-
-        for feature_key in self.features_infos:
-
-            print("🚀 Running profiling of '{0}' dataset".format(feature_key))
-            module_exporter.change_current_directory(['Data Profiling', feature_key])
-            feature_info = self.features_infos[feature_key]
-
-            feature_set : pd.DataFrame = feature_info['features'].drop(feature_info['drop_columns'] + self.GENERAL_DROP_COLUMNS, axis=1)
-            target_set : pd.Series = feature_info['features'].reset_index()['Subject'].apply(lambda subject: self.subjects_infos.loc[subject]['Target'])
-            profiler = module_profiling.DatasetProfiling(feature_set, target_set)
-            profiler.make_profiling()
 
     def run_variations(self):
 
@@ -239,12 +242,12 @@ class SequentialModel(ModelAbstraction):
             for score in best_scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
             self.variations_results.append(variation_summary)
 
-    def execute(self, feature_sets: Optional[Dict[str, Dict[str, Any]]] = None):
+    def execute(self, feature_sets: Optional[List[module_featureset.FeatureSetAbstraction]] = None):
         
         if feature_sets is None:
             exit("🚨 Execute on 'SequentialModel' requires 'feature_sets'")
 
-        self.load_features_infos(feature_sets)
+        self.load_feature_sets(feature_sets)
         self.study_feature_sets()
         self.run_variations()
         self.export_final_results()
@@ -255,30 +258,14 @@ class ParallelModel(ModelAbstraction):
         # Run Super Initialization
         super().__init__(arguments)
 
-    def study_feature_sets(self):
-
-        print()
-        print("🚀 Running datasets profiling ...")
-
-        for feature_key in self.features_infos:
-
-            print("🚀 Running profiling of '{0}' dataset".format(feature_key))
-            module_exporter.change_current_directory(['Data Profiling', feature_key])
-            feature_info = self.features_infos[feature_key]
-
-            feature_set : pd.DataFrame = feature_info['features'].drop(feature_info['drop_columns'] + self.GENERAL_DROP_COLUMNS, axis=1)
-            target_set : pd.Series = feature_info['features'].reset_index()['Subject'].apply(lambda subject: self.subjects_infos.loc[subject]['Target'])
-            profiler = module_profiling.DatasetProfiling(feature_set, target_set)
-            profiler.make_profiling()
-
-    def load_feature_sets(self):
+    def load_feature_sets_from_memory(self):
 
         directory_path = PARALLEL_TMP_DIRECTORY
         if self.arguments.timestamp is not None: directory_path = os.path.join(directory_path, self.arguments.timestamp)
         full_path = os.path.join(directory_path, PARALLEL_FEATURE_SETS_FILE)
 
         file = open(full_path, 'rb')
-        self.load_features_infos(pickle.load(file))
+        self.load_feature_sets(pickle.load(file))
         file.close()
 
     def save_feature_sets(self):
@@ -289,7 +276,7 @@ class ParallelModel(ModelAbstraction):
         full_path = os.path.join(directory_path, PARALLEL_FEATURE_SETS_FILE)
 
         file = open(full_path, 'wb')
-        pickle.dump(self.features_infos, file)
+        pickle.dump(self.feature_sets, file)
         file.close()
 
     def save_number_of_variations(self):
@@ -340,7 +327,7 @@ class ParallelModel(ModelAbstraction):
             # Save back variation summary
             self.variations_results.append(variation_summary)
 
-    def execute(self, feature_sets: Optional[Dict[str, Dict[str, Any]]] = None):
+    def execute(self, feature_sets: Optional[List[module_featureset.FeatureSetAbstraction]] = None):
 
         # Get pertinent arguments
         parallelization = self.arguments.parallelization_key
@@ -351,16 +338,16 @@ class ParallelModel(ModelAbstraction):
             if feature_sets is None:
                 exit("🚨 Execute on 'SequentialModel' requires 'feature_sets'")
 
-            self.load_features_infos(feature_sets)
+            self.load_feature_sets(feature_sets)
             self.study_feature_sets()
             self.save_feature_sets()
             self.save_number_of_variations()
 
         elif parallelization == PARALLEL_RUN_MODELS:
-            self.load_feature_sets()
+            self.load_feature_sets_from_memory()
             self.run_variation_by_index(int(parallelization_index))
 
         elif parallelization == PARALLEL_RUN_FINAL:
-            self.load_feature_sets()
+            self.load_feature_sets_from_memory()
             self.load_variations_results()
             self.export_final_results()
