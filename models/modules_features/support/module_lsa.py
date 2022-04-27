@@ -34,7 +34,7 @@ def compute_coherence_score(embeddings: List[NDArray[np.float64]], group_jump: i
 # =================================== PUBLIC METHODS ===================================
 
 def lsa_analysis(structure_df: pd.DataFrame) -> pd.DataFrame:
-    print("🚀 Processing 'LSA' analysis ...")
+    print("🚀 Processing 'Latent Semantic Analysis' analysis ...")
     lsa_model = module_gensim.ModelLSA()
 
     # Preparation for LSA Coherence computation
