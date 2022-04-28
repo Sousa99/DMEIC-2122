@@ -61,3 +61,9 @@ class ModelWord2Vec(ModelCorpora):
         embedding : NDArray[np.float32] = self.model.wv[word]
 
         return embedding.astype(np.float64)
+
+    def get_vocab_size(self) -> int:
+        return len(self.model.wv)
+
+    def get_vocab_by_frequency(self) -> List[str]:
+        return self.model.wv.index_to_key
