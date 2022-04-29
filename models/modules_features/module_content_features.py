@@ -9,6 +9,7 @@ from typing     import List, Optional, Tuple
 import modules_features.support.module_lca      as module_lca
 # Local Modules - Auxiliary
 import modules_aux.module_aux                   as module_aux
+import modules_aux.module_nlp                   as module_nlp
 import modules_aux.module_load                  as module_load
 # Local Modules - Abstraction
 import modules_abstraction.module_featureset    as module_featureset
@@ -25,6 +26,7 @@ class ContentFeatureSet(module_featureset.FeatureSetAbstraction):
 
     def develop_basis_df(self):
         print(f"🚀 Preparing for '{self.id}' analysis ...")
+        lemmatizer : module_nlp.LemmatizerStanza = module_nlp.LemmatizerStanza()
 
         # Dataframe to study content features
         basics_dataframe = self.paths_df.copy(deep=True)[['Subject', 'Task', 'Trans Path']]
@@ -34,10 +36,12 @@ class ContentFeatureSet(module_featureset.FeatureSetAbstraction):
         basics_dataframe['Trans File Path'] = list(map(lambda items: os.path.join(items[0], items[1]), list(zip(basics_dataframe['Trans Path'], basics_dataframe['Trans File']))))
         # Process Transcriptions
         basics_dataframe['Trans Info'] = basics_dataframe['Trans File Path'].apply(lambda file_path: module_load.TranscriptionInfo(file_path))
-        
+        basics_dataframe['Lemmatized Text'] = basics_dataframe['Trans Info'].apply(lambda trans_info: trans_info.lemmatize_words(lemmatizer))
+        basics_dataframe['Lemmatized Filtered Text'] = basics_dataframe['Lemmatized Text'].apply(module_nlp.filter_out_stop_words)
+
         # Save back 'basis dataframe' and 'drop_columns'
         self.basis_dataframe = basics_dataframe
-        self.drop_columns = ['Trans Path', 'Trans File', 'Trans File Path', 'Trans Info',
+        self.drop_columns = ['Trans Path', 'Trans File', 'Trans File Path', 'Trans Info', 'Lemmatized Text', 'Lemmatized Filtered Text',
             'LCA - Word Groups', 'LCA - Embedding per Word Groups', 'LCA - Embedding Groups' ]
 
     def develop_static_df(self):
