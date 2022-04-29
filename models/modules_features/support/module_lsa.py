@@ -16,17 +16,13 @@ NUMBER_OF_WORDS_PER_BAG : int = 5
 
 # =================================== PRIVATE METHODS ===================================
 
-def embeddings_cossine_similarity(embedding_1: NDArray[np.float64], embedding_2: NDArray[np.float64]) -> float:
-    dot_product : float = np.dot(embedding_1, embedding_2)
-    normal_product : float = np.linalg.norm(embedding_1) * np.linalg.norm(embedding_2)
-    return dot_product / normal_product
-
 def compute_coherence_score(embeddings: List[NDArray[np.float64]], group_jump: int) -> float:
     current_scores : List[float] = []
     for index in range(0, len(embeddings) - group_jump, 1):
         embedding_1 : NDArray[np.float64] = embeddings[index]
         embedding_2 : NDArray[np.float64] = embeddings[index + group_jump]
-        current_scores.append(embeddings_cossine_similarity(embedding_1, embedding_2))
+        cossine_score : float = module_nlp.embeddings_cossine_similarity(embedding_1, embedding_2)
+        current_scores.append(cossine_score)
 
     if len(current_scores) == 0: return DEFAULT_VALUE
     return sum(current_scores) / len(current_scores)

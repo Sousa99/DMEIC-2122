@@ -28,11 +28,6 @@ warnings.filterwarnings('ignore', module = 'stanza')
 
 # =================================== PRIVATE FUNCTIONS ===================================
 
-def convert_words_to_embeddings(group_of_words: List[str], model: module_gensim.ModelCorpora) -> List[NDArray[np.float64]]:
-    embeddings : List[Optional[NDArray[np.float64]]] = list(map(lambda word: model.get_word_embedding(word), group_of_words))
-    embeddings_filtered : List[NDArray[np.float64]] = list(filter(lambda embedding: embedding is not None, embeddings))
-    return embeddings_filtered
-
 def average_embeddings(embeddings: List[NDArray[np.float64]]) -> NDArray[np.float64]:
     matrix_embeddings : NDArray[np.float64] = convert_embeddings_to_matrix(embeddings)
     avg_embedding : NDArray[np.float64] = np.mean(matrix_embeddings, axis=0)
@@ -54,6 +49,15 @@ def subdivide_bags_of_words(words: List[str], words_per_bag: int) -> List[List[s
     groups_of_words : List[List[str]] = [words[x : x + words_per_bag ] for x in range(0, len(words), words_per_bag)]
     return groups_of_words
 
+def convert_word_to_embedding(word: str, model: module_gensim.ModelCorpora) -> Optional[NDArray[np.float64]]:
+    embedding : Optional[NDArray[np.float64]] = model.get_word_embedding(word)
+    return embedding
+
+def convert_words_to_embeddings(group_of_words: List[str], model: module_gensim.ModelCorpora) -> List[NDArray[np.float64]]:
+    embeddings : List[Optional[NDArray[np.float64]]] = list(map(lambda word: model.get_word_embedding(word), group_of_words))
+    embeddings_filtered : List[NDArray[np.float64]] = list(filter(lambda embedding: embedding is not None, embeddings))
+    return embeddings_filtered
+
 def convert_groups_of_words_to_embeddings(groups_of_words: List[List[str]], model: module_gensim.ModelCorpora) -> List[List[NDArray[np.float64]]]:
     embeddings_per_group : List[List[NDArray[np.float64]]] = list(map(lambda group_of_words: convert_words_to_embeddings(group_of_words, model), groups_of_words))
     embeddings_per_group_filtered : List[List[NDArray[np.float64]]] = list(filter(lambda group_of_embeddings: len(group_of_embeddings) != 0, embeddings_per_group))
@@ -69,6 +73,11 @@ def average_embedding_per_group(groups_embeddings: List[List[NDArray[np.float64]
 def sum_normalize_embedding_per_group(groups_embeddings: List[List[NDArray[np.float64]]]) -> List[NDArray[np.float64]]:
     sum_norm_embedding_per_group : List[NDArray[np.float64]] = list(map(lambda group_embeddings: sum_normalize_embeddings(group_embeddings), groups_embeddings))
     return sum_norm_embedding_per_group
+
+def embeddings_cossine_similarity(embedding_1: NDArray[np.float64], embedding_2: NDArray[np.float64]) -> float:
+    dot_product : float = np.dot(embedding_1, embedding_2)
+    normal_product : float = np.linalg.norm(embedding_1) * np.linalg.norm(embedding_2)
+    return dot_product / normal_product
 
 # =================================== PRIVATE CLASS DEFINITIONS ===================================
 

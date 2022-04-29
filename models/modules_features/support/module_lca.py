@@ -1,7 +1,5 @@
-from functools import reduce
-import operator
-from tokenize import group
 from typing                                 import Any, Dict, List, Optional, Tuple
+from functools                              import reduce
 
 import pandas                               as pd
 import numpy                                as np
@@ -18,7 +16,7 @@ import modules_corpora.module_gensim_util   as module_gensim_util
 
 DEFAULT_VALUE : float = -1.0
 NUMBER_OF_WORDS_PER_BAG : int = 15
-PERCENTAGE_OF_MOST_FREQUENT_WORDS : float = 0.95
+PERCENTAGE_OF_MOST_FREQUENT_WORDS : float = 0.05
 
 # =================================== PRIVATE METHODS ===================================
 
@@ -29,37 +27,66 @@ def get_top_words(model: module_gensim.ModelWord2Vec, percentage: float) -> List
     most_frequent_words : List[str] = model_vocab_words[:number_of_words]
     return most_frequent_words
 
+def get_cossine_similarity_with_word(sentence_embeddings: List[npt.NDArray[np.float64]], word_embedding: npt.NDArray[np.float64]) -> Optional[float]:
+
+    max_cossine : Optional[float] = None
+    for sentece_embedding in sentence_embeddings:
+        cossine_score = module_nlp.embeddings_cossine_similarity(sentece_embedding, word_embedding)
+        if max_cossine is None or max_cossine < cossine_score:
+            max_cossine = cossine_score
+
+    return max_cossine
+
+def get_max_cossine_similarity(sentence_embeddings: List[npt.NDArray[np.float64]], most_frequent_words: List[Tuple[str, npt.NDArray[np.float64]]]) -> Dict[str, float]:
+    max_cossine_dictionary : Dict[str, float] = {}
+    for (frequent_word, frequent_embedding) in most_frequent_words:
+        max_cossine = get_cossine_similarity_with_word(sentence_embeddings, frequent_embedding)
+        if max_cossine is not None:
+            max_cossine_dictionary[frequent_word] = max_cossine
+
+    return max_cossine_dictionary
+
 # =================================== PUBLIC METHODS ===================================
 
 def lca_analysis(basis_df: pd.DataFrame) -> pd.DataFrame:
     print("🚀 Processing 'Latent Content Analysis' analysis ...")
     word2vec_model = module_gensim.ModelWord2Vec()
-
+    model_frequent_words : List[str] = get_top_words(word2vec_model, PERCENTAGE_OF_MOST_FREQUENT_WORDS)
+    model_frequent_word_embeddings : List[Tuple[str, npt.NDArray]] = list(map(lambda word: (word, module_nlp.convert_word_to_embedding(word, word2vec_model)), model_frequent_words))
+    
     # Preparation for LCA features
     basis_df['LCA - Word Groups'] = basis_df['Lemmatized Filtered Text'].progress_apply(lambda words: module_nlp.subdivide_bags_of_words(words, NUMBER_OF_WORDS_PER_BAG))
     basis_df['LCA - Embedding per Word Groups'] = basis_df['LCA - Word Groups'].progress_apply(lambda groups_of_words: module_nlp.convert_groups_of_words_to_embeddings(groups_of_words, word2vec_model))
     basis_df['LCA - Embedding Groups'] = basis_df['LCA - Embedding per Word Groups'].progress_apply(module_nlp.sum_normalize_embedding_per_group)
+    basis_df['LCA - Max Cossine w/ Frequent Words'] = basis_df['LCA - Embedding Groups'].progress_apply(lambda sentence_embeddings: get_max_cossine_similarity(sentence_embeddings, model_frequent_word_embeddings))
     
     return basis_df
 
 def lca_analysis_dynamic(train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
-    word2vec_model = module_gensim.ModelWord2Vec()
-    model_frequent_words : List[str] = get_top_words(word2vec_model, PERCENTAGE_OF_MOST_FREQUENT_WORDS)
-
     train_full_df : pd.DataFrame = module_aux.join_dataframes(train_X, train_Y.to_frame('Target'))
 
-    # Achieved grouped by target dataframe
-    grouped_by_df : pd.DataFrame = train_full_df.groupby('Target')['Lemmatized Filtered Text'].apply(list).to_frame("Lemmatized Filtered Documents")
-    grouped_by_df["LCA - Lemmatized Filtered Text"] = grouped_by_df["Lemmatized Filtered Documents"].apply(lambda documents: reduce(lambda d1, d2: d1 + d2, documents))
+    word2vec_model = module_gensim.ModelWord2Vec()
+
+    lca_cossines_matrix = train_full_df[['Target', 'LCA - Max Cossine w/ Frequent Words']].copy(deep=True)
+    lca_cossines_matrix = pd.concat([lca_cossines_matrix.drop(['LCA - Max Cossine w/ Frequent Words'], axis=1),
+        lca_cossines_matrix['LCA - Max Cossine w/ Frequent Words'].apply(pd.Series)], axis=1)
+    grouped_by_lca_cossines : pd.DataFrame = lca_cossines_matrix.groupby('Target').mean().transpose()
     
-    # Achieve tdidf model
-    list_of_documents : List[List[str]] = grouped_by_df["LCA - Lemmatized Filtered Text"].to_list()
-    model : module_gensim_util.ModelTDIDF = module_gensim_util.ModelTDIDF(list_of_documents)
 
     # Achieved grouped by target dataframe
-    grouped_by_df["LCA - TD-IDF"] = grouped_by_df["LCA - Lemmatized Filtered Text"].apply(lambda document: model.process_document(document))
-    grouped_by_df["LCA - TD-IDF Sorted"] = grouped_by_df["LCA - TD-IDF"].apply(lambda items: sorted(items, key=lambda item: item[1], reverse=True))
-    print(grouped_by_df)
+    grouped_by_df : pd.DataFrame = train_full_df.groupby('Target')['Lemmatized Filtered Text'].apply(list).to_frame('Lemmatized Filtered Documents')
+    grouped_by_df['Lemmatized Filtered Text'] = grouped_by_df['Lemmatized Filtered Documents'].apply(lambda documents: reduce(lambda d1, d2: d1 + d2, documents))
+
+    # Achieve tdidf model
+    list_of_documents   : List[List[str]]               = grouped_by_df['Lemmatized Filtered Text'].to_list()
+    tdidf_model         : module_gensim_util.ModelTDIDF = module_gensim_util.ModelTDIDF(list_of_documents)
+    tdidf_document      : Dict[str, float]              = tdidf_model.process_document(grouped_by_df.loc[True, 'Lemmatized Filtered Text'])
+
+    word_importance = grouped_by_lca_cossines.progress_apply(lambda row: row[True] / row[False], axis=1).sort_values(ascending=False)
+    word_importance_tdidf = grouped_by_lca_cossines.progress_apply(lambda row: tdidf_document[row.name] * (row[True] / row[False]) if row.name in tdidf_document else 0.0, axis=1).sort_values(ascending=False)
+    
+    print(word_importance)
+    print(word_importance_tdidf)
 
     # LCA features
 

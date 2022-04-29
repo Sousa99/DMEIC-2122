@@ -23,7 +23,7 @@ class ModelCorpora(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def get_word_embedding(self, word: str) -> Optional[List[float]]:
+    def get_word_embedding(self, word: str) -> Optional[NDArray[np.float64]]:
         pass
 
 # =================================== PUBLIC CLASS DEFINITIONS ===================================

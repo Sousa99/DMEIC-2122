@@ -2,7 +2,7 @@ import os
 import gensim
 
 from numpy.typing   import NDArray
-from typing         import List, Optional, Tuple
+from typing         import Dict, List, Optional, Tuple
 
 import numpy    as np
 
@@ -28,9 +28,9 @@ class ModelTDIDF():
 
         self.model = gensim.models.TfidfModel(self.documents_bow)
 
-    def process_document(self, document: List[str]):
+    def process_document(self, document: List[str]) -> Dict[str, float]:
         document_bow        : List[int]                 = self.dictionary.doc2bow(document)
         td_idf_bow_result   : List[Tuple[int, float]]   = self.model[document_bow]
-        td_idf_result       : List[Tuple[str, float]]   = list(map(lambda item: (self.dictionary[item[0]], item[1]), td_idf_bow_result))
+        td_idf_result       : Dict[str, float]          = dict(map(lambda item: (self.dictionary[item[0]], item[1]), td_idf_bow_result))
 
         return td_idf_result
