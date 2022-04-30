@@ -54,7 +54,7 @@ def create_and_train_models(groups_of_embeddings: List[List[npt.NDArray[np.float
 # =================================== PUBLIC METHODS ===================================
 
 def vector_unpacking_analysis(basis_dataframe: pd.DataFrame) -> pd.DataFrame:
-    print("🚀 Processing 'Vector Unpacking' analysis ...")
+    print("🚀 Processing 'vector unpacking' analysis ...")
     word2vec_model = module_gensim.ModelWord2Vec()
 
     # Preparation for Vector Unpacking features

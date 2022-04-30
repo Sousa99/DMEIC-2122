@@ -8,15 +8,19 @@ import numpy.typing                         as npt
 # Local Modules - Auxiliary
 import modules_aux.module_aux               as module_aux
 import modules_aux.module_nlp               as module_nlp
+import modules_aux.module_exporter          as module_exporter
+import modules_aux.module_clustering        as module_clustering
 # Local Modules - Corpora
 import modules_corpora.module_gensim        as module_gensim
 import modules_corpora.module_gensim_util   as module_gensim_util
 
 # =================================== CONSTANTS DEFINITIONS ===================================
 
-DEFAULT_VALUE : float = -1.0
-NUMBER_OF_WORDS_PER_BAG : int = 15
-PERCENTAGE_OF_MOST_FREQUENT_WORDS : float = 0.05
+DEFAULT_VALUE                       : float     = -1.0
+NUMBER_OF_WORDS_PER_BAG             : int       = 15
+PERCENTAGE_OF_MOST_FREQUENT_WORDS   : float     = 0.05
+NUMBER_WORDS_FOR_CLUSTERING         : int       = 50
+NUMBER_CLUSTERS_TO_TEST             : List[int] = [ x for x in range(3, 11) ]
 
 # =================================== PRIVATE METHODS ===================================
 
@@ -49,7 +53,7 @@ def get_max_cossine_similarity(sentence_embeddings: List[npt.NDArray[np.float64]
 # =================================== PUBLIC METHODS ===================================
 
 def lca_analysis(basis_df: pd.DataFrame) -> pd.DataFrame:
-    print("🚀 Processing 'Latent Content Analysis' analysis ...")
+    print("🚀 Processing 'latent content analysis' analysis ...")
     word2vec_model = module_gensim.ModelWord2Vec()
     model_frequent_words : List[str] = get_top_words(word2vec_model, PERCENTAGE_OF_MOST_FREQUENT_WORDS)
     model_frequent_word_embeddings : List[Tuple[str, npt.NDArray]] = list(map(lambda word: (word, module_nlp.convert_word_to_embedding(word, word2vec_model)), model_frequent_words))
@@ -82,14 +86,26 @@ def lca_analysis_dynamic(train_X: pd.DataFrame, train_Y: pd.Series, test_X: Opti
     tdidf_model         : module_gensim_util.ModelTDIDF = module_gensim_util.ModelTDIDF(list_of_documents)
     tdidf_document      : Dict[str, float]              = tdidf_model.process_document(grouped_by_df.loc[True, 'Lemmatized Filtered Text'])
 
-    word_importance = grouped_by_lca_cossines.progress_apply(lambda row: row[True] / row[False], axis=1).sort_values(ascending=False)
-    word_importance_tdidf = grouped_by_lca_cossines.progress_apply(lambda row: tdidf_document[row.name] * (row[True] / row[False]) if row.name in tdidf_document else 0.0, axis=1).sort_values(ascending=False)
+    # Select words based on scores
+    word_importance             : pd.Series = grouped_by_lca_cossines.progress_apply(lambda row: row[True] / row[False], axis=1).sort_values(ascending=False)
+    word_importance_tdidf       : pd.Series = grouped_by_lca_cossines.progress_apply(lambda row: tdidf_document[row.name] * (row[True] / row[False]) if row.name in tdidf_document else 0.0, axis=1).sort_values(ascending=False)
+    list_of_words_sorted        : List[str] = list(filter(lambda word: word2vec_model.word_in_model(word), word_importance_tdidf.index))
+
+    selected_words              : List[str]                     = list_of_words_sorted[:NUMBER_WORDS_FOR_CLUSTERING]
+    selected_words_embeddings   : List[npt.NDArray[np.float64]] = list(map(lambda word: module_nlp.convert_word_to_embedding(word, word2vec_model), selected_words))
     
-    print(word_importance)
-    print(word_importance_tdidf)
+    # Predict Clusters and Reduce Dimensionality
+    predicted_clusters, cluster_centers = module_clustering.cluster_word_embeddings(selected_words_embeddings, NUMBER_CLUSTERS_TO_TEST)
+    reduced_dimensionality = module_clustering.reduce_data_dimensionality_to(selected_words_embeddings, [ "Column 1", "Column 2" ])
+    reduced_dimensionality['Cluster'] = predicted_clusters
+    reduced_dimensionality.index = selected_words
+
+    # Plot and Save achieved Clusters
+    module_exporter.push_current_directory('Temporary')
+    module_exporter.export_scatter_clusters('content - lca - achieved clusters', reduced_dimensionality, 'Column 1', 'Column 2', hue_key='Cluster')
+    module_exporter.pop_current_directory()
 
     # LCA features
-
     exit()
     
     return basis_df

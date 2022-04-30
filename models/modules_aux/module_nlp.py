@@ -33,11 +33,14 @@ def average_embeddings(embeddings: List[NDArray[np.float64]]) -> NDArray[np.floa
     avg_embedding : NDArray[np.float64] = np.mean(matrix_embeddings, axis=0)
     return avg_embedding
 
+def normalize_embedding(embedding: NDArray[np.float64]) -> NDArray[np.float64]:
+    embedding_norm : float = np.linalg.norm(embedding)
+    return embedding / embedding_norm
+
 def sum_normalize_embeddings(embeddings: List[NDArray[np.float64]]) -> NDArray[np.float64]:
     matrix_embeddings : NDArray[np.float64] = convert_embeddings_to_matrix(embeddings)
     sum_embedding : NDArray[np.float64] = np.sum(matrix_embeddings, axis=0)
-    sum_embedding_norm : float = np.linalg.norm(sum_embedding)
-    return sum_embedding / sum_embedding_norm
+    return normalize_embedding(sum_embedding)
 
 # =================================== PUBLIC FUNCTIONS ===================================
 
@@ -51,10 +54,11 @@ def subdivide_bags_of_words(words: List[str], words_per_bag: int) -> List[List[s
 
 def convert_word_to_embedding(word: str, model: module_gensim.ModelCorpora) -> Optional[NDArray[np.float64]]:
     embedding : Optional[NDArray[np.float64]] = model.get_word_embedding(word)
+    if embedding is not None: embedding = normalize_embedding(embedding)
     return embedding
 
 def convert_words_to_embeddings(group_of_words: List[str], model: module_gensim.ModelCorpora) -> List[NDArray[np.float64]]:
-    embeddings : List[Optional[NDArray[np.float64]]] = list(map(lambda word: model.get_word_embedding(word), group_of_words))
+    embeddings : List[Optional[NDArray[np.float64]]] = list(map(lambda word: convert_word_to_embedding(word, model), group_of_words))
     embeddings_filtered : List[NDArray[np.float64]] = list(filter(lambda embedding: embedding is not None, embeddings))
     return embeddings_filtered
 

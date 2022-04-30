@@ -55,6 +55,14 @@ def change_current_directory(current_directories: List[str] = []):
     global CURRENT_DIRECTORIES
     CURRENT_DIRECTORIES = current_directories
 
+def push_current_directory(directory: str):
+    global CURRENT_DIRECTORIES
+    CURRENT_DIRECTORIES.append(directory)
+
+def pop_current_directory():
+    global CURRENT_DIRECTORIES
+    CURRENT_DIRECTORIES.pop()
+
 # =================================== PUBLIC FUNCTIONS - SPECIFIC PARAMETERS ===================================
 
 def export_csv(dataframe: pd.DataFrame, filename: str = 'temp', index = True):
@@ -239,6 +247,31 @@ def export_word_graph(filename: str, graph: nx.DiGraph, weight_edges: Optional[b
     nx.draw_networkx(graph, pos, with_labels=with_labels, node_color=node_color)
     labels = nx.get_edge_attributes(graph, 'weight')
     if weight_edges: nx.draw_networkx_edge_labels(graph, pos, edge_labels=labels)
+
+    plt.savefig(complete_path)
+    plt.close('all')
+
+def export_scatter_clusters(filename: str, dataframe: pd.DataFrame, x_key: str, y_key: str, figsize: Tuple[int] = (10, 4),
+    hue_key: Optional[str] = None, x_label: Optional[str] = None, y_label: Optional[str] = None,
+    margins: Optional[Dict[str, Optional[float]]] = None) -> None:
+
+    complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
+
+    plt.figure(figsize=figsize)
+    plot = sns.scatterplot(data=dataframe, x=x_key, y=y_key, hue=hue_key)
+
+    if x_label: plt.xlabel(x_label)
+    if y_label: plt.ylabel(y_label)
+
+    if margins: plt.subplots_adjust(bottom=margins['bottom'], left=margins['left'],
+        top=margins['top'], right=margins['right'])
+
+    def label_point(x, y, val, ax):
+        a = pd.DataFrame.from_dict({'x': x, 'y': y, 'val': val})
+        for i, point in a.iterrows():
+            ax.text(point['x']+ .02, point['y'], str(point['val']))
+
+    label_point(dataframe[x_key], dataframe[y_key], dataframe.index, plt.gca()) 
 
     plt.savefig(complete_path)
     plt.close('all')
