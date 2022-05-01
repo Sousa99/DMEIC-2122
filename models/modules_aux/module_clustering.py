@@ -25,7 +25,7 @@ print()
 '''
 # =================================== IGNORE CERTAIN ERRORS ===================================
 
-warnings.filterwarnings('ignore', module = 'stanza')
+warnings.filterwarnings('ignore', module = 'sklearn')
 
 # =================================== PRIVATE FUNCTIONS ===================================
 
@@ -81,13 +81,20 @@ def cluster_word_embeddings(embeddings: List[npt.NDArray[np.float64]], numbers_c
     prediction, cluster_centers = test_multiple_clusters(embeddings_as_data, numbers_clusters)
     return (prediction, cluster_centers)
 
-def reduce_data_dimensionality_to(embeddings: List[npt.NDArray[np.float64]], reduced_columns: List[str]) -> pd.DataFrame:
+def reduce_data_dimensionality_to(words: List[str], embeddings: List[npt.NDArray[np.float64]],
+    predicted_clusters: npt.NDArray[np.float64], centers: npt.NDArray[np.float64], reduced_columns: List[str]) -> pd.DataFrame:
 
-    embeddings_as_data          : pd.DataFrame          = pd.DataFrame(module_nlp.convert_embeddings_to_matrix(embeddings))
-    embedding_model             : sklearn.manifold.MDS  = sklearn.manifold.MDS(n_components=len(reduced_columns))
-    
-    mds = pd.DataFrame(embedding_model.fit_transform(embeddings_as_data), columns = reduced_columns)
-    return mds
+    embeddings_as_data  : pd.DataFrame          = pd.DataFrame(module_nlp.convert_embeddings_to_matrix(embeddings))
+    centers_as_data     : pd.DataFrame          = pd.DataFrame(centers)
+    entire_data         : pd.DataFrame          = pd.concat([embeddings_as_data, centers_as_data])
+
+    mds_model           : sklearn.manifold.TSNE = sklearn.manifold.TSNE(n_components=len(reduced_columns), init='pca', perplexity=10, learning_rate='auto')
+    reduced_data        : pd.DataFrame          = pd.DataFrame(mds_model.fit_transform(entire_data), columns = reduced_columns)
+
+    reduced_data.index          = words + [ f'Center {index}' for index in range(len(centers)) ]
+    reduced_data['Cluster']     = pd.Series(predicted_clusters.tolist() + [ index for index in range(len(centers)) ], index=reduced_data.index)
+    reduced_data['Type']        = pd.Series([ 'point' for _ in range(len(words)) ] + [ 'center' for _ in range(len(centers)) ], index=reduced_data.index)
+    return reduced_data
 
 # =================================== PRIVATE CLASS DEFINITIONS ===================================
 

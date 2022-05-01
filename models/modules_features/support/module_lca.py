@@ -96,13 +96,14 @@ def lca_analysis_dynamic(train_X: pd.DataFrame, train_Y: pd.Series, test_X: Opti
     
     # Predict Clusters and Reduce Dimensionality
     predicted_clusters, cluster_centers = module_clustering.cluster_word_embeddings(selected_words_embeddings, NUMBER_CLUSTERS_TO_TEST)
-    reduced_dimensionality = module_clustering.reduce_data_dimensionality_to(selected_words_embeddings, [ "Column 1", "Column 2" ])
-    reduced_dimensionality['Cluster'] = predicted_clusters
-    reduced_dimensionality.index = selected_words
+    reduced_dimensionality = module_clustering.reduce_data_dimensionality_to(selected_words, selected_words_embeddings,
+        predicted_clusters, cluster_centers, [ "Feature 1", "Feature 2" ])
 
     # Plot and Save achieved Clusters
     module_exporter.push_current_directory('Temporary')
-    module_exporter.export_scatter_clusters('content - lca - achieved clusters', reduced_dimensionality, 'Column 1', 'Column 2', hue_key='Cluster')
+    module_exporter.export_scatter_clusters('content - lca - achieved clusters', reduced_dimensionality, 'Feature 1', 'Feature 2',
+        hue_key='Cluster', style_key='Type', hide_labels=('Type', 'center'), figsize=(10, 6),
+        legend_placement='upper left', margins={ 'bottom': None, 'left': 0.1, 'top': None, 'right': 0.85 })
     module_exporter.pop_current_directory()
 
     # LCA features
