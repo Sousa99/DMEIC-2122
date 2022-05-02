@@ -16,9 +16,9 @@ import modules_corpora.module_gensim_util   as module_gensim_util
 
 # =================================== CONSTANTS DEFINITIONS ===================================
 
-DEFAULT_VALUE                       : float     = -1.0
+DEFAULT_VALUE                       : float     = 0
 NUMBER_OF_WORDS_PER_BAG             : int       = 15
-PERCENTAGE_OF_MOST_FREQUENT_WORDS   : float     = 0.05
+PERCENTAGE_OF_MOST_FREQUENT_WORDS   : float     = 0.95
 NUMBER_WORDS_FOR_CLUSTERING         : int       = 50
 NUMBER_CLUSTERS_TO_TEST             : List[int] = [ x for x in range(3, 11) ]
 
@@ -31,7 +31,7 @@ def get_top_words(model: module_gensim.ModelWord2Vec, percentage: float) -> List
     most_frequent_words : List[str] = model_vocab_words[:number_of_words]
     return most_frequent_words
 
-def get_cossine_similarity_with_word(sentence_embeddings: List[npt.NDArray[np.float64]], word_embedding: npt.NDArray[np.float64]) -> Optional[float]:
+def get_max_cossine_similarity_with_word(sentence_embeddings: List[npt.NDArray[np.float64]], word_embedding: npt.NDArray[np.float64]) -> Optional[float]:
 
     max_cossine : Optional[float] = None
     for sentece_embedding in sentence_embeddings:
@@ -41,10 +41,10 @@ def get_cossine_similarity_with_word(sentence_embeddings: List[npt.NDArray[np.fl
 
     return max_cossine
 
-def get_max_cossine_similarity(sentence_embeddings: List[npt.NDArray[np.float64]], most_frequent_words: List[Tuple[str, npt.NDArray[np.float64]]]) -> Dict[str, float]:
+def get_max_cossine_similarity_freq_words(sentence_embeddings: List[npt.NDArray[np.float64]], most_frequent_words: List[Tuple[str, npt.NDArray[np.float64]]]) -> Dict[str, float]:
     max_cossine_dictionary : Dict[str, float] = {}
     for (frequent_word, frequent_embedding) in most_frequent_words:
-        max_cossine = get_cossine_similarity_with_word(sentence_embeddings, frequent_embedding)
+        max_cossine = get_max_cossine_similarity_with_word(sentence_embeddings, frequent_embedding)
         if max_cossine is not None:
             max_cossine_dictionary[frequent_word] = max_cossine
 
@@ -62,7 +62,7 @@ def lca_analysis(basis_df: pd.DataFrame) -> pd.DataFrame:
     basis_df['LCA - Word Groups'] = basis_df['Lemmatized Filtered Text'].progress_apply(lambda words: module_nlp.subdivide_bags_of_words(words, NUMBER_OF_WORDS_PER_BAG))
     basis_df['LCA - Embedding per Word Groups'] = basis_df['LCA - Word Groups'].progress_apply(lambda groups_of_words: module_nlp.convert_groups_of_words_to_embeddings(groups_of_words, word2vec_model))
     basis_df['LCA - Embedding Groups'] = basis_df['LCA - Embedding per Word Groups'].progress_apply(module_nlp.sum_normalize_embedding_per_group)
-    basis_df['LCA - Max Cossine w/ Frequent Words'] = basis_df['LCA - Embedding Groups'].progress_apply(lambda sentence_embeddings: get_max_cossine_similarity(sentence_embeddings, model_frequent_word_embeddings))
+    basis_df['LCA - Max Cossine w/ Frequent Words'] = basis_df['LCA - Embedding Groups'].progress_apply(lambda sentence_embeddings: get_max_cossine_similarity_freq_words(sentence_embeddings, model_frequent_word_embeddings))
     
     return basis_df
 
@@ -100,13 +100,21 @@ def lca_analysis_dynamic(train_X: pd.DataFrame, train_Y: pd.Series, test_X: Opti
         predicted_clusters, cluster_centers, [ "Feature 1", "Feature 2" ])
 
     # Plot and Save achieved Clusters
-    module_exporter.push_current_directory('Temporary')
     module_exporter.export_scatter_clusters('content - lca - achieved clusters', reduced_dimensionality, 'Feature 1', 'Feature 2',
         hue_key='Cluster', style_key='Type', hide_labels=('Type', 'center'), figsize=(10, 6),
         legend_placement='upper left', margins={ 'bottom': None, 'left': 0.1, 'top': None, 'right': 0.85 })
-    module_exporter.pop_current_directory()
 
-    # LCA features
-    exit()
+    # LCA features applied to train
+    for index, cluster_center in enumerate(cluster_centers):
+        column_name : str   = f'LCA - Max Cossine w/ Cluster {index}'
+        train_X[column_name] = train_X['LCA - Embedding Groups'].progress_apply(lambda sentence_embeddings: get_max_cossine_similarity_with_word(sentence_embeddings, cluster_center))
+        train_X[column_name].fillna(DEFAULT_VALUE, inplace=True)
     
-    return basis_df
+    # LCA features applied to test
+    if test_X is not None:
+        for index, cluster_center in enumerate(cluster_centers):
+            column_name : str   = f'LCA - Max Cossine w/ Cluster {index}'
+            test_X[column_name] = test_X['LCA - Embedding Groups'].progress_apply(lambda sentence_embeddings: get_max_cossine_similarity_with_word(sentence_embeddings, cluster_center))
+            test_X[column_name].fillna(DEFAULT_VALUE, inplace=True)
+
+    return (train_X, test_X)

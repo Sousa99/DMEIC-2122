@@ -74,18 +74,18 @@ def test_multiple_clusters(data: pd.DataFrame, numbers_clusters: List[int]) -> T
 
 # =================================== PUBLIC FUNCTIONS ===================================
 
-def cluster_word_embeddings(embeddings: List[npt.NDArray[np.float64]], numbers_clusters: List[int]) -> Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+def cluster_word_embeddings(embeddings: List[npt.NDArray[np.float64]], numbers_clusters: List[int]) -> Tuple[npt.NDArray[np.float64], List[npt.NDArray[np.float64]]]:
 
     embeddings_as_data  : pd.DataFrame  = module_nlp.convert_embeddings_to_matrix(embeddings)
 
     prediction, cluster_centers = test_multiple_clusters(embeddings_as_data, numbers_clusters)
-    return (prediction, cluster_centers)
+    return (prediction, module_nlp.convert_matrix_to_embeddings(cluster_centers))
 
 def reduce_data_dimensionality_to(words: List[str], embeddings: List[npt.NDArray[np.float64]],
-    predicted_clusters: npt.NDArray[np.float64], centers: npt.NDArray[np.float64], reduced_columns: List[str]) -> pd.DataFrame:
+    predicted_clusters: npt.NDArray[np.float64], centers: List[npt.NDArray[np.float64]], reduced_columns: List[str]) -> pd.DataFrame:
 
     embeddings_as_data  : pd.DataFrame          = pd.DataFrame(module_nlp.convert_embeddings_to_matrix(embeddings))
-    centers_as_data     : pd.DataFrame          = pd.DataFrame(centers)
+    centers_as_data     : pd.DataFrame          = pd.DataFrame(module_nlp.convert_embeddings_to_matrix(centers))
     entire_data         : pd.DataFrame          = pd.concat([embeddings_as_data, centers_as_data])
 
     mds_model           : sklearn.manifold.TSNE = sklearn.manifold.TSNE(n_components=len(reduced_columns), init='pca', perplexity=10, learning_rate='auto')

@@ -70,6 +70,10 @@ def convert_groups_of_words_to_embeddings(groups_of_words: List[List[str]], mode
 def convert_embeddings_to_matrix(group_of_embeddings: List[NDArray[np.float64]]) -> NDArray[np.float64]:
     return np.array(group_of_embeddings).astype(np.float64)
 
+def convert_matrix_to_embeddings(embeddings_matrix: NDArray[np.float64]) -> List[NDArray[np.float64]]:
+    list_elem   : List[List[float]] = embeddings_matrix.tolist()
+    return list(map(lambda item: np.array(item).astype(np.float64), list_elem))
+
 def average_embedding_per_group(groups_embeddings: List[List[NDArray[np.float64]]]) -> List[NDArray[np.float64]]:
     avg_embedding_per_group : List[NDArray[np.float64]] = list(map(lambda group_embeddings: average_embeddings(group_embeddings), groups_embeddings))
     return avg_embedding_per_group

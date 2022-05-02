@@ -42,7 +42,7 @@ class ContentFeatureSet(module_featureset.FeatureSetAbstraction):
         # Save back 'basis dataframe' and 'drop_columns'
         self.basis_dataframe = basics_dataframe
         self.drop_columns = ['Trans Path', 'Trans File', 'Trans File Path', 'Trans Info', 'Lemmatized Text', 'Lemmatized Filtered Text',
-            'LCA - Word Groups', 'LCA - Embedding per Word Groups', 'LCA - Embedding Groups', 'LCA - Cossine with most frequent Words' ]
+            'LCA - Word Groups', 'LCA - Embedding per Word Groups', 'LCA - Embedding Groups', 'LCA - Max Cossine w/ Frequent Words' ]
 
     def develop_static_df(self):
         if self.static_dataframe is not None: return
