@@ -105,17 +105,22 @@ class FeatureSetAbstraction(abc.ABC):
         current_df : pd.DataFrame = self.static_dataframe.copy(deep=True)
 
         current_df = self.filter_rows(current_df, variation)
-        current_df = current_df.drop(self.drop_columns, axis=1)
 
         dataframe_X, dataframe_Y = self.separate_target(current_df)
-        if not self.pivot_on_task: dataframe_X = dataframe_X.drop(self.general_drop_columns, axis=1)
-
-        dataframe_X = variation.preprocesser.preprocess_train(dataframe_X)
-        dataframe_Y = variation.preprocesser.preprocess_test(dataframe_Y)
-
         (train_X, train_Y), (test_X, test_Y) = self.separate_train_test(indexes, dataframe_X, dataframe_Y)
-
         train_X, test_X = self.develop_dynamic_df(train_X, train_Y, test_X)
+
+        train_X = train_X.drop(self.drop_columns, axis=1)
+        test_X = test_X.drop(self.drop_columns, axis=1)
+        if not self.pivot_on_task:
+            train_X = train_X.drop(self.general_drop_columns, axis=1)
+            test_X = test_X.drop(self.general_drop_columns, axis=1)
+
+        train_X = variation.preprocesser.preprocess_train(train_X)
+        test_X = variation.preprocesser.preprocess_test(test_X)
+        train_Y = variation.preprocesser.preprocess_train(train_Y)
+        test_Y = variation.preprocesser.preprocess_test(test_Y)
+
         return ((train_X, train_Y), (test_X, test_Y))
 
     def get_full_df(self, variation: Optional[module_variations.Variation] = None) -> Tuple[pd.DataFrame, pd.Series]:
@@ -124,19 +129,20 @@ class FeatureSetAbstraction(abc.ABC):
         if self.static_dataframe is None: self.develop_static_df()
         current_df : pd.DataFrame = self.static_dataframe.copy(deep=True)
 
-        if variation is not None:
-            current_df = self.filter_rows(current_df, variation)
-        current_df = current_df.drop(self.drop_columns, axis=1)
+        if variation is not None: current_df = self.filter_rows(current_df, variation)
 
         dataframe_X, dataframe_Y = self.separate_target(current_df)
-        if not self.pivot_on_task: dataframe_X = dataframe_X.drop(self.general_drop_columns, axis=1)
+
+        dataframe_X, _ = self.develop_dynamic_df(dataframe_X, dataframe_Y)
+        dataframe_X = dataframe_X.drop(self.drop_columns, axis=1)
+        if not self.pivot_on_task:
+            dataframe_X = dataframe_X.drop(self.general_drop_columns, axis=1)
 
         if variation is not None:
             dataframe_X = variation.preprocesser.preprocess_train(dataframe_X)
-            dataframe_Y = variation.preprocesser.preprocess_test(dataframe_Y)
-
-        train_X, test_X = self.develop_dynamic_df(dataframe_X, dataframe_Y)
-        return train_X, test_X
+            dataframe_Y = variation.preprocesser.preprocess_train(dataframe_Y)
+        
+        return dataframe_X, dataframe_Y
 
 class MergedFeatureSetAbstraction(FeatureSetAbstraction):
 

@@ -153,51 +153,51 @@ def compute_probability_component(trans_info: module_load.TranscriptionInfo, con
 
 # =================================== PUBLIC METHODS ===================================
 
-def word_graph_analysis(structure_df: pd.DataFrame) -> pd.DataFrame:
+def word_graph_analysis(basis_dataframe: pd.DataFrame) -> pd.DataFrame:
     print("🚀 Processing 'word graph' analysis ...")
 
     # ===================================================== FEATURES - WORD GRAPH - ACQUIRE STRUCTURES =====================================================
-    structure_df['Word Graph'] = structure_df['Trans Info'].progress_apply(compute_word_graph)
-    structure_df['Word Graph - WCC'] = structure_df['Word Graph'].progress_apply(compute_weakly_connected_components)
-    structure_df['Word Graph - SCC'] = structure_df['Word Graph'].progress_apply(compute_strong_connected_components)
-    structure_df['Word Graph - LWCC'] = structure_df['Word Graph - WCC'].progress_apply(get_largest_connected_component)
-    structure_df['Word Graph - LSCC'] = structure_df['Word Graph - SCC'].progress_apply(get_largest_connected_component)
+    basis_dataframe['Word Graph'] = basis_dataframe['Trans Info'].progress_apply(compute_word_graph)
+    basis_dataframe['Word Graph - WCC'] = basis_dataframe['Word Graph'].progress_apply(compute_weakly_connected_components)
+    basis_dataframe['Word Graph - SCC'] = basis_dataframe['Word Graph'].progress_apply(compute_strong_connected_components)
+    basis_dataframe['Word Graph - LWCC'] = basis_dataframe['Word Graph - WCC'].progress_apply(get_largest_connected_component)
+    basis_dataframe['Word Graph - LSCC'] = basis_dataframe['Word Graph - SCC'].progress_apply(get_largest_connected_component)
 
     # ============================================== FEATURES - WORD GRAPH - EXTRACT FEATURES - MOST IMPORTANT ==============================================
-    structure_df['Word Graph - #nodes'] = structure_df['Word Graph'].progress_apply(compute_number_of_nodes).astype(int)
-    structure_df['Word Graph - #edges'] = structure_df['Word Graph'].progress_apply(compute_number_of_edges).astype(int)
-    structure_df['Word Graph - diameter'] = structure_df['Word Graph'].progress_apply(compute_diameter).astype(int)
-    structure_df['Word Graph - #repeated_edges'] = structure_df['Word Graph'].progress_apply(compute_repeated_edges).astype(int)
-    structure_df['Word Graph - #parallel_edges'] = structure_df['Word Graph'].progress_apply(compute_parallel_edges).astype(int)
-    structure_df['Word Graph - #average_total_degree'] = structure_df['Word Graph'].progress_apply(compute_average_total_degree).astype(int)
-    structure_df['Word Graph - #average_shortest_path'] = structure_df['Word Graph'].progress_apply(compute_average_shorthest_path).astype(int)
-    structure_df['Word Graph - #average_clustering_coefficient'] = structure_df['Word Graph'].progress_apply(compute_average_cluster_coefficient).astype(float)
-    # = structure_df['Word Graph - LWCC - #nodes'] = structure_df['Word Graph - LWCC'].progress_apply(compute_number_of_nodes).astype(int)
-    # = structure_df['Word Graph - LWCC - #edges'] = structure_df['Word Graph - LWCC'].progress_apply(compute_number_of_edges).astype(int)
-    # = structure_df['Word Graph - LWCC - probability'] = structure_df.progress_apply(lambda row: compute_probability_component(row['Trans Info'], row['Word Graph - LWCC'], False), axis=1)
-    structure_df['Word Graph - LSCC - #nodes'] = structure_df['Word Graph - LSCC'].progress_apply(compute_number_of_nodes).astype(int)
-    structure_df['Word Graph - LSCC - #edges'] = structure_df['Word Graph - LSCC'].progress_apply(compute_number_of_edges).astype(int)
-    structure_df['Word Graph - LSCC - probability'] = structure_df.progress_apply(lambda row: compute_probability_component(row['Trans Info'], row['Word Graph - LSCC'], True), axis=1)
+    basis_dataframe['Word Graph - #nodes'] = basis_dataframe['Word Graph'].progress_apply(compute_number_of_nodes).astype(int)
+    basis_dataframe['Word Graph - #edges'] = basis_dataframe['Word Graph'].progress_apply(compute_number_of_edges).astype(int)
+    basis_dataframe['Word Graph - diameter'] = basis_dataframe['Word Graph'].progress_apply(compute_diameter).astype(int)
+    basis_dataframe['Word Graph - #repeated_edges'] = basis_dataframe['Word Graph'].progress_apply(compute_repeated_edges).astype(int)
+    basis_dataframe['Word Graph - #parallel_edges'] = basis_dataframe['Word Graph'].progress_apply(compute_parallel_edges).astype(int)
+    basis_dataframe['Word Graph - #average_total_degree'] = basis_dataframe['Word Graph'].progress_apply(compute_average_total_degree).astype(int)
+    basis_dataframe['Word Graph - #average_shortest_path'] = basis_dataframe['Word Graph'].progress_apply(compute_average_shorthest_path).astype(int)
+    basis_dataframe['Word Graph - #average_clustering_coefficient'] = basis_dataframe['Word Graph'].progress_apply(compute_average_cluster_coefficient).astype(float)
+    # = basis_dataframe['Word Graph - LWCC - #nodes'] = basis_dataframe['Word Graph - LWCC'].progress_apply(compute_number_of_nodes).astype(int)
+    # = basis_dataframe['Word Graph - LWCC - #edges'] = basis_dataframe['Word Graph - LWCC'].progress_apply(compute_number_of_edges).astype(int)
+    # = basis_dataframe['Word Graph - LWCC - probability'] = basis_dataframe.progress_apply(lambda row: compute_probability_component(row['Trans Info'], row['Word Graph - LWCC'], False), axis=1)
+    basis_dataframe['Word Graph - LSCC - #nodes'] = basis_dataframe['Word Graph - LSCC'].progress_apply(compute_number_of_nodes).astype(int)
+    basis_dataframe['Word Graph - LSCC - #edges'] = basis_dataframe['Word Graph - LSCC'].progress_apply(compute_number_of_edges).astype(int)
+    basis_dataframe['Word Graph - LSCC - probability'] = basis_dataframe.progress_apply(lambda row: compute_probability_component(row['Trans Info'], row['Word Graph - LSCC'], True), axis=1)
     
     # ============================================== FEATURES - WORD GRAPH - EXTRACT FEATURES - LEAST IMPORTANT ==============================================
-    # = structure_df['Word Graph - WCC - min #nodes'] = structure_df['Word Graph - WCC'].progress_apply(compute_connected_components_nodes_min).astype(int)
-    # = structure_df['Word Graph - WCC - avg #nodes'] = structure_df['Word Graph - WCC'].progress_apply(compute_connected_components_nodes_avg).astype(float)
-    # = structure_df['Word Graph - WCC - max #nodes'] = structure_df['Word Graph - WCC'].progress_apply(compute_connected_components_nodes_max).astype(int)
-    structure_df['Word Graph - SCC - min #nodes'] = structure_df['Word Graph - SCC'].progress_apply(compute_connected_components_nodes_min).astype(int)
-    structure_df['Word Graph - SCC - avg #nodes'] = structure_df['Word Graph - SCC'].progress_apply(compute_connected_components_nodes_avg).astype(float)
-    structure_df['Word Graph - SCC - max #nodes'] = structure_df['Word Graph - SCC'].progress_apply(compute_connected_components_nodes_max).astype(int)
-    # = structure_df['Word Graph - WCC - min #edges'] = structure_df['Word Graph - WCC'].progress_apply(compute_connected_components_edges_min).astype(int)
-    # = structure_df['Word Graph - WCC - avg #edges'] = structure_df['Word Graph - WCC'].progress_apply(compute_connected_components_edges_avg).astype(float)
-    # = structure_df['Word Graph - WCC - max #edges'] = structure_df['Word Graph - WCC'].progress_apply(compute_connected_components_edges_max).astype(int)
-    structure_df['Word Graph - SCC - min #edges'] = structure_df['Word Graph - SCC'].progress_apply(compute_connected_components_edges_min).astype(int)
-    structure_df['Word Graph - SCC - avg #edges'] = structure_df['Word Graph - SCC'].progress_apply(compute_connected_components_edges_avg).astype(float)
-    structure_df['Word Graph - SCC - max #edges'] = structure_df['Word Graph - SCC'].progress_apply(compute_connected_components_edges_max).astype(int)
+    # = basis_dataframe['Word Graph - WCC - min #nodes'] = basis_dataframe['Word Graph - WCC'].progress_apply(compute_connected_components_nodes_min).astype(int)
+    # = basis_dataframe['Word Graph - WCC - avg #nodes'] = basis_dataframe['Word Graph - WCC'].progress_apply(compute_connected_components_nodes_avg).astype(float)
+    # = basis_dataframe['Word Graph - WCC - max #nodes'] = basis_dataframe['Word Graph - WCC'].progress_apply(compute_connected_components_nodes_max).astype(int)
+    basis_dataframe['Word Graph - SCC - min #nodes'] = basis_dataframe['Word Graph - SCC'].progress_apply(compute_connected_components_nodes_min).astype(int)
+    basis_dataframe['Word Graph - SCC - avg #nodes'] = basis_dataframe['Word Graph - SCC'].progress_apply(compute_connected_components_nodes_avg).astype(float)
+    basis_dataframe['Word Graph - SCC - max #nodes'] = basis_dataframe['Word Graph - SCC'].progress_apply(compute_connected_components_nodes_max).astype(int)
+    # = basis_dataframe['Word Graph - WCC - min #edges'] = basis_dataframe['Word Graph - WCC'].progress_apply(compute_connected_components_edges_min).astype(int)
+    # = basis_dataframe['Word Graph - WCC - avg #edges'] = basis_dataframe['Word Graph - WCC'].progress_apply(compute_connected_components_edges_avg).astype(float)
+    # = basis_dataframe['Word Graph - WCC - max #edges'] = basis_dataframe['Word Graph - WCC'].progress_apply(compute_connected_components_edges_max).astype(int)
+    basis_dataframe['Word Graph - SCC - min #edges'] = basis_dataframe['Word Graph - SCC'].progress_apply(compute_connected_components_edges_min).astype(int)
+    basis_dataframe['Word Graph - SCC - avg #edges'] = basis_dataframe['Word Graph - SCC'].progress_apply(compute_connected_components_edges_avg).astype(float)
+    basis_dataframe['Word Graph - SCC - max #edges'] = basis_dataframe['Word Graph - SCC'].progress_apply(compute_connected_components_edges_max).astype(int)
 
     # ================================================================ EXPORT GRAPHS ================================================================
     # = module_exporter.change_current_directory(['tmp'])
-    # = for subject, task, graph in tqdm(list(zip(structure_df['Subject'], structure_df['Task'], structure_df['Word Graph'])), desc="🎨 Exporting Graphs", leave=True):
+    # = for subject, task, graph in tqdm(list(zip(basis_dataframe['Subject'], basis_dataframe['Task'], basis_dataframe['Word Graph'])), desc="🎨 Exporting Graphs", leave=True):
     # =     code = subject[0]
     # =     module_exporter.change_current_directory(['tmp', task, code])
     # =     module_exporter.export_word_graph(f'{subject}-{task}', convert_multi_graph_to_weighted(graph), figsize=(30, 12), with_labels=True)
 
-    return structure_df
+    return basis_dataframe

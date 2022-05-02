@@ -23,7 +23,10 @@ class ModelCorpora(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def get_word_embedding(self, word: str) -> Optional[List[float]]:
+    def word_in_model(self, word: str) -> bool:
+        pass
+    @abc.abstractmethod
+    def get_word_embedding(self, word: str) -> Optional[NDArray[np.float64]]:
         pass
 
 # =================================== PUBLIC CLASS DEFINITIONS ===================================
@@ -38,6 +41,12 @@ class ModelLSA(ModelCorpora):
 
         self.dictionary : gensim.corpora.Dictionary = gensim.corpora.Dictionary.load(filepath_dictionary)
         self.model : gensim.models.LsiModel = gensim.models.LsiModel.load(filepath_model)
+
+    def word_in_model(self, word: str) -> bool:
+        if word not in self.dictionary.token2id: return False
+        word_id = self.dictionary.token2id[word]
+        if word_id not in self.model.projection.u: return False
+        return True
 
     def get_word_embedding(self, word: str) -> Optional[NDArray[np.float64]]:
 
@@ -55,9 +64,19 @@ class ModelWord2Vec(ModelCorpora):
 
         self.model : gensim.models.Word2Vec = gensim.models.Word2Vec.load(filepath_model)
 
+    def word_in_model(self, word: str) -> bool:
+        if word not in self.model.wv: return False
+        return True
+
     def get_word_embedding(self, word: str) -> Optional[NDArray[np.float64]]:
 
         if word not in self.model.wv: return None
         embedding : NDArray[np.float32] = self.model.wv[word]
 
         return embedding.astype(np.float64)
+
+    def get_vocab_size(self) -> int:
+        return len(self.model.wv)
+
+    def get_vocab_by_frequency(self) -> List[str]:
+        return self.model.wv.index_to_key

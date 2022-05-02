@@ -1,16 +1,18 @@
 import os
 import sys
 import math
+import warnings
 import matplotlib
 
-import numpy as np
-import pandas as pd
-import seaborn as sns
-import networkx as nx
-import matplotlib.pyplot as plt
+import numpy                as np
+import pandas               as pd
+import seaborn              as sns
+import networkx             as nx
+import matplotlib.pyplot    as plt
 
-from datetime import datetime
-from typing import Dict, List, Optional, Tuple
+from datetime               import datetime
+from typing                 import Any, Dict, List, Optional, Tuple
+
 if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from typing import TypedDict
 else: from typing_extensions import TypedDict
 
@@ -22,6 +24,10 @@ EXPORT_IMAGE_EXTENSION = '.png'
 CURRENT_DIRECTORIES = []
 
 matplotlib.use('Agg')
+
+# =================================== IGNORE CERTAIN ERRORS ===================================
+
+warnings.filterwarnings('ignore', category = UserWarning, module = 'openpyxl')
 
 # =================================== PRIVATE FUNCTIONS ===================================
 
@@ -54,6 +60,14 @@ def change_execution_timestamp(timestamp: str):
 def change_current_directory(current_directories: List[str] = []):
     global CURRENT_DIRECTORIES
     CURRENT_DIRECTORIES = current_directories
+
+def push_current_directory(directory: str):
+    global CURRENT_DIRECTORIES
+    CURRENT_DIRECTORIES.append(directory)
+
+def pop_current_directory():
+    global CURRENT_DIRECTORIES
+    CURRENT_DIRECTORIES.pop()
 
 # =================================== PUBLIC FUNCTIONS - SPECIFIC PARAMETERS ===================================
 
@@ -239,6 +253,38 @@ def export_word_graph(filename: str, graph: nx.DiGraph, weight_edges: Optional[b
     nx.draw_networkx(graph, pos, with_labels=with_labels, node_color=node_color)
     labels = nx.get_edge_attributes(graph, 'weight')
     if weight_edges: nx.draw_networkx_edge_labels(graph, pos, edge_labels=labels)
+
+    plt.savefig(complete_path)
+    plt.close('all')
+
+def export_scatter_clusters(filename: str, dataframe: pd.DataFrame, x_key: str, y_key: str, figsize: Tuple[int] = (10, 4),
+    hue_key: Optional[str] = None, style_key: Optional[str] = None, x_label: Optional[str] = None, y_label: Optional[str] = None,
+    hide_labels: Optional[Tuple[str, Any]] = None, palette: str = "deep",
+    legend_placement: Optional[str] = None, margins: Optional[Dict[str, Optional[float]]] = None) -> None:
+
+    complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
+
+    plt.figure(figsize=figsize)
+    plot = sns.scatterplot(data=dataframe, x=x_key, y=y_key, hue=hue_key, style=style_key, palette=palette)
+
+    if x_label: plt.xlabel(x_label)
+    if y_label: plt.ylabel(y_label)
+
+    if margins: plt.subplots_adjust(bottom=margins['bottom'], left=margins['left'],
+        top=margins['top'], right=margins['right'])
+
+    def label_point(x: pd.Series, y: pd.Series, val: pd.Series, display: pd.Series, ax):
+        a = pd.DataFrame.from_dict({'x': x, 'y': y, 'val': val, 'filter': display})
+        for _, point in a.iterrows():
+            if not point['filter']:
+                ax.text(point['x']+ .15, point['y'] + 3.0, str(point['val']), fontsize='small')
+
+    filter_labeling = pd.Series(False, index = dataframe.index)
+    if hide_labels is not None: filter_labeling = dataframe[hide_labels[0]] == hide_labels[1]
+
+    label_point(dataframe[x_key], dataframe[y_key], dataframe.index, filter_labeling, plt.gca())
+    if legend_placement is not None:
+        plt.legend(bbox_to_anchor=(1.02, 1), loc=legend_placement, borderaxespad=0)
 
     plt.savefig(complete_path)
     plt.close('all')

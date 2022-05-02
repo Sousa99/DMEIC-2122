@@ -165,9 +165,11 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
 
             feature_key : str = feature_set.id
             print("🚀 Running profiling of '{0}' dataset".format(feature_key))
-            module_exporter.change_current_directory(['Data Profiling', feature_key])
 
+            module_exporter.change_current_directory(['Feature Extraction'])
             feature_df, target_df = feature_set.get_full_df()
+
+            module_exporter.change_current_directory(['Data Profiling', feature_key])
             profiler = module_profiling.DatasetProfiling(feature_df, target_df)
             profiler.make_profiling()
 
@@ -178,6 +180,7 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
         if len(feature_sets_filter) == 0: exit(f"🚨 Feature set with key '{variation.features_code}' not found in model feature_sets")
         feature_set : module_featureset.FeatureSetAbstraction = feature_sets_filter[0]
 
+        module_exporter.change_current_directory([variation.generate_code(), 'Feature Extraction'])
         dataframe_X, dataframe_Y = feature_set.get_full_df(variation)
 
         # Do profiling of current dataset
@@ -187,15 +190,16 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
         profiler.make_profiling()
 
         # Running the classifier itself
-        module_exporter.change_current_directory([variation.generate_code(), 'Classifier'])
         print("🚀 Running model ...")
         data_splits = list(module_classifier.leave_one_out(dataframe_X))
         classifier = variation.classifier(['Psychosis', 'Control'])
-        for (train_index, test_index) in tqdm(data_splits, desc="👉 Running classifier:", leave=False):
+        for (split_index, (train_index, test_index)) in enumerate(tqdm(data_splits, desc="👉 Running classifier:", leave=False)):
+            module_exporter.change_current_directory([variation.generate_code(), 'Feature Extraction', f'split {split_index}'])
             (X_train, y_train), (X_test, y_test) = feature_set.get_df_for_classification(variation, (train_index, test_index))
             classifier.process_iteration(X_train, y_train, X_test, y_test)
 
         # Export Classifier Variations Results
+        module_exporter.change_current_directory([variation.generate_code(), 'Classifier'])
         variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 
             'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code }
         classifier.export_variations_results(variation_summary, self.TARGET_METRIC)
