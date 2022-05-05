@@ -85,38 +85,48 @@ def lca_analysis_dynamic(train_X: pd.DataFrame, train_Y: pd.Series, test_X: Opti
     # Achieve tdidf model
     list_of_documents   : List[List[str]]               = grouped_by_df['Lemmatized Filtered Text'].to_list()
     tdidf_model         : module_gensim_util.ModelTDIDF = module_gensim_util.ModelTDIDF(list_of_documents)
-    tdidf_document      : Dict[str, float]              = tdidf_model.process_document(grouped_by_df.loc[True, 'Lemmatized Filtered Text'])
 
-    # Select words based on scores
-    word_importance             : pd.Series = grouped_by_lca_cossines.progress_apply(lambda row: row[True] / row[False], axis=1).sort_values(ascending=False)
-    word_importance_tdidf       : pd.Series = grouped_by_lca_cossines.progress_apply(lambda row: tdidf_document[row.name] * (row[True] / row[False]) if row.name in tdidf_document else 0.0, axis=1).sort_values(ascending=False)
-    list_of_words_sorted        : List[str] = list(filter(lambda word: word2vec_model.word_in_model(word), word_importance_tdidf.index))
+    # Define variation for cluster creation
+    clusters_to_study   : Dict[str, Any]                = [
+        { 'code':   'target',       'full_code':    'Target',       'target_column':    True,   'non_target_column':    False   },
+        { 'code':   'non-target',   'full_code':    'Non-Target',   'target_column':    False,  'non_target_column':    True    },
+    ]
 
-    selected_words              : List[str]                     = list_of_words_sorted[:NUMBER_WORDS_FOR_CLUSTERING]
-    selected_words_embeddings   : List[npt.NDArray[np.float64]] = list(map(lambda word: module_nlp.convert_word_to_embedding(word, word2vec_model), selected_words))
-    
-    # Predict Clusters and Reduce Dimensionality
-    predicted_clusters, cluster_centers = module_clustering.cluster_word_embeddings(selected_words_embeddings, NUMBER_CLUSTERS_TO_TEST)
-    reduced_dimensionality = module_clustering.reduce_data_dimensionality_to(selected_words, selected_words_embeddings,
-        predicted_clusters, cluster_centers, [ "Feature 1", "Feature 2" ])
+    for cluster_to_study in clusters_to_study:
 
-    # Plot and Save achieved Clusters
-    module_exporter.export_scatter_clusters('content - lca - achieved clusters', reduced_dimensionality, 'Feature 1', 'Feature 2',
-        hue_key='Cluster', style_key='Type', hide_labels=('Type', 'center'), figsize=(10, 6),
-        legend_placement='upper left', margins={ 'bottom': None, 'left': 0.1, 'top': None, 'right': 0.85 })
+        # Achieve tdidf model
+        tdidf_document      : Dict[str, float]              = tdidf_model.process_document(grouped_by_df.loc[cluster_to_study['target_column'], 'Lemmatized Filtered Text'])
 
-    # LCA features applied to train
-    for index, cluster_center in enumerate(cluster_centers):
-        column_name : str   = f'LCA - Max Cossine w/ Cluster {index}'
-        train_X[column_name] = train_X['LCA - Embedding Groups'].progress_apply(lambda sentence_embeddings: get_max_cossine_similarity_with_word(sentence_embeddings, cluster_center))
-        train_X[column_name].fillna(DEFAULT_VALUE, inplace=True)
-    
-    # LCA features applied to test
-    if test_X is not None:
+        # Select words based on scores
+        word_importance             : pd.Series = grouped_by_lca_cossines.progress_apply(lambda row: row[cluster_to_study['target_column']] / row[cluster_to_study['non_target_column']], axis=1).sort_values(ascending=False)
+        word_importance_tdidf       : pd.Series = grouped_by_lca_cossines.progress_apply(lambda row: tdidf_document[row.name] * (row[cluster_to_study['target_column']] / row[cluster_to_study['non_target_column']]) if row.name in tdidf_document else 0.0, axis=1).sort_values(ascending=False)
+        list_of_words_sorted        : List[str] = list(filter(lambda word: word2vec_model.word_in_model(word), word_importance_tdidf.index))
+
+        selected_words              : List[str]                     = list_of_words_sorted[:NUMBER_WORDS_FOR_CLUSTERING]
+        selected_words_embeddings   : List[npt.NDArray[np.float64]] = list(map(lambda word: module_nlp.convert_word_to_embedding(word, word2vec_model), selected_words))
+        
+        # Predict Clusters and Reduce Dimensionality
+        predicted_clusters, cluster_centers = module_clustering.cluster_word_embeddings(selected_words_embeddings, NUMBER_CLUSTERS_TO_TEST)
+        reduced_dimensionality = module_clustering.reduce_data_dimensionality_to(selected_words, selected_words_embeddings,
+            predicted_clusters, cluster_centers, [ "Feature 1", "Feature 2" ])
+
+        # Plot and Save achieved Clusters
+        module_exporter.export_scatter_clusters(f"content - lca - {cluster_to_study['code']} - train - achieved clusters", reduced_dimensionality, 'Feature 1', 'Feature 2',
+            hue_key='Cluster', style_key='Type', hide_labels=('Type', 'center'), figsize=(10, 6),
+            legend_placement='upper left', margins={ 'bottom': None, 'left': 0.1, 'top': None, 'right': 0.85 })
+
+        # LCA features applied to train
         for index, cluster_center in enumerate(cluster_centers):
             column_name : str   = f'LCA - Max Cossine w/ Cluster {index}'
-            test_X[column_name] = test_X['LCA - Embedding Groups'].progress_apply(lambda sentence_embeddings: get_max_cossine_similarity_with_word(sentence_embeddings, cluster_center))
-            test_X[column_name].fillna(DEFAULT_VALUE, inplace=True)
+            train_X[column_name] = train_X['LCA - Embedding Groups'].progress_apply(lambda sentence_embeddings: get_max_cossine_similarity_with_word(sentence_embeddings, cluster_center))
+            train_X[column_name].fillna(DEFAULT_VALUE, inplace=True)
+        
+        # LCA features applied to test
+        if test_X is not None:
+            for index, cluster_center in enumerate(cluster_centers):
+                column_name : str   = f"LCA - Max Cossine w/ Cluster {index} for {cluster_to_study['full_code']}"
+                test_X[column_name] = test_X['LCA - Embedding Groups'].progress_apply(lambda sentence_embeddings: get_max_cossine_similarity_with_word(sentence_embeddings, cluster_center))
+                test_X[column_name].fillna(DEFAULT_VALUE, inplace=True)
 
     del word2vec_model
     return (train_X, test_X)
