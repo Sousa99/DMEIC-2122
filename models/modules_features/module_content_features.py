@@ -7,6 +7,7 @@ from typing     import List, Optional, Tuple
 
 # Local Modules - Features
 import modules_features.support.module_lca      as module_lca
+import modules_features.support.module_sentilex as module_sentilex
 # Local Modules - Auxiliary
 import modules_aux.module_aux                   as module_aux
 import modules_aux.module_nlp                   as module_nlp
@@ -42,7 +43,8 @@ class ContentFeatureSet(module_featureset.FeatureSetAbstraction):
         # Save back 'basis dataframe' and 'drop_columns'
         self.basis_dataframe = basics_dataframe
         self.drop_columns = ['Trans Path', 'Trans File', 'Trans File Path', 'Trans Info', 'Lemmatized Text', 'Lemmatized Filtered Text',
-            'LCA - Word Groups', 'LCA - Embedding per Word Groups', 'LCA - Embedding Groups', 'LCA - Max Cossine w/ Frequent Words' ]
+            'LCA - Word Groups', 'LCA - Embedding per Word Groups', 'LCA - Embedding Groups', 'LCA - Max Cossine w/ Frequent Words',
+            'SentiLex - Extracted Scores' ]
 
     def develop_static_df(self):
         if self.static_dataframe is not None: return
@@ -50,10 +52,11 @@ class ContentFeatureSet(module_featureset.FeatureSetAbstraction):
         static_dataframe = self.basis_dataframe.copy(deep=True)
 
         print(f"🚀 Developing '{self.id}' analysis ...")
-        lca_df = module_lca.lca_analysis(static_dataframe.copy(deep=True))
+        lca_df      = module_lca.lca_analysis(static_dataframe.copy(deep=True))
+        sentilex_df = module_sentilex.sentilex_analysis(static_dataframe.copy(deep=True))
 
         # Final Dataframe
-        all_content_dataframes : List[pd.DataFrame] = [lca_df]
+        all_content_dataframes : List[pd.DataFrame] = [lca_df, sentilex_df]
         static_dataframe = reduce(lambda dataset_left, dataset_right: module_aux.join_dataframes(dataset_left, dataset_right), all_content_dataframes)
         
         # Save back 'static dataframe'
