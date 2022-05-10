@@ -73,6 +73,16 @@ def pop_current_directory():
     global CURRENT_DIRECTORIES
     CURRENT_DIRECTORIES.pop()
 
+# ======================================== PUBLIC FUNCTIONS - AUXILIARY ========================================
+
+def get_current_path() -> str:
+
+    timestampStr = EXECUTION_TIMESTAMP.strftime("%Y.%m.%d %H.%M.%S")
+    directory_path = os.path.join(EXPORT_DIRECTORY, timestampStr, *CURRENT_DIRECTORIES)
+
+    if not os.path.exists(directory_path): os.makedirs(directory_path)
+    return os.path.join(directory_path, '')
+
 # =================================== PUBLIC FUNCTIONS - SPECIFIC PARAMETERS ===================================
 
 def export_csv(dataframe: pd.DataFrame, filename: str = 'temp', index = True):
