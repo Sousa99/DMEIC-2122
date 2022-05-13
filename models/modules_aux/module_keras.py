@@ -6,8 +6,8 @@ import math
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 # =================================== IGNORE CERTAIN ERRORS ===================================
 
-import numpy            as np
 import tensorflow       as tf
+import numpy            as np
 
 if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from numpy.typing   import NDArray
 else: NDArray = np.ndarray
