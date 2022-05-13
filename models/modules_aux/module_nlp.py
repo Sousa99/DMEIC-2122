@@ -1,11 +1,13 @@
 import abc
-from tokenize import group
+import sys
 import nltk
 import stanza
 import warnings
 
 from typing         import List, Optional
-from numpy.typing   import NDArray
+
+if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from numpy.typing   import NDArray
+else: NDArray = np.ndarray
 
 import numpy    as np
 

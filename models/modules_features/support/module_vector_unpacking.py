@@ -1,8 +1,12 @@
+import sys
+
 from typing                             import Any, Dict, List
 
 import pandas                           as pd
 import numpy                            as np
-import numpy.typing                     as npt
+
+if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from numpy.typing   import NDArray
+else: NDArray = np.ndarray
 
 # Local Modules - Auxiliary
 import modules_aux.module_nlp           as module_nlp
@@ -18,11 +22,11 @@ NUMBER_OF_EPHOCS : int = 5000
 
 # =================================== PRIVATE METHODS ===================================
 
-def create_models(groups_of_embeddings: List[List[npt.NDArray[np.float64]]], sentence_embeddings: List[npt.NDArray[np.float64]]) -> List[module_keras.NeuralNetworkRezaii]:
+def create_models(groups_of_embeddings: List[List[NDArray[np.float64]]], sentence_embeddings: List[NDArray[np.float64]]) -> List[module_keras.NeuralNetworkRezaii]:
 
     models_list : List[module_keras.NeuralNetworkRezaii] = []
     for (group_of_embeddings, sentence_embedding) in zip(groups_of_embeddings, sentence_embeddings):
-        matrix_embeddings : npt.NDArray[np.float64] = module_nlp.convert_embeddings_to_matrix(group_of_embeddings)
+        matrix_embeddings : NDArray[np.float64] = module_nlp.convert_embeddings_to_matrix(group_of_embeddings)
         model : module_keras.NeuralNetworkRezaii = module_keras.NeuralNetworkRezaii(matrix_embeddings, sentence_embedding, ephocs=NUMBER_OF_EPHOCS)
         models_list.append(model)
 
@@ -45,7 +49,7 @@ def train_models(models: List[module_keras.NeuralNetworkRezaii]) -> pd.Series:
     result_series = pd.Series(dictionary_fixed)
     return result_series
 
-def create_and_train_models(groups_of_embeddings: List[List[npt.NDArray[np.float64]]], sentence_embeddings: List[npt.NDArray[np.float64]]) -> pd.Series:
+def create_and_train_models(groups_of_embeddings: List[List[NDArray[np.float64]]], sentence_embeddings: List[NDArray[np.float64]]) -> pd.Series:
     
     models_list : List[module_keras.NeuralNetworkRezaii] = create_models(groups_of_embeddings, sentence_embeddings)
     result_trained_models : pd.Series = train_models(models_list)

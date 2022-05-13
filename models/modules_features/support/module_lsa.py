@@ -1,8 +1,12 @@
+import sys
+
 import numpy        as np
 import pandas       as pd
 
 from typing import List
-from numpy.typing import NDArray
+
+if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from numpy.typing   import NDArray
+else: NDArray = np.ndarray
 
 # Local Modules - Auxiliary
 import modules_aux.module_nlp    as module_nlp
