@@ -1,7 +1,7 @@
 import os
+import sys
 import gensim
 
-from numpy.typing   import NDArray
 from typing         import Dict, List, Optional, Tuple
 
 import numpy    as np
