@@ -9,8 +9,7 @@ from typing         import List, Optional
 import numpy        as np
 
 if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from numpy.typing   import NDArray
-else: NDArray = np.ndarray
-
+else: NDArray = List
 
 # Local Modules - Auxiliary
 import modules_corpora.module_gensim    as module_gensim

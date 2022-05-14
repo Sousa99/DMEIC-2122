@@ -9,11 +9,12 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow       as tf
 import numpy            as np
 
-if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from numpy.typing   import NDArray
-else: NDArray = np.ndarray
-
 from typing             import Any, Dict, List
 from tensorflow         import keras
+
+if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from numpy.typing   import NDArray
+else: NDArray = List
+
 
 # ===================================== PRIVATE FUNCTIONS =====================================
 

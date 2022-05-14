@@ -6,7 +6,7 @@ import numpy        as np
 from typing         import List
 
 if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from numpy.typing   import NDArray
-else: NDArray = np.ndarray
+else: NDArray = List
 
 # Local Modules - Auxiliary
 import modules_aux.module_nlp    as module_nlp

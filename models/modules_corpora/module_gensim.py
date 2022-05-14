@@ -3,13 +3,12 @@ import abc
 import sys
 import gensim
 
-import numpy    as np
+import numpy        as np
+
+from typing         import Any, List, Optional
 
 if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from numpy.typing   import NDArray
-else: NDArray = np.ndarray
-
-from typing         import List, Optional
-
+else: NDArray = List
 
 # =================================== CONSTANTS DEFINITIONS ===================================
 
