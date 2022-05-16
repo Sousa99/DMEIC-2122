@@ -29,7 +29,7 @@ warnings.filterwarnings('ignore', category = UserWarning, module = 'opensmile')
 
 DATASET_SAMPLE              :   float               = 1.00
 PIVOT_ON_TASKS              :   bool                = False
-VARIATIONS_FILTER_BY_INDEX  :   Optional[List[int]] = None
+VARIATIONS_FILTER_BY_INDEX  :   Optional[List[int]] = [ 0, 1, 2 ]
 
 # =================================== CONSTANTS ===================================
 

@@ -4,6 +4,7 @@ from typing                                 import List, Optional, Tuple
 import pandas                               as pd
 
 # Local Modules - Auxiliary
+import modules_aux.module_aux               as module_aux
 import modules_aux.module_exporter          as module_exporter
 import modules_aux.module_transformers      as module_transformers
 
@@ -43,9 +44,15 @@ def entirety_roberta_analysis_dynamic(train_X: pd.DataFrame, train_Y: pd.Series,
     model   : module_transformers.TransformerModel  = module_transformers.TransformerModel(tokenizer, model_base)
     
     model.train(train_texts, train_labels, training_args)
-    print(model.model)
+    train_return = model.predict(train_texts)
+    train_return.columns = list(map(lambda column: 'Entirety RoBERTa' + ' - ' + column, train_return.columns.to_list()))
+    train_X = module_aux.join_dataframes(train_X, train_return)
 
-    exit
+    if test_X is not None:
+        test_texts  : pd.Series = test_X['Lemmatized Filtered Text'].apply(lambda list_of_words: ' '.join(list_of_words))
+        test_return = model.predict(test_texts)
+        test_return.columns = list(map(lambda column: 'Entirety RoBERTa' + ' - ' + column, test_return.columns.to_list()))
+        test_X = module_aux.join_dataframes(test_X, test_return)
     
     del training_args, tokenizer, model_base, model
     return (train_X, test_X)

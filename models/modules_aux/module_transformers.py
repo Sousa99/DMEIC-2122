@@ -3,7 +3,7 @@ import torch
 import warnings
 import transformers
 
-from typing         import Any, List, Optional, Tuple
+from typing         import Any, Dict, List, Optional, Tuple
 
 import pandas       as pd
 
@@ -13,7 +13,8 @@ import pandas       as pd
 
 # =================================== IGNORE CERTAIN ERRORS ===================================
 
-
+transformers.logging.set_verbosity_error()
+transformers.utils.logging.enable_progress_bar()
 
 # =================================== PRIVATE FUNCTIONS ===================================
 
@@ -25,12 +26,15 @@ def get_training_args(output_dir: str, logging_dir: str) -> transformers.Trainin
     training_args = transformers.TrainingArguments(
         output_dir=output_dir,
         num_train_epochs=3,
-        per_device_train_batch_size=4,
-        per_device_eval_batch_size=4,
+        per_device_train_batch_size=1,
+        per_device_eval_batch_size=1,
         warmup_steps=500,
         weight_decay=0.01,
+        logging_strategy='no',
         logging_dir=logging_dir,
         logging_steps=100,
+        optim="adamw_torch",
+        disable_tqdm=False
     )
 
     return training_args
@@ -49,7 +53,7 @@ class Dataset(torch.utils.data.Dataset):
         self.labels = labels
 
     def __getitem__(self, idx):
-        item = {key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
+        item = {key: val[idx].clone().detach() for key, val in self.encodings.items()}
         item['labels'] = torch.tensor(self.labels[idx])
         return item
 
@@ -61,8 +65,8 @@ class Dataset(torch.utils.data.Dataset):
 class TransformerModel():
 
     def __init__(self, tokenizer: transformers.PreTrainedTokenizer, model: transformers.PreTrainedModel) -> None:
-        self.tokenizer  : transformers.PreTrainedTokenizer  = tokenizer
-        self.model      : transformers.PreTrainedModel      = model
+        self.tokenizer      : transformers.PreTrainedTokenizer  = tokenizer
+        self.model          : transformers.PreTrainedModel      = model
 
     def train(self, train_texts: pd.Series, train_labels: pd.Series, training_args: transformers.TrainingArguments):
 
@@ -75,3 +79,32 @@ class TransformerModel():
         trainer         : transformers.Trainer  = transformers.Trainer(model=self.model, args=training_args, train_dataset=train_dataset)
 
         trainer.train()
+
+    def predict(self, test_texts: pd.Series) -> pd.DataFrame:
+
+        test_texts_lst  : List[str] = test_texts.to_list()
+
+        pipe = transformers.TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, return_all_scores=True, max_length=200, truncation=True, padding=True)
+        predictions = pipe(test_texts_lst)
+
+        predictions_dict : Dict[str, Dict[str, float]] = {}
+        for index, prediction in zip(test_texts.index.to_list(), predictions):
+            predictions_dict[index] = {}
+
+            for item in prediction:
+                label   : str   = item['label']
+                score   : float = item['score']
+
+                predictions_dict[index][label] = score
+
+        predictions_df  : pd.DataFrame  = pd.DataFrame.from_dict(predictions_dict, orient='index')
+        columns         : List[str]     = predictions_df.columns.to_list()
+        columns_fixed   : List[str]     = list(map(lambda column: column.replace('_', ' ').title(), columns))
+        
+        predictions_df.columns = columns_fixed
+
+        return predictions_df
+
+    def __del__(self):
+        del self.model
+        del self.tokenizer
