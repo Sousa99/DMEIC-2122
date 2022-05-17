@@ -1,11 +1,14 @@
 import os
 import abc
+import sys
 import gensim
 
-from numpy.typing   import NDArray
-from typing         import List, Optional
+import numpy        as np
 
-import numpy    as np
+from typing         import Any, List, Optional
+
+if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from numpy.typing   import NDArray
+else: NDArray = List
 
 # =================================== CONSTANTS DEFINITIONS ===================================
 

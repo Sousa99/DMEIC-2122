@@ -1,3 +1,4 @@
+import sys
 import math
 import warnings
 import sklearn.cluster
@@ -8,7 +9,9 @@ from typing                             import Dict, List, Optional, Tuple
 
 import numpy                            as np
 import pandas                           as pd
-import numpy.typing                     as npt
+
+if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from numpy.typing   import NDArray
+else: NDArray = List
 
 # Local Modules - Auxiliary
 import modules_aux.module_nlp           as module_nlp
@@ -29,7 +32,7 @@ warnings.filterwarnings('ignore', module = 'sklearn')
 
 # =================================== PRIVATE FUNCTIONS ===================================
 
-def compute_mse(X: npt.NDArray[np.float64], labels: npt.NDArray[np.float64], centroids: npt.NDArray[np.float64]) -> float:
+def compute_mse(X: NDArray[np.float64], labels: NDArray[np.float64], centroids: NDArray[np.float64]) -> float:
     n = len(X)
     centroid_per_record = [centroids[labels[i]] for i in range(n)]
     partial = X - centroid_per_record
@@ -38,7 +41,7 @@ def compute_mse(X: npt.NDArray[np.float64], labels: npt.NDArray[np.float64], cen
     partial = sum(partial)
     return math.sqrt(partial / n)
 
-def compute_mae(X: npt.NDArray[np.float64], labels: npt.NDArray[np.float64], centroids: npt.NDArray[np.float64]) -> float:
+def compute_mae(X: NDArray[np.float64], labels: NDArray[np.float64], centroids: NDArray[np.float64]) -> float:
     n = len(X)
     centroid_per_record = [centroids[labels[i]] for i in range(n)]
     partial = abs(X - centroid_per_record)
@@ -46,13 +49,13 @@ def compute_mae(X: npt.NDArray[np.float64], labels: npt.NDArray[np.float64], cen
     partial = sum(partial)
     return partial / n
 
-def predict_clustering(data: pd.DataFrame, number_clusters: int) -> Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+def predict_clustering(data: pd.DataFrame, number_clusters: int) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
     cluster_model   : sklearn.cluster.KMeans    = sklearn.cluster.KMeans(n_clusters=number_clusters)
-    prediction      : npt.NDArray[np.float64]   = cluster_model.fit_predict(data)
+    prediction      : NDArray[np.float64]   = cluster_model.fit_predict(data)
 
     return (prediction, cluster_model.cluster_centers_)
 
-def compute_cluster_scores(data: pd.DataFrame, prediction: npt.NDArray[np.float64], cluster_centers: npt.NDArray[np.float64]) -> Dict[str, float]:
+def compute_cluster_scores(data: pd.DataFrame, prediction: NDArray[np.float64], cluster_centers: NDArray[np.float64]) -> Dict[str, float]:
 
     mse             : float                     = compute_mse(data, prediction, cluster_centers)
     mae             : float                     = compute_mae(data, prediction, cluster_centers)
@@ -60,9 +63,9 @@ def compute_cluster_scores(data: pd.DataFrame, prediction: npt.NDArray[np.float6
 
     return { 'mse': mse, 'mae': mae, 'silhouette': silhouette }
 
-def test_multiple_clusters(data: pd.DataFrame, numbers_clusters: List[int]) -> Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+def test_multiple_clusters(data: pd.DataFrame, numbers_clusters: List[int]) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
 
-    best_result : Optional[Tuple[float, Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]]] = None
+    best_result : Optional[Tuple[float, Tuple[NDArray[np.float64], NDArray[np.float64]]]] = None
     for number_clusters in numbers_clusters:
         prediction, centers = predict_clustering(data, number_clusters)
         scores = compute_cluster_scores(data, prediction, centers)
@@ -74,15 +77,15 @@ def test_multiple_clusters(data: pd.DataFrame, numbers_clusters: List[int]) -> T
 
 # =================================== PUBLIC FUNCTIONS ===================================
 
-def cluster_word_embeddings(embeddings: List[npt.NDArray[np.float64]], numbers_clusters: List[int]) -> Tuple[npt.NDArray[np.float64], List[npt.NDArray[np.float64]]]:
+def cluster_word_embeddings(embeddings: List[NDArray[np.float64]], numbers_clusters: List[int]) -> Tuple[NDArray[np.float64], List[NDArray[np.float64]]]:
 
     embeddings_as_data  : pd.DataFrame  = module_nlp.convert_embeddings_to_matrix(embeddings)
 
     prediction, cluster_centers = test_multiple_clusters(embeddings_as_data, numbers_clusters)
     return (prediction, module_nlp.convert_matrix_to_embeddings(cluster_centers))
 
-def reduce_data_dimensionality_to(words: List[str], embeddings: List[npt.NDArray[np.float64]],
-    predicted_clusters: npt.NDArray[np.float64], centers: List[npt.NDArray[np.float64]], reduced_columns: List[str]) -> pd.DataFrame:
+def reduce_data_dimensionality_to(words: List[str], embeddings: List[NDArray[np.float64]],
+    predicted_clusters: NDArray[np.float64], centers: List[NDArray[np.float64]], reduced_columns: List[str]) -> pd.DataFrame:
 
     embeddings_as_data  : pd.DataFrame          = pd.DataFrame(module_nlp.convert_embeddings_to_matrix(embeddings))
     centers_as_data     : pd.DataFrame          = pd.DataFrame(module_nlp.convert_embeddings_to_matrix(centers))

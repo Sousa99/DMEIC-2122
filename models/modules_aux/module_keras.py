@@ -1,16 +1,20 @@
 import os
+import sys
 import math
 
 # =================================== IGNORE CERTAIN ERRORS ===================================
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 # =================================== IGNORE CERTAIN ERRORS ===================================
 
-import numpy            as np
 import tensorflow       as tf
-import numpy.typing     as npt
+import numpy            as np
 
 from typing             import Any, Dict, List
 from tensorflow         import keras
+
+if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from numpy.typing   import NDArray
+else: NDArray = List
+
 
 # ===================================== PRIVATE FUNCTIONS =====================================
 
@@ -54,7 +58,7 @@ class CallbackWeightTreshold(keras.callbacks.Callback):
         threshold : float = ( epoch + 1 ) / self.constant_denominator
 
         full_weights = self.model.get_weights()
-        weights : npt.NDArray[np.float64] = full_weights[0]
+        weights : NDArray[np.float64] = full_weights[0]
         weights[weights < threshold] = 0.0
         weights = weights.astype(np.float64)
 
@@ -65,9 +69,9 @@ class CallbackWeightTreshold(keras.callbacks.Callback):
 
 class NeuralNetworkRezaii():
 
-    def __init__(self, matrix_embeddings: npt.NDArray[np.float64], sentence_embedding: npt.NDArray[np.float64], ephocs: int = 5000) -> None:
-        self.matrix_embeddings : npt.NDArray[np.float64] = matrix_embeddings
-        self.sentence_embedding : npt.NDArray[np.float64] = sentence_embedding
+    def __init__(self, matrix_embeddings: NDArray[np.float64], sentence_embedding: NDArray[np.float64], ephocs: int = 5000) -> None:
+        self.matrix_embeddings : NDArray[np.float64] = matrix_embeddings
+        self.sentence_embedding : NDArray[np.float64] = sentence_embedding
 
         self.epochs : int = ephocs
         self.number_of_words : int = self.matrix_embeddings.shape[0]
