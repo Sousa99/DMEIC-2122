@@ -1,5 +1,7 @@
+import os
 import abc
 import torch
+import logging
 import warnings
 import transformers
 
@@ -15,6 +17,16 @@ import pandas       as pd
 
 transformers.logging.set_verbosity_error()
 transformers.utils.logging.enable_progress_bar()
+
+logging.disable(logging.WARNING)
+
+# ================================= CONSTANTS DEFINITIONS =================================
+
+SEQUENCE_MAX_LENGTH : int   = 750
+SEQUENCE_TRUNCATION : bool  = True
+SEQUENCE_PADDING    : bool  = True
+
+FINAL_MODEL_SAVE    : str   = 'checkpoint-final'
 
 # =================================== PRIVATE FUNCTIONS ===================================
 
@@ -65,26 +77,35 @@ class Dataset(torch.utils.data.Dataset):
 class TransformerModel():
 
     def __init__(self, tokenizer: transformers.PreTrainedTokenizer, model: transformers.PreTrainedModel) -> None:
-        self.tokenizer      : transformers.PreTrainedTokenizer  = tokenizer
-        self.model          : transformers.PreTrainedModel      = model
+        self.tokenizer          : transformers.PreTrainedTokenizer  = tokenizer
+        self.model              : transformers.PreTrainedModel      = model
+        self.model_saved_path   : Optional[str]                     = None
 
-    def train(self, train_texts: pd.Series, train_labels: pd.Series, training_args: transformers.TrainingArguments):
+    def train(self, train_texts: pd.Series, train_labels: pd.Series, training_args: transformers.TrainingArguments) -> transformers.Trainer:
 
         train_texts_lst     : List[str] = train_texts.to_list()
         train_labels_lst    : List[int] = train_labels.replace({ False: 0, True: 1 }, inplace=False).to_list()
 
-        train_encodings : transformers.BatchEncoding    = self.tokenizer(text=train_texts_lst, max_length=200, truncation=True, padding=True, return_tensors='pt')
+        train_encodings : transformers.BatchEncoding    = self.tokenizer(text=train_texts_lst, max_length=SEQUENCE_MAX_LENGTH,
+            truncation=SEQUENCE_TRUNCATION, padding=SEQUENCE_PADDING, return_tensors='pt')
 
         train_dataset   : Dataset               = Dataset(train_encodings, train_labels_lst)
         trainer         : transformers.Trainer  = transformers.Trainer(model=self.model, args=training_args, train_dataset=train_dataset)
 
         trainer.train()
+        self.model_saved_path = os.path.join(training_args.output_dir, FINAL_MODEL_SAVE)
+        trainer.save_model(self.model_saved_path)
+
+    def load_saved_model(self):
+        if self.model_saved_path is not None:
+            self.model = transformers.AutoModelForSequenceClassification.from_pretrained(self.model_saved_path)
 
     def predict(self, test_texts: pd.Series) -> pd.DataFrame:
 
         test_texts_lst  : List[str] = test_texts.to_list()
 
-        pipe = transformers.TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, return_all_scores=True, max_length=200, truncation=True, padding=True)
+        pipe = transformers.TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, return_all_scores=True,
+            max_length=SEQUENCE_MAX_LENGTH, truncation=SEQUENCE_TRUNCATION, padding=SEQUENCE_PADDING)
         predictions = pipe(test_texts_lst)
 
         predictions_dict : Dict[str, Dict[str, float]] = {}

@@ -44,6 +44,8 @@ def entirety_roberta_analysis_dynamic(train_X: pd.DataFrame, train_Y: pd.Series,
     model   : module_transformers.TransformerModel  = module_transformers.TransformerModel(tokenizer, model_base)
     
     model.train(train_texts, train_labels, training_args)
+    model.load_saved_model()
+
     train_return = model.predict(train_texts)
     train_return.columns = list(map(lambda column: 'Entirety RoBERTa' + ' - ' + column, train_return.columns.to_list()))
     train_X = module_aux.join_dataframes(train_X, train_return)
