@@ -22,9 +22,9 @@ logging.disable(logging.WARNING)
 
 # ================================= CONSTANTS DEFINITIONS =================================
 
-SEQUENCE_MAX_LENGTH : int   = 750
+SEQUENCE_MAX_LENGTH : int   = 512
 SEQUENCE_TRUNCATION : bool  = True
-SEQUENCE_PADDING    : bool  = True
+SEQUENCE_PADDING    : str   = 'max_length'
 
 FINAL_MODEL_SAVE    : str   = 'checkpoint-final'
 
