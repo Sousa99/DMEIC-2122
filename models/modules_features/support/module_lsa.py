@@ -26,7 +26,8 @@ def compute_coherence_score(embeddings: List[NDArray[np.float64]], group_jump: i
         embedding_1 : NDArray[np.float64] = embeddings[index]
         embedding_2 : NDArray[np.float64] = embeddings[index + group_jump]
         cossine_score : float = module_nlp.embeddings_cossine_similarity(embedding_1, embedding_2)
-        current_scores.append(cossine_score)
+        if (type(cossine_score) == int or type(cossine_score) == float) and not np.isnan(cossine_score):
+            current_scores.append(cossine_score)
 
     if len(current_scores) == 0: return DEFAULT_VALUE
     return sum(current_scores) / len(current_scores)
