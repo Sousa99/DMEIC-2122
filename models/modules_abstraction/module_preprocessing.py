@@ -17,7 +17,14 @@ class PreprocessingDropRowsNan(PreprocessingStage):
     def __init__(self) -> None: return
     def fitting(self, dataframe_X: pd.DataFrame, dataframe_Y: pd.Series) -> None: return
     def transform(self, dataframe_X: pd.DataFrame, dataframe_Y: pd.Series) -> Tuple[pd.DataFrame, pd.Series]:
-        return dataframe_X.dropna()
+        dataframe_X_nulls   : pd.Series = dataframe_X.isnull().any(axis='columns')
+        dataframe_Y_nulls   : pd.Series = dataframe_Y.isnull().any(axis='columns')
+
+        joined_nulls        : pd.Series = dataframe_X_nulls | dataframe_Y_nulls
+
+        new_dataframe_X     : pd.DataFrame  =   dataframe_X.drop(dataframe_X[joined_nulls].index, inplace=False)
+        new_dataframe_Y     : pd.Series     =   dataframe_Y.drop(dataframe_Y[joined_nulls].index, inplace=False)
+        return (new_dataframe_X, new_dataframe_Y)
 
 # =================================== PRIVATE FUNCTIONS ===================================
 
