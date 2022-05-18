@@ -91,7 +91,7 @@ def reduce_data_dimensionality_to(words: List[str], embeddings: List[NDArray[np.
     centers_as_data     : pd.DataFrame          = pd.DataFrame(module_nlp.convert_embeddings_to_matrix(centers))
     entire_data         : pd.DataFrame          = pd.concat([embeddings_as_data, centers_as_data])
 
-    mds_model           : sklearn.manifold.TSNE = sklearn.manifold.TSNE(n_components=len(reduced_columns), init='pca', perplexity=10, learning_rate='auto')
+    mds_model           : sklearn.manifold.TSNE = sklearn.manifold.TSNE(n_components=len(reduced_columns), init='pca', perplexity=10)
     reduced_data        : pd.DataFrame          = pd.DataFrame(mds_model.fit_transform(entire_data), columns = reduced_columns)
 
     reduced_data.index          = words + [ f'Center {index}' for index in range(len(centers)) ]
