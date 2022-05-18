@@ -2,22 +2,22 @@ import abc
 
 import pandas as pd
 
-from typing import List
+from typing import List, Tuple
 
 # =================================== PRIVATE CLASSES ===================================
 
 class PreprocessingStage(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def fitting(self, dataframe: pd.DataFrame) -> None: exit("🚨 Method 'fitting' not defined")
+    def fitting(self, dataframe_X: pd.DataFrame, dataframe_Y: pd.Series) -> None: exit("🚨 Method 'fitting' not defined")
     @abc.abstractmethod
-    def transform(self, dataframe: pd.DataFrame) -> pd.DataFrame: exit("🚨 Method 'transform' not defined")
+    def transform(self, dataframe_X: pd.DataFrame, dataframe_Y: pd.Series) -> Tuple[pd.DataFrame, pd.Series]: exit("🚨 Method 'transform' not defined")
 
 class PreprocessingDropRowsNan(PreprocessingStage):
 
     def __init__(self) -> None: return
-    def fitting(self, dataframe: pd.DataFrame) -> None: return
-    def transform(self, dataframe: pd.DataFrame) -> pd.DataFrame:
-        return dataframe.dropna()
+    def fitting(self, dataframe_X: pd.DataFrame, dataframe_Y: pd.Series) -> None: return
+    def transform(self, dataframe_X: pd.DataFrame, dataframe_Y: pd.Series) -> Tuple[pd.DataFrame, pd.Series]:
+        return dataframe_X.dropna()
 
 # =================================== PRIVATE FUNCTIONS ===================================
 
@@ -36,20 +36,24 @@ class Preprocesser():
         for pipeline_key in pipeline_stages:
             self.pipeline.append(convert_key(pipeline_key))
 
-    def preprocess_train(self, dataframe: pd.DataFrame) -> pd.DataFrame:
-        current_dataframe = dataframe.copy(deep=True)
+    def preprocess_train(self, dataframe_X: pd.DataFrame, dataframe_Y: pd.Series) -> Tuple[pd.DataFrame, pd.Series]:
+        current_dataframe_X = dataframe_X.copy(deep=True)
+        current_dataframe_Y = dataframe_Y.copy(deep=True)
+
         for stage in self.pipeline:
-            stage.fitting(current_dataframe)
-            current_dataframe = stage.transform(current_dataframe)
+            stage.fitting(current_dataframe_X, current_dataframe_Y)
+            current_dataframe_X, current_dataframe_Y = stage.transform(current_dataframe_X, current_dataframe_Y)
 
-        return current_dataframe
+        return (current_dataframe_X, current_dataframe_Y)
 
-    def preprocess_test(self, dataframe: pd.DataFrame) -> pd.DataFrame:
-        current_dataframe = dataframe.copy(deep=True)
+    def preprocess_test(self, dataframe_X: pd.DataFrame, dataframe_Y: pd.Series) -> Tuple[pd.DataFrame, pd.Series]:
+        current_dataframe_X = dataframe_X.copy(deep=True)
+        current_dataframe_Y = dataframe_Y.copy(deep=True)
+
         for stage in self.pipeline:
-            current_dataframe = stage.transform(current_dataframe)
+            current_dataframe_X, current_dataframe_Y = stage.transform(current_dataframe_X, current_dataframe_Y)
 
-        return current_dataframe
+        return (current_dataframe_X, current_dataframe_Y)
 
 
 
