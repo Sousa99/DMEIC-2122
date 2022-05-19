@@ -159,7 +159,8 @@ def histogram_for_each_numeric(filename: str, dataframe: pd.DataFrame, variables
         col_index = variable_index % cols
         row_index = variable_index // cols
 
-        sns.histplot(data=dataframe, x=variable_key, hue=hue, kde=kde, ax=axs[row_index, col_index])
+        try: sns.histplot(data=dataframe, x=variable_key, hue=hue, kde=kde, ax=axs[row_index, col_index])
+        except np.linalg.LinAlgError: sns.histplot(data=dataframe, x=variable_key, hue=hue, kde=False, ax=axs[row_index, col_index])
 
     plt.savefig(complete_path)
     plt.close('all')
