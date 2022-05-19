@@ -57,6 +57,12 @@ def get_xlm_roberta_base() -> Tuple[transformers.AutoTokenizer, transformers.Aut
 
     return (tokenizer, model)
 
+def get_xlm_roberta_large() -> Tuple[transformers.AutoTokenizer, transformers.AutoModelForSequenceClassification]:
+    tokenizer   : transformers.AutoTokenizer                        = transformers.AutoTokenizer.from_pretrained('xlm-roberta-large')
+    model       : transformers.AutoModelForSequenceClassification   = transformers.AutoModelForSequenceClassification.from_pretrained("xlm-roberta-large", num_labels=2)
+
+    return (tokenizer, model)
+
 # =================================== PRIVATE CLASS DEFINITIONS ===================================
 
 class Dataset(torch.utils.data.Dataset):
