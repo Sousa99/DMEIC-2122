@@ -30,7 +30,7 @@ for ((extract_index = 0; extract_index < ${#extract_lines[@]} ; extract_index +=
     # Fix Files for Condor Old Syntax
     output="${TEMP_CONDOR_LOGS_DIRECTORY}condor.out.${process_id}.log"
     error="${TEMP_CONDOR_LOGS_DIRECTORY}condor.err.${process_id}.log"
-    log="${TEMP_CONDOR_DIRECTORY}extracts_condor.log"
+    log="${TEMP_CONDOR_DIRECTORY}/extracts_condor.log"
 
     condor_submit \
             -a "Executable = ${script_file}"    \
@@ -41,6 +41,6 @@ for ((extract_index = 0; extract_index < ${#extract_lines[@]} ; extract_index +=
 done
 
 echo "🚀 Waiting for extractions to finish ..."
-condor_wait "${TEMP_CONDOR_DIRECTORY}extracts_condor.log"
+condor_wait "${TEMP_CONDOR_DIRECTORY}/extracts_condor.log"
 
 python3 extraction_dictionary.py -parallelization_key final

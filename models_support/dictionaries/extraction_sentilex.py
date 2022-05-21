@@ -8,11 +8,11 @@ from typing import Dict, List
 
 # ================================================== CONSTANTS ===================================================
 
-PATH_TO_SENTILEX_INFLECTIONS    : str = './corpora/SentiLex/SentiLex-flex-PT02.txt'
-PATH_TO_SENTILEX_LEMMATIZED     : str = './corpora/SentiLex/SentiLex-lem-PT02.txt'    
+PATH_TO_SENTILEX_INFLECTIONS    : str = '../corpora/SentiLex/SentiLex-flex-PT02.txt'
+PATH_TO_SENTILEX_LEMMATIZED     : str = '../corpora/SentiLex/SentiLex-lem-PT02.txt'    
 PATH_TO_SENTILEX_SELECTED       : str = PATH_TO_SENTILEX_LEMMATIZED
 
-PATH_TO_SENTILEX_MODEL          : str = './exports/sentilex_model.pkl'
+PATH_TO_SENTILEX_MODEL          : str = '../exports/sentilex_model.pkl'
 
 # ================================================== AUXILIARY FUNCTIONS ==================================================
 

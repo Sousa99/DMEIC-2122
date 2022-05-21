@@ -18,13 +18,13 @@ NUMBER_OF_TOPIC_VARIATIONS_TO_TEST : int = 20
 
 # ================================================== CONSTANTS ===================================================
 
-PATH_TO_DOCUMENTS : str = './exports/documents_clean/'
-PATH_TO_DICTIONARY : str = './exports/corpora_dictionary.bin'
+PATH_TO_DOCUMENTS : str = '../exports/documents_clean/'
+PATH_TO_DICTIONARY : str = '../exports/corpora_dictionary.bin'
 
-PATH_TO_LDA_MODELS_DIRECTORY : str = './exports/lda_variations/'
-PATH_TO_LDA_MODELS_TOPIC_COHERENCE : str = './exports/lda_topics_coherence.png'
-PATH_TO_LDA_BEST_MODEL : str = './exports/lda_best_model.bin'
-PATH_TO_LDA_BEST_MODEL_TOPICS : str = './exports/lda_best_model_topics.txt'
+PATH_TO_LDA_MODELS_DIRECTORY : str = '../exports/lda_variations/'
+PATH_TO_LDA_MODELS_TOPIC_COHERENCE : str = '../exports/lda_topics_coherence.png'
+PATH_TO_LDA_BEST_MODEL : str = '../exports/lda_best_model.bin'
+PATH_TO_LDA_BEST_MODEL_TOPICS : str = '../exports/lda_best_model_topics.txt'
 
 # ================================================== AUXILIARY FUNCTIONS ==================================================
 
