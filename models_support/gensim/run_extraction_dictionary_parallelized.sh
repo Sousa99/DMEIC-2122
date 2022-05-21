@@ -22,7 +22,7 @@ for ((extract_index = 0; extract_index < ${#extract_lines[@]} ; extract_index +=
     script_file="${TEMP_CONDOR_SCRIPTS_DIRECTORY}${process_id}.sh"
 
     echo "#!/bin/bash" > "${script_file}"
-    echo "source ./venv/bin/activate"                                                   >> "${script_file}"
+    echo "source ../venv/bin/activate"                                                   >> "${script_file}"
     echo "python3 ./extraction_dictionary.py -extracts_per_run ${extracts_per_run}  \\" >> "${script_file}"
     echo "    -parallelization_key extract -parallelization_index ${extract_line}"      >> "${script_file}"
     chmod a+x "${script_file}"
