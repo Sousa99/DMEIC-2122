@@ -18,6 +18,15 @@ from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
+# ================================================== CONSTANTS ===================================================
+
+PATH_TO_EXPORTS : str = '../exports/'
+PATH_TO_DOCUMENTS : str = '../exports/documents_clean/'
+
+PATH_TO_CORPORA : str = '../corpora/CETEMPublico/CETEMPublicoAnotado2019.txt'
+
+PATH_TO_DICTIONARY : str = '../exports/corpora_dictionary.bin'
+
 # ===================================================== SETUP =====================================================
 
 parser = argparse.ArgumentParser()
@@ -30,8 +39,8 @@ arguments_dict = vars(arguments)
 PARALLELIZATION_EXTRACT = "extract"
 PARALLELIZATION_FINAL = "final"
 
-if not os.path.exists('../exports/'): os.makedirs('../exports')
-if not os.path.exists('../exports/documents_clean/'): os.makedirs('../exports/documents_clean/')
+if not os.path.exists(PATH_TO_EXPORTS): os.makedirs(PATH_TO_EXPORTS)
+if not os.path.exists(PATH_TO_DOCUMENTS): os.makedirs(PATH_TO_DOCUMENTS)
 
 NUMBER_EXTRACTS_PRINT : int = 1
 if arguments_dict['extracts_per_run'] is None: NUMBER_EXTRACTS_BREAK : Optional[int] = None
@@ -43,7 +52,7 @@ else: NUMBER_EXTRACTS_BREAK : Optional[int] = int(arguments_dict['extracts_per_r
 
 def read_lines() -> None:
 
-    file = open('../corpora/CETEMPublico/CETEMPublicoAnotado2019.txt', 'r', encoding='latin-1')
+    file = open(PATH_TO_CORPORA, 'r', encoding='latin-1')
     queu_of_elements : List[str] = []
     count_extracts : int = 0
     count_line : int = 0
@@ -69,7 +78,7 @@ def read_lines() -> None:
                 extract_words : List[str] = current_extract.get_words()
                 extract_code : str = current_extract.get_code()
                 
-                file_save = open(f'../exports/documents_clean/lemmatized_{extract_code}.pkl', 'wb')
+                file_save = open(f'{PATH_TO_DOCUMENTS}lemmatized_{extract_code}.pkl', 'wb')
                 pickle.dump(extract_words, file_save)
                 file_save.close()
 
@@ -121,8 +130,8 @@ def save_information() -> None:
     gensim_dictionary : gensim.corpora.Dictionary = gensim.corpora.Dictionary()
 
     count_extracts : int = 0
-    for filename in os.listdir('../exports/documents_clean/'):
-        file_path = os.path.join('../exports/documents_clean/', filename)
+    for filename in os.listdir(PATH_TO_DOCUMENTS):
+        file_path = os.path.join(PATH_TO_DOCUMENTS, filename)
         if not os.path.isfile(file_path): continue
         
         file_save = open(file_path, 'rb')
@@ -136,7 +145,7 @@ def save_information() -> None:
 
     print()
 
-    gensim_dictionary.save('../exports/corpora_dictionary.bin')
+    gensim_dictionary.save(PATH_TO_DICTIONARY)
 
 # =========================================== DEFINITION OF CONSTANTS ===========================================
 
