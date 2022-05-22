@@ -5,8 +5,7 @@ from typing import Dict, Optional
 
 # =================================== CONSTANTS DEFINITIONS ===================================
 
-PATH_MODELS_SUPPORT = '../models_support/exports/'
-
+PATH_MODELS_SUPPORT = '../models_support/exports/dictionaries/'
 FILENAME_SENTILEX   = 'sentilex_model.pkl'
 
 # =================================== PRIVATE CLASS DEFINITIONS ===================================

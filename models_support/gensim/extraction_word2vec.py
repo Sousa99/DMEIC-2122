@@ -9,9 +9,9 @@ NUMBER_DOCUMENTS : Optional[int] = 5000
 
 # ================================================== CONSTANTS ===================================================
 
-VECTOR_SIZE : int = 200
-PATH_TO_DOCUMENTS : str = '../exports/documents_clean/'
-PATH_TO_MODEL : str = '../exports/word2vec_model.bin'
+VECTOR_SIZE         : int   = 200
+PATH_TO_DOCUMENTS   : str   = '../exports/gensim/documents_clean/'
+PATH_TO_MODEL       : str   = '../exports/gensim/word2vec_model.bin'
 
 # ================================================== MAIN CODE ==================================================
 

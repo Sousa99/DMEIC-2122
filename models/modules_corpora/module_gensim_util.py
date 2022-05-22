@@ -8,8 +8,7 @@ import numpy    as np
 
 # =================================== CONSTANTS DEFINITIONS ===================================
 
-PATH_MODELS_SUPPORT = '../models_support/exports/'
-
+PATH_MODELS_SUPPORT = '../models_support/exports/gensim/'
 FILENAME_DICTIONARY = 'corpora_dictionary.bin'
 
 # =================================== PRIVATE CLASS DEFINITIONS ===================================

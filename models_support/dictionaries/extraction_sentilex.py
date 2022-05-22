@@ -12,7 +12,8 @@ PATH_TO_SENTILEX_INFLECTIONS    : str = '../corpora/SentiLex/SentiLex-flex-PT02.
 PATH_TO_SENTILEX_LEMMATIZED     : str = '../corpora/SentiLex/SentiLex-lem-PT02.txt'    
 PATH_TO_SENTILEX_SELECTED       : str = PATH_TO_SENTILEX_LEMMATIZED
 
-PATH_TO_SENTILEX_MODEL          : str = '../exports/sentilex_model.pkl'
+PATH_TO_EXPORT                  : str = '../exports/dictionaries/'
+PATH_TO_EXPORT_SENTILEX_MODEL   : str = PATH_TO_EXPORT + 'sentilex_model.pkl'
 
 # ================================================== AUXILIARY FUNCTIONS ==================================================
 
@@ -41,6 +42,7 @@ for line in tqdm.tqdm(sentilex_file.readlines(), desc='🚀 Creating SentiLex Ma
 sentilex_file.close()
 
 # Save back mapping
-file = open(PATH_TO_SENTILEX_MODEL, 'wb')
+if not os.path.exists(PATH_TO_EXPORT): os.makedirs(PATH_TO_EXPORT)
+file = open(PATH_TO_EXPORT_SENTILEX_MODEL, 'wb')
 pickle.dump(mapping, file)
 file.close()

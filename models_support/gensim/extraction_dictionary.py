@@ -20,12 +20,11 @@ import pandas as pd
 
 # ================================================== CONSTANTS ===================================================
 
-PATH_TO_EXPORTS : str = '../exports/'
-PATH_TO_DOCUMENTS : str = '../exports/documents_clean/'
+PATH_TO_CORPORA             : str   = '../corpora/CETEMPublico/CETEMPublicoAnotado2019.txt'
 
-PATH_TO_CORPORA : str = '../corpora/CETEMPublico/CETEMPublicoAnotado2019.txt'
-
-PATH_TO_DICTIONARY : str = '../exports/corpora_dictionary.bin'
+PATH_TO_EXPORTS             : str   = '../exports/gensim/'
+PATH_TO_EXPORT_DOCUMENTS    : str   = PATH_TO_EXPORTS + 'documents_clean/'
+PATH_TO_EXPORT_DICTIONARY   : str   = PATH_TO_EXPORTS + 'corpora_dictionary.bin'
 
 # ===================================================== SETUP =====================================================
 
@@ -40,7 +39,7 @@ PARALLELIZATION_EXTRACT = "extract"
 PARALLELIZATION_FINAL = "final"
 
 if not os.path.exists(PATH_TO_EXPORTS): os.makedirs(PATH_TO_EXPORTS)
-if not os.path.exists(PATH_TO_DOCUMENTS): os.makedirs(PATH_TO_DOCUMENTS)
+if not os.path.exists(PATH_TO_EXPORT_DOCUMENTS): os.makedirs(PATH_TO_EXPORT_DOCUMENTS)
 
 NUMBER_EXTRACTS_PRINT : int = 1
 if arguments_dict['extracts_per_run'] is None: NUMBER_EXTRACTS_BREAK : Optional[int] = None
@@ -78,7 +77,7 @@ def read_lines() -> None:
                 extract_words : List[str] = current_extract.get_words()
                 extract_code : str = current_extract.get_code()
                 
-                file_save = open(f'{PATH_TO_DOCUMENTS}lemmatized_{extract_code}.pkl', 'wb')
+                file_save = open(f'{PATH_TO_EXPORT_DOCUMENTS}lemmatized_{extract_code}.pkl', 'wb')
                 pickle.dump(extract_words, file_save)
                 file_save.close()
 
@@ -130,8 +129,8 @@ def save_information() -> None:
     gensim_dictionary : gensim.corpora.Dictionary = gensim.corpora.Dictionary()
 
     count_extracts : int = 0
-    for filename in os.listdir(PATH_TO_DOCUMENTS):
-        file_path = os.path.join(PATH_TO_DOCUMENTS, filename)
+    for filename in os.listdir(PATH_TO_EXPORT_DOCUMENTS):
+        file_path = os.path.join(PATH_TO_EXPORT_DOCUMENTS, filename)
         if not os.path.isfile(file_path): continue
         
         file_save = open(file_path, 'rb')
@@ -145,7 +144,7 @@ def save_information() -> None:
 
     print()
 
-    gensim_dictionary.save(PATH_TO_DICTIONARY)
+    gensim_dictionary.save(PATH_TO_EXPORT_DICTIONARY)
 
 # =========================================== DEFINITION OF CONSTANTS ===========================================
 
