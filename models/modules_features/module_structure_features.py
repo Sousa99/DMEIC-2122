@@ -27,6 +27,7 @@ class StructureFeatureSet(module_featureset.FeatureSetAbstraction):
             subject_info, general_drop_columns, pivot_on_task)
 
     def develop_basis_df(self):
+        if self.basis_dataframe is not None: return
         print(f"🚀 Preparing for '{self.id}' analysis ...")
         lemmatizer : module_nlp.LemmatizerStanza = module_nlp.LemmatizerStanza()
 
@@ -47,6 +48,8 @@ class StructureFeatureSet(module_featureset.FeatureSetAbstraction):
             'Word Graph', 'Word Graph - WCC', 'Word Graph - SCC', 'Word Graph - LWCC', 'Word Graph - LSCC',
             'LSA - Word Groups', 'LSA - Embedding per Word Groups', 'LSA - Embedding Groups',
             'Vector Unpacking - Word Groups', 'Vector Unpacking - Embedding per Word Groups', 'Vector Unpacking - Embedding Groups']
+
+        del lemmatizer
 
     def develop_static_df(self):
         if self.static_dataframe is not None: return

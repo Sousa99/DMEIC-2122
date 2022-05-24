@@ -104,9 +104,14 @@ class Lemmatizer(abc.ABC):
 
 class LemmatizerStanza(Lemmatizer):
 
-    pipeline = stanza.Pipeline('pt', verbose=False)
+    def __init__(self) -> None:
+        super().__init__()
+        self.pipeline = stanza.Pipeline('pt', processors='tokenize,mwt,pos,lemma', verbose=False,
+            tokenize_batch_size=32, mwt_batch_size=50, pos_batch_size=5000, lemma_batch_size=50)
 
-    def __init__(self) -> None: super().__init__()
+    def __del__(self):
+        del self.pipeline
+
     def get_name(self) -> str: return "Stanza"
     def process_words(self, words: List[str]) -> List[str]:
         words_as_string : str = ' '.join(words)
