@@ -26,7 +26,6 @@ class EntiretyFeatureSet(module_featureset.FeatureSetAbstraction):
 
     def develop_basis_df(self):
         print(f"🚀 Preparing for '{self.id}' analysis ...")
-        lemmatizer : module_nlp.LemmatizerStanza = module_nlp.LemmatizerStanza()
 
         # Dataframe to study content features
         basics_dataframe = self.paths_df.copy(deep=True)[['Subject', 'Task', 'Trans Path']]
@@ -36,12 +35,11 @@ class EntiretyFeatureSet(module_featureset.FeatureSetAbstraction):
         basics_dataframe['Trans File Path'] = list(map(lambda items: os.path.join(items[0], items[1]), list(zip(basics_dataframe['Trans Path'], basics_dataframe['Trans File']))))
         # Process Transcriptions
         basics_dataframe['Trans Info'] = basics_dataframe['Trans File Path'].apply(lambda file_path: module_load.TranscriptionInfo(file_path))
-        basics_dataframe['Lemmatized Text'] = basics_dataframe['Trans Info'].apply(lambda trans_info: trans_info.lemmatize_words(lemmatizer))
-        basics_dataframe['Lemmatized Filtered Text'] = basics_dataframe['Lemmatized Text'].apply(module_nlp.filter_out_stop_words)
+        basics_dataframe['Text'] = basics_dataframe['Trans Info'].apply(lambda trans_info: trans_info.get_words())
 
         # Save back 'basis dataframe' and 'drop_columns'
         self.basis_dataframe = basics_dataframe
-        self.drop_columns = ['Trans Path', 'Trans File', 'Trans File Path', 'Trans Info', 'Lemmatized Text', 'Lemmatized Filtered Text']
+        self.drop_columns = ['Trans Path', 'Trans File', 'Trans File Path', 'Trans Info', 'Text']
 
     def develop_static_df(self):
         if self.static_dataframe is not None: return

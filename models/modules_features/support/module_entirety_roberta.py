@@ -28,7 +28,7 @@ def entirety_roberta_analysis(basis_df: pd.DataFrame) -> pd.DataFrame:
 
 def entirety_roberta_analysis_dynamic(train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
 
-    train_texts     : pd.Series = train_X['Lemmatized Filtered Text'].apply(lambda list_of_words: ' '.join(list_of_words))
+    train_texts     : pd.Series = train_X['Text'].apply(lambda list_of_words: ' '.join(list_of_words))
     train_labels    : pd.Series = train_Y
 
     module_exporter.push_current_directory('Entirety Roberta Model')
@@ -51,7 +51,7 @@ def entirety_roberta_analysis_dynamic(train_X: pd.DataFrame, train_Y: pd.Series,
     train_X = module_aux.join_dataframes(train_X, train_return)
 
     if test_X is not None:
-        test_texts  : pd.Series = test_X['Lemmatized Filtered Text'].apply(lambda list_of_words: ' '.join(list_of_words))
+        test_texts  : pd.Series = test_X['Text'].apply(lambda list_of_words: ' '.join(list_of_words))
         test_return = model.predict(test_texts)
         test_return.columns = list(map(lambda column: 'Entirety RoBERTa' + ' - ' + column, test_return.columns.to_list()))
         test_X = module_aux.join_dataframes(test_X, test_return)
