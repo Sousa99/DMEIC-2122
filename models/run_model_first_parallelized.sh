@@ -61,7 +61,7 @@ for parallel_index in $(seq 0 $(expr $number_of_variations - 1)); do
             -a "Output = ${output}"             \
             -a "Error = ${error}"               \
             -a "Log = ${log}"                   \
-            `pwd`/condor.config;
+            `pwd`/condor_cpu.config;
 done
 
 echo "🚀 Waiting for models to finish ..."
