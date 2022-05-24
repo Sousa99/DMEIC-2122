@@ -1,4 +1,6 @@
-from pyexpat import model
+import os
+import sys
+
 from typing                                 import List, Optional, Tuple
 
 import pandas                               as pd
@@ -43,7 +45,11 @@ def entirety_roberta_analysis_dynamic(train_X: pd.DataFrame, train_Y: pd.Series,
 
     model   : module_transformers.TransformerModel  = module_transformers.TransformerModel(tokenizer, model_base)
     
+    old_stdout = sys.stdout
+    sys.stdout = open(os.devnull, "w")
     model.train(train_texts, train_labels, training_args)
+    sys.stdout = old_stdout
+
     model.load_saved_model()
 
     train_return = model.predict(train_texts)
