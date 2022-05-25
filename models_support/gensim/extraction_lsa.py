@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 # =============================================== DEBUG CONSTANTS ================================================
 
-NUMBER_DOCUMENTS : Optional[int] = 5000
+NUMBER_DOCUMENTS : Optional[int] = None
 MAX_USABLE_RAM_GB : float = 40.0
 NUMBER_OF_TOPIC_VARIATIONS_TO_TEST : int = 20
 

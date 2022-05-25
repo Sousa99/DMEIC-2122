@@ -5,7 +5,7 @@ from typing import Optional
 
 # =============================================== DEBUG CONSTANTS ================================================
 
-NUMBER_DOCUMENTS : Optional[int] = 5000
+NUMBER_DOCUMENTS : Optional[int] = None
 
 # ================================================== CONSTANTS ===================================================
 
