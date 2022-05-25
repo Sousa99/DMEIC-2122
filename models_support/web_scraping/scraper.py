@@ -30,3 +30,15 @@ class WebScraper(abc.ABC, Generic[ScrapedInfo]):
 
         return all_scrapped_info
 
+# ===================================================== MAIN TYPES OF SCRAPED INFO TYPES DEFINITION =====================================================
+
+class ScrapedInfoValence():
+
+    def __init__(self) -> None: pass
+
+    @abc.abstractmethod
+    def get_text(self) -> str:
+        exit(f"🚨 Method 'get_text' not defined for '{self.__class__.__name__}'")
+    @abc.abstractmethod
+    def get_valence_score(self, limit_floor: float, limit_ceil: float) -> float:
+        exit(f"🚨 Method 'get_text' not defined for '{self.__class__.__name__}'")
