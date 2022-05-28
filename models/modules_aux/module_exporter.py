@@ -14,6 +14,7 @@ from datetime               import datetime
 from typing                 import Any, Dict, List, Optional, Tuple
 from typing_extensions      import TypedDict
 
+TMP_DIRECTORY = './tmp/'
 EXPORT_DIRECTORY = '../results/'
 EXECUTION_TIMESTAMP = datetime.now()
 EXPORT_CSV_EXTENSION = '.csv'
@@ -66,6 +67,13 @@ def push_current_directory(directory: str):
 def pop_current_directory():
     global CURRENT_DIRECTORIES
     CURRENT_DIRECTORIES.pop()
+
+def get_tmp_directory(sub_directories: List[str] = []):
+    timestampStr = EXECUTION_TIMESTAMP.strftime("%Y.%m.%d %H.%M.%S")
+    directory_path = os.path.join(TMP_DIRECTORY, timestampStr, *sub_directories)
+
+    if not os.path.exists(directory_path): os.makedirs(directory_path)
+    return directory_path
 
 # =================================== PUBLIC FUNCTIONS - SPECIFIC PARAMETERS ===================================
 
