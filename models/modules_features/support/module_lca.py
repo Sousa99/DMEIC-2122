@@ -1,13 +1,10 @@
 import sys
 
-from typing                                 import Dict, List, Optional, Tuple
+from typing                                 import Dict, Iterable, List, Optional, Tuple
 from functools                              import reduce
 
 import pandas                               as pd
 import numpy                                as np
-
-if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from numpy.typing   import NDArray
-else: NDArray = List
 
 # Local Modules - Auxiliary
 import modules_aux.module_aux               as module_aux
@@ -17,6 +14,8 @@ import modules_aux.module_clustering        as module_clustering
 # Local Modules - Corpora
 import modules_corpora.module_gensim        as module_gensim
 import modules_corpora.module_gensim_util   as module_gensim_util
+
+NDArray = Iterable
 
 # =================================== CONSTANTS DEFINITIONS ===================================
 

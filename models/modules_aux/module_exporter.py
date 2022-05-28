@@ -12,9 +12,7 @@ import matplotlib.pyplot    as plt
 
 from datetime               import datetime
 from typing                 import Any, Dict, List, Optional, Tuple
-
-if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from typing import TypedDict
-else: from typing_extensions import TypedDict
+from typing_extensions      import TypedDict
 
 EXPORT_DIRECTORY = '../results/'
 EXECUTION_TIMESTAMP = datetime.now()

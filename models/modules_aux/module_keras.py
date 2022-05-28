@@ -9,12 +9,10 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow       as tf
 import numpy            as np
 
-from typing             import Any, Dict, List
+from typing             import Any, Dict, Iterable, List
 from tensorflow         import keras
 
-if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from numpy.typing   import NDArray
-else: NDArray = List
-
+NDArray = Iterable
 
 # ===================================== PRIVATE FUNCTIONS =====================================
 
@@ -85,7 +83,7 @@ class NeuralNetworkRezaii():
         self.metrics : List[keras.metrics.Metric] = [keras.metrics.CosineSimilarity()]
         self.callbacks : List[keras.callbacks.Callback] = [tf.keras.callbacks.EarlyStopping(monitor='loss', patience=10, restore_best_weights=True),
             CallbackWeightTreshold(self.number_of_words, self.epochs)]
-
+        
         self.model.compile(optimizer=keras.optimizers.Adam(), loss=euclidean_distance_loss, metrics=self.metrics)
 
     def train_model(self) -> Dict[str, Any]:

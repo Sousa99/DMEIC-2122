@@ -5,16 +5,15 @@ import sklearn.cluster
 import sklearn.metrics
 import sklearn.manifold
 
-from typing                             import Dict, List, Optional, Tuple
+from typing                             import Dict, Iterable, List, Optional, Tuple
 
-import numpy                            as np
 import pandas                           as pd
-
-if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from numpy.typing   import NDArray
-else: NDArray = List
+import numpy                            as np
 
 # Local Modules - Auxiliary
 import modules_aux.module_nlp           as module_nlp
+
+NDArray = Iterable
 
 # =================================== DOWNLOADS FOR LANGUAGE PROCESSING ===================================
 '''

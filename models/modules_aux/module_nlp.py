@@ -4,15 +4,14 @@ import nltk
 import stanza
 import warnings
 
-from typing         import List, Optional
+from typing         import Iterable, List, Optional
 
 import numpy        as np
 
-if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from numpy.typing   import NDArray
-else: NDArray = List
-
 # Local Modules - Auxiliary
 import modules_corpora.module_gensim    as module_gensim
+
+NDArray = Iterable
 
 # =================================== DOWNLOADS FOR LANGUAGE PROCESSING ===================================
 '''
