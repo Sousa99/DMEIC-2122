@@ -3,15 +3,14 @@ import sys
 import pandas       as pd
 import numpy        as np
 
-from typing         import List
-
-if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from numpy.typing   import NDArray
-else: NDArray = List
+from typing         import Iterable, List
 
 # Local Modules - Auxiliary
 import modules_aux.module_nlp    as module_nlp
 # Local Modules - Corpora
 import modules_corpora.module_gensim    as module_gensim
+
+NDArray = Iterable
 
 # =================================== CONSTANTS DEFINITIONS ===================================
 
@@ -26,7 +25,8 @@ def compute_coherence_score(embeddings: List[NDArray[np.float64]], group_jump: i
         embedding_1 : NDArray[np.float64] = embeddings[index]
         embedding_2 : NDArray[np.float64] = embeddings[index + group_jump]
         cossine_score : float = module_nlp.embeddings_cossine_similarity(embedding_1, embedding_2)
-        current_scores.append(cossine_score)
+        if (type(cossine_score) == int or type(cossine_score) == float) and not np.isnan(cossine_score):
+            current_scores.append(cossine_score)
 
     if len(current_scores) == 0: return DEFAULT_VALUE
     return sum(current_scores) / len(current_scores)

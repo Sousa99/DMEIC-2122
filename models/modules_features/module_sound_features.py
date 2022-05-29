@@ -22,6 +22,7 @@ class SoundFeatureSet(module_featureset.FeatureSetAbstraction):
             subject_info, general_drop_columns, pivot_on_task)
 
     def develop_basis_df(self):
+        if self.basis_dataframe is not None: return
         print(f"🚀 Preparing for '{self.id}' analysis ...")
 
         # Dataframe to study sound features

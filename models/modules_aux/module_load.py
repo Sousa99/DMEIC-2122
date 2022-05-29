@@ -3,9 +3,8 @@ import sys
 
 import pandas as pd
 
-from typing import Any, List
-if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from typing import TypedDict
-else: from typing_extensions import TypedDict
+from typing             import Any, List
+from typing_extensions  import TypedDict
 
 # Local Modules - Auxiliary
 import modules_aux.module_nlp   as module_nlp

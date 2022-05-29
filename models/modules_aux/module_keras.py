@@ -1,20 +1,29 @@
 import os
 import sys
 import math
+import warnings
+
 
 # =================================== IGNORE CERTAIN ERRORS ===================================
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 # =================================== IGNORE CERTAIN ERRORS ===================================
 
-import tensorflow       as tf
-import numpy            as np
+import tensorflow                   as tf
+import numpy                        as np
 
-from typing             import Any, Dict, List
-from tensorflow         import keras
+from typing                         import Any, Dict, Iterable, List
+from tensorflow                     import keras
 
-if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from numpy.typing   import NDArray
-else: NDArray = List
+import modules_aux.module_exporter  as module_exporter
 
+NDArray = Iterable
+
+# =================================== IGNORE CERTAIN ERRORS ===================================
+tf.logging.set_verbosity(tf.logging.ERROR)
+
+warnings.filterwarnings('ignore', module = 'tensorflow')
+warnings.filterwarnings('ignore', module = 'keras')
+# =================================== IGNORE CERTAIN ERRORS ===================================
 
 # ===================================== PRIVATE FUNCTIONS =====================================
 
@@ -39,12 +48,14 @@ class LayerCustomRezaii(keras.layers.Layer):
         self.iteration : int = 0
         # Weights Initialization
         self.w = self.add_weight(
+            name='main_weights',
             shape=(input_shape[-1], 1),
             initializer="random_normal",
             trainable=True,
         )
     def call(self, inputs):
-        return tf.matmul(inputs, self.w)
+        return tf.tensordot(inputs, self.w, [[2], [0]])
+
 # --------------------------------------- Custom Callbacks ---------------------------------------
 class CallbackWeightTreshold(keras.callbacks.Callback):
 
@@ -69,6 +80,8 @@ class CallbackWeightTreshold(keras.callbacks.Callback):
 
 class NeuralNetworkRezaii():
 
+    TMP_DIRECTORY = os.path.join(module_exporter.get_tmp_directory(['RezaiiNN']), 'model_checkpoint')
+
     def __init__(self, matrix_embeddings: NDArray[np.float64], sentence_embedding: NDArray[np.float64], ephocs: int = 5000) -> None:
         self.matrix_embeddings : NDArray[np.float64] = matrix_embeddings
         self.sentence_embedding : NDArray[np.float64] = sentence_embedding
@@ -79,12 +92,13 @@ class NeuralNetworkRezaii():
 
         # Develop Model
         self.model = keras.Sequential()
-        self.model.add(keras.layers.Input(self.matrix_embeddings.transpose().shape))
+        self.model.add(keras.layers.InputLayer(self.matrix_embeddings.transpose().shape))
         self.model.add(LayerCustomRezaii())
 
-        self.metrics : List[keras.metrics.Metric] = [keras.metrics.CosineSimilarity()]
-        self.callbacks : List[keras.callbacks.Callback] = [tf.keras.callbacks.EarlyStopping(monitor='loss', patience=10, restore_best_weights=True),
-            CallbackWeightTreshold(self.number_of_words, self.epochs)]
+        self.metrics : List[keras.metrics.Metric | str] = ['cosine']
+        self.callbacks : List[keras.callbacks.Callback] = [tf.keras.callbacks.EarlyStopping(monitor='loss', patience=10),
+            CallbackWeightTreshold(self.number_of_words, self.epochs),
+            tf.keras.callbacks.ModelCheckpoint(filepath=self.TMP_DIRECTORY, save_weights_only=True, monitor='loss', mode='max', save_best_only=True)]
 
         self.model.compile(optimizer=keras.optimizers.Adam(), loss=euclidean_distance_loss, metrics=self.metrics)
 
@@ -100,12 +114,12 @@ class NeuralNetworkRezaii():
         history_loss_filtered : List[float] = list(filter(lambda loss_value: loss_value is not None and not math.isnan(loss_value), history_loss))
         last_loss : float = history_loss_filtered[-1]
 
-        history_cosine_similarity : List[float] = history.history['cosine_similarity']
+        history_cosine_similarity : List[float] = history.history['cosine_proximity']
         history_cosine_similarity_filtered : List[float] = list(filter(lambda cosine_similarity_value: cosine_similarity_value is not None and not math.isnan(cosine_similarity_value), history_cosine_similarity))
         last_cosine_similarity : float = history_cosine_similarity_filtered[-1]
 
         number_of_zero_weights : int = len(np.where(self.model.weights[0] != 0.0))
-        ratio_zero_weights : float = number_of_zero_weights / self.model.weights[0].shape[0]
+        ratio_zero_weights : float = number_of_zero_weights / self.model.weights[0].shape[0].value
 
         return { '#ephocs': number_of_ephocs_ran, 'ratio #zero_weights': ratio_zero_weights,
             'model loss': last_loss, 'model cosine similarity': last_cosine_similarity }

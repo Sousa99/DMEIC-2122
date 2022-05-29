@@ -5,10 +5,9 @@ import gensim
 
 import numpy        as np
 
-from typing         import Any, List, Optional
+from typing         import Any, Iterable, List, Optional
 
-if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from numpy.typing   import NDArray
-else: NDArray = List
+NDArray = Iterable
 
 # =================================== CONSTANTS DEFINITIONS ===================================
 

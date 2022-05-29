@@ -13,10 +13,9 @@ import matplotlib.pyplot    as plt
 from tqdm                   import tqdm
 from datetime               import datetime
 from typing                 import Any, Dict, List, Optional, Tuple
+from typing_extensions      import TypedDict
 
-if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from typing import TypedDict
-else: from typing_extensions import TypedDict
-
+TMP_DIRECTORY = './tmp/'
 EXPORT_DIRECTORY = '../results/'
 EXECUTION_TIMESTAMP = datetime.now()
 EXPORT_CSV_EXTENSION = '.csv'
@@ -82,6 +81,13 @@ def get_current_path() -> str:
 
     if not os.path.exists(directory_path): os.makedirs(directory_path)
     return os.path.join(directory_path, '')
+
+def get_tmp_directory(sub_directories: List[str] = []):
+    timestampStr = EXECUTION_TIMESTAMP.strftime("%Y.%m.%d %H.%M.%S")
+    directory_path = os.path.join(TMP_DIRECTORY, timestampStr, *sub_directories)
+
+    if not os.path.exists(directory_path): os.makedirs(directory_path)
+    return directory_path
 
 # =================================== PUBLIC FUNCTIONS - SPECIFIC PARAMETERS ===================================
 
@@ -173,7 +179,8 @@ def histogram_for_each_numeric(filename: str, dataframe: pd.DataFrame, variables
         col_index = variable_index % cols
         row_index = variable_index // cols
 
-        sns.histplot(data=dataframe, x=variable_key, hue=hue, kde=kde, ax=axs[row_index, col_index])
+        try: sns.histplot(data=dataframe, x=variable_key, hue=hue, kde=kde, ax=axs[row_index, col_index])
+        except np.linalg.LinAlgError: sns.histplot(data=dataframe, x=variable_key, hue=hue, kde=False, ax=axs[row_index, col_index])
 
     plt.savefig(complete_path)
     plt.close('all')

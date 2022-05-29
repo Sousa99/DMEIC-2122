@@ -1,18 +1,17 @@
 import sys
 
-from typing                             import Any, Dict, List
+from typing                             import Any, Dict, Iterable, List
 
 import pandas                           as pd
 import numpy                            as np
-
-if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from numpy.typing   import NDArray
-else: NDArray = List
 
 # Local Modules - Auxiliary
 import modules_aux.module_nlp           as module_nlp
 import modules_aux.module_keras         as module_keras
 # Local Modules - Corpora
 import modules_corpora.module_gensim    as module_gensim
+
+NDArray = Iterable
 
 # =================================== CONSTANTS DEFINITIONS ===================================
 
