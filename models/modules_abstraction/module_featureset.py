@@ -86,10 +86,6 @@ class FeatureSetAbstraction(abc.ABC):
 
         return (dataframe_X, dataframe_Y)
 
-    def pre_process(self, dataframe_X: pd.DataFrame, dataframe_Y: pd.Series, variation: module_variations.Variation) -> Tuple[pd.DataFrame, pd.Series]:
-        dataframe_X = variation.preprocesser.preprocess_train(dataframe_X)
-        dataframe_Y = variation.preprocesser.preprocess_test(dataframe_Y)
-
     def separate_train_test(self, indexes : Tuple[List[int], List[int]], dataframe_X: pd.DataFrame, dataframe_Y: pd.Series) -> Tuple[Tuple[pd.DataFrame, pd.Series], Tuple[pd.DataFrame, pd.Series]]:
         
         train_index, test_index = indexes
@@ -116,10 +112,8 @@ class FeatureSetAbstraction(abc.ABC):
             train_X = train_X.drop(self.general_drop_columns, axis=1)
             test_X = test_X.drop(self.general_drop_columns, axis=1)
 
-        train_X = variation.preprocesser.preprocess_train(train_X)
-        test_X = variation.preprocesser.preprocess_test(test_X)
-        train_Y = variation.preprocesser.preprocess_train(train_Y)
-        test_Y = variation.preprocesser.preprocess_test(test_Y)
+        train_X, train_Y = variation.preprocesser.preprocess_train(train_X, train_Y)
+        test_X, test_Y = variation.preprocesser.preprocess_test(test_X, test_Y)
 
         return ((train_X, train_Y), (test_X, test_Y))
 
@@ -139,8 +133,7 @@ class FeatureSetAbstraction(abc.ABC):
             dataframe_X = dataframe_X.drop(self.general_drop_columns, axis=1)
 
         if variation is not None:
-            dataframe_X = variation.preprocesser.preprocess_train(dataframe_X)
-            dataframe_Y = variation.preprocesser.preprocess_train(dataframe_Y)
+            dataframe_X, dataframe_Y = variation.preprocesser.preprocess_train(dataframe_X, dataframe_Y)
         
         return dataframe_X, dataframe_Y
 

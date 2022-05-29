@@ -1,13 +1,10 @@
 import sys
 
-from typing                                 import Dict, List, Optional, Tuple
+from typing                                 import Dict, Iterable, List, Optional, Tuple
 from functools                              import reduce
 
 import pandas                               as pd
 import numpy                                as np
-
-if sys.version_info[0] == 3 and sys.version_info[1] >= 8: from numpy.typing   import NDArray
-else: NDArray = List
 
 # Local Modules - Auxiliary
 import modules_aux.module_aux               as module_aux
@@ -17,6 +14,8 @@ import modules_aux.module_clustering        as module_clustering
 # Local Modules - Corpora
 import modules_corpora.module_gensim        as module_gensim
 import modules_corpora.module_gensim_util   as module_gensim_util
+
+NDArray = Iterable
 
 # =================================== CONSTANTS DEFINITIONS ===================================
 
@@ -28,11 +27,12 @@ NUMBER_CLUSTERS_TO_TEST             : List[int] = [ x for x in range(3, 11) ]
 
 # =================================== PRIVATE METHODS ===================================
 
-def get_top_words(model: module_gensim.ModelWord2Vec, percentage: float) -> List[str]:
+def get_top_words(model: module_gensim.ModelWord2Vec, percentage: float, blacklist_top_words: List[str] = []) -> List[str]:
     number_of_words     : int = round(model.get_vocab_size() * percentage)
     model_vocab_words   : List[str] = model.get_vocab_by_frequency()
 
-    most_frequent_words : List[str] = model_vocab_words[:number_of_words]
+    most_frequent_words : List[str] = list(filter(lambda item: item not in blacklist_top_words, model_vocab_words))
+    most_frequent_words : List[str] = most_frequent_words[:number_of_words]
     return most_frequent_words
 
 def get_max_cossine_similarity_with_word(sentence_embeddings: List[NDArray[np.float64]], word_embedding: NDArray[np.float64]) -> Optional[float]:
@@ -59,7 +59,7 @@ def get_max_cossine_similarity_freq_words(sentence_embeddings: List[NDArray[np.f
 def lca_analysis(basis_df: pd.DataFrame) -> pd.DataFrame:
     print("🚀 Processing 'latent content analysis' analysis ...")
     word2vec_model = module_gensim.ModelWord2Vec()
-    model_frequent_words : List[str] = get_top_words(word2vec_model, PERCENTAGE_OF_MOST_FREQUENT_WORDS)
+    model_frequent_words : List[str] = get_top_words(word2vec_model, PERCENTAGE_OF_MOST_FREQUENT_WORDS, ['Target'])
     model_frequent_word_embeddings : List[Tuple[str, NDArray]] = list(map(lambda word: (word, module_nlp.convert_word_to_embedding(word, word2vec_model)), model_frequent_words))
     
     # Preparation for LCA features
@@ -79,7 +79,6 @@ def lca_analysis_dynamic(train_X: pd.DataFrame, train_Y: pd.Series, test_X: Opti
     lca_cossines_matrix = pd.concat([lca_cossines_matrix.drop(['LCA - Max Cossine w/ Frequent Words'], axis=1),
         lca_cossines_matrix['LCA - Max Cossine w/ Frequent Words'].apply(pd.Series)], axis=1)
     grouped_by_lca_cossines : pd.DataFrame = lca_cossines_matrix.groupby('Target').mean().transpose()
-    
 
     # Achieved grouped by target dataframe
     grouped_by_df : pd.DataFrame = train_full_df.groupby('Target')['Lemmatized Filtered Text'].apply(list).to_frame('Lemmatized Filtered Documents')

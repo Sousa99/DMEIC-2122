@@ -24,6 +24,7 @@ import modules_aux.module_exporter  as module_exporter
 tqdm.pandas(desc='🐼 Pandas DataFrame apply', mininterval=0.1, maxinterval=10.0, leave=False)
 warnings.filterwarnings('ignore', category = UserWarning, module = 'openpyxl')
 warnings.filterwarnings('ignore', category = UserWarning, module = 'opensmile')
+warnings.filterwarnings("ignore", category = FutureWarning, module = 'tensorflow')
 
 # =================================== DEBUG CONSTANTS ===================================
 

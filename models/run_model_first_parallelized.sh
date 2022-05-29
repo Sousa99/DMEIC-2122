@@ -54,18 +54,18 @@ for parallel_index in $(seq 0 $(expr $number_of_variations - 1)); do
     # Fix Files for Condor Old Syntax
     output="${TEMP_CONDOR_LOGS_DIRECTORY}condor.out.${process_id}.log"
     error="${TEMP_CONDOR_LOGS_DIRECTORY}condor.err.${process_id}.log"
-    log="${TEMP_CONDOR_DIRECTORY}first_variations_condor.log"
+    log="${TEMP_CONDOR_DIRECTORY}/first_variations_condor.log"
 
     condor_submit \
             -a "Executable = ${script_file}"    \
             -a "Output = ${output}"             \
             -a "Error = ${error}"               \
             -a "Log = ${log}"                   \
-            `pwd`/condor.config;
+            `pwd`/condor_cpu.config;
 done
 
 echo "🚀 Waiting for models to finish ..."
-condor_wait "${TEMP_CONDOR_DIRECTORY}first_variations_condor.log"
+condor_wait "${TEMP_CONDOR_DIRECTORY}/first_variations_condor.log"
 
 python3 model_first.py                                                                                                                      \
     -info_controls=${CONTROL_INFO}              -info_psychosis=${PSYCHOSIS_INFO}               -info_bipolars=${BIPOLAR_INFO}              \
