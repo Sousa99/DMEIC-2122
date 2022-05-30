@@ -38,12 +38,12 @@ class FeatureSetAbstraction(abc.ABC):
 
     # =================================== FUNCTIONS ===================================
 
-    def __init__(self, id: str, paths_df: pd.DataFrame, preference_audio_tracks: List[str], preference_trans: List[str], trans_extension: str,
-        subject_info: pd.DataFrame, general_drop_columns: List[str], pivot_on_task: bool = False) -> None:
-
+    def __init__(self, id: str) -> None:
         super().__init__()
+        self.id = id
 
-        self.id                         = id
+    def init_execution(self, paths_df: pd.DataFrame, preference_audio_tracks: List[str], preference_trans: List[str], trans_extension: str,
+        subject_info: pd.DataFrame, general_drop_columns: List[str], pivot_on_task: bool = False) -> None:
 
         self.paths_df                   = paths_df
         self.preference_audio_tracks    = preference_audio_tracks
@@ -139,13 +139,8 @@ class FeatureSetAbstraction(abc.ABC):
 
 class MergedFeatureSetAbstraction(FeatureSetAbstraction):
 
-    def __init__(self, feature_sets: List[FeatureSetAbstraction],
-        paths_df: pd.DataFrame, preference_audio_tracks: List[str], preference_trans: List[str], trans_extension: str,
-        subject_info: pd.DataFrame, general_drop_columns: List[str], pivot_on_task: bool = False) -> None:
-
-        super().__init__(' + '.join(map(lambda feature_set: feature_set.id, feature_sets)),
-            paths_df, preference_audio_tracks, preference_trans, trans_extension,
-            subject_info, general_drop_columns, pivot_on_task)
+    def __init__(self, feature_sets: List[FeatureSetAbstraction]) -> None:
+        super().__init__(' + '.join(map(lambda feature_set: feature_set.id, feature_sets)))
         self.feature_sets = feature_sets
     
     def develop_basis_df(self):

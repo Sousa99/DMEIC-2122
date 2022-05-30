@@ -15,11 +15,9 @@ import modules_abstraction.module_featureset    as module_featureset
 
 FEATURE_SET_ID : str = 'sound'
 class SoundFeatureSet(module_featureset.FeatureSetAbstraction):
-    
-    def __init__(self, paths_df: pd.DataFrame, preference_audio_tracks: List[str], preference_trans: List[str], trans_extension: str,
-        subject_info: pd.DataFrame, general_drop_columns: List[str], pivot_on_task: bool = False) -> None:
-        super().__init__(FEATURE_SET_ID, paths_df, preference_audio_tracks, preference_trans, trans_extension,
-            subject_info, general_drop_columns, pivot_on_task)
+
+    def __init__(self) -> None:
+        super().__init__(FEATURE_SET_ID)
 
     def develop_basis_df(self):
         if self.basis_dataframe is not None: return

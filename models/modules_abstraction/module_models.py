@@ -1,3 +1,4 @@
+import math
 import os
 import abc
 import pickle
@@ -145,6 +146,15 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
         if VARIATIONS_FILTER_BY_INDEX is not None:
             self.variations_to_test = [ self.variations_to_test[index] for index in VARIATIONS_FILTER_BY_INDEX ]
 
+    def print_variations(self):
+
+        number_variations = len(self.variations_to_test)
+        number_digits = int(math.floor(math.log10(number_variations))) + 1
+
+        print("🚀 Variations currently being carried out:")
+        for variation_index, variation in enumerate(self.variations_to_test):
+            print(f"⚙️  [{variation_index:0{number_digits}d}]: {variation.generate_code()}")
+
     @abc.abstractmethod
     def __init__(self, arguments: argparse.Namespace) -> None:
         # Arguments and Logic        
@@ -152,6 +162,7 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
         timestamp_argument = arguments.timestamp;
         if timestamp_argument is not None: module_exporter.change_execution_timestamp(timestamp_argument)
 
+    def init_execution(self) -> None:
         # Load Informations
         self.load_subjects()
         self.load_subjects_info()
@@ -248,14 +259,26 @@ class SequentialModel(ModelAbstraction):
             self.variations_results.append(variation_summary)
 
     def execute(self, feature_sets: Optional[List[module_featureset.FeatureSetAbstraction]] = None):
-        
-        if feature_sets is None:
-            exit("🚨 Execute on 'SequentialModel' requires 'feature_sets'")
 
-        self.load_feature_sets(feature_sets)
-        self.study_feature_sets()
-        self.run_variations()
-        self.export_final_results()
+        print_variations = self.arguments.print_variations
+
+        if print_variations:
+            
+            if feature_sets is None:
+                exit("🚨 Printing variations on 'SequentialModel' requires 'feature_sets'")
+
+            self.load_feature_sets(feature_sets)
+            self.print_variations()
+        
+        else:
+            
+            if feature_sets is None:
+                exit("🚨 Execute on 'SequentialModel' requires 'feature_sets'")
+
+            self.load_feature_sets(feature_sets)
+            self.study_feature_sets()
+            self.run_variations()
+            self.export_final_results()
 
 class ParallelModel(ModelAbstraction):
 
@@ -337,8 +360,16 @@ class ParallelModel(ModelAbstraction):
         # Get pertinent arguments
         parallelization = self.arguments.parallelization_key
         parallelization_index = self.arguments.parallelization_index
+        print_variations = self.arguments.print_variations
 
-        if parallelization == PARALLEL_FEATURE_EXTRACTION:
+        if print_variations:
+
+            if feature_sets is None:
+                exit("🚨 Printing variations on 'SequentialModel' requires 'feature_sets'")
+            self.load_feature_sets(feature_sets)
+            self.print_variations()            
+
+        elif parallelization == PARALLEL_FEATURE_EXTRACTION:
 
             if feature_sets is None:
                 exit("🚨 Execute on 'SequentialModel' requires 'feature_sets'")

@@ -17,6 +17,7 @@ parser.add_argument("-variations_key",          help="key for the generation of 
 parser.add_argument("-timestamp",               help="key for the timestamp identifier, if not given current timestamp is used")
 parser.add_argument("-parallelization_key",     help="key for the parallelized model, if not given is executed sequentially")
 parser.add_argument("-parallelization_index",   help="key index for the parallelized model, must be given if task is to be parallelized")
+parser.add_argument("-print_variations",        help="tag as boolean to print only variations and their indexes", action='store_const', const=True, default=False)
 
 # Define Requirements
 arguments_requirements = [
@@ -37,11 +38,12 @@ arguments_dict = vars(arguments)
 for requirement in arguments_requirements:
     requirement['arg'] = arguments_dict[requirement['key']]
 
-# Check Requirements
-if ( any(not req['arg'] for req in arguments_requirements) ):
-    print("🙏 Please provide a:")
-    for requirement in arguments_requirements:
-        print('\t\'{}\': {}'.format(requirement['key'], requirement['help']))
-    exit(1)
+# Check Requirements if not simply printing variations
+if not arguments_dict['print_variations']:
+    if ( any(not req['arg'] for req in arguments_requirements) ):
+        print("🙏 Please provide a:")
+        for requirement in arguments_requirements:
+            print('\t\'{}\': {}'.format(requirement['key'], requirement['help']))
+        exit(1)
 
 def get_arguments() -> argparse.Namespace: return arguments
