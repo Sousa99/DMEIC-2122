@@ -30,7 +30,7 @@ warnings.filterwarnings("ignore", category = FutureWarning, module = 'tensorflow
 
 DATASET_SAMPLE              :   float               = 1.00
 PIVOT_ON_TASKS              :   bool                = False
-VARIATIONS_FILTER_BY_INDEX  :   Optional[List[int]] = Optional
+VARIATIONS_FILTER_BY_INDEX  :   Optional[List[int]] = None
 
 # =================================== CONSTANTS ===================================
 
