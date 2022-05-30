@@ -11,7 +11,7 @@ NDArray = Iterable
 
 # =================================== CONSTANTS DEFINITIONS ===================================
 
-PATH_MODELS_SUPPORT = '../models_support/exports/'
+PATH_MODELS_SUPPORT = '../models_support/exports/gensim/'
 
 FILENAME_DICTIONARY = 'corpora_dictionary.bin'
 FILENAME_WORD2VEC   = 'word2vec_model.bin'

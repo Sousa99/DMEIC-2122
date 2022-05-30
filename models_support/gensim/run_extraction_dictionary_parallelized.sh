@@ -22,7 +22,7 @@ for ((extract_index = 0; extract_index < ${#extract_lines[@]} ; extract_index +=
     script_file="${TEMP_CONDOR_SCRIPTS_DIRECTORY}${process_id}.sh"
 
     echo "#!/bin/bash" > "${script_file}"
-    echo "source ./venv/bin/activate"                                                   >> "${script_file}"
+    echo "source ../venv/bin/activate"                                                   >> "${script_file}"
     echo "python3 ./extraction_dictionary.py -extracts_per_run ${extracts_per_run}  \\" >> "${script_file}"
     echo "    -parallelization_key extract -parallelization_index ${extract_line}"      >> "${script_file}"
     chmod a+x "${script_file}"
@@ -30,7 +30,7 @@ for ((extract_index = 0; extract_index < ${#extract_lines[@]} ; extract_index +=
     # Fix Files for Condor Old Syntax
     output="${TEMP_CONDOR_LOGS_DIRECTORY}condor.out.${process_id}.log"
     error="${TEMP_CONDOR_LOGS_DIRECTORY}condor.err.${process_id}.log"
-    log="${TEMP_CONDOR_DIRECTORY}extracts_condor.log"
+    log="${TEMP_CONDOR_DIRECTORY}/extracts_condor.log"
 
     condor_submit \
             -a "Executable = ${script_file}"    \
@@ -41,6 +41,6 @@ for ((extract_index = 0; extract_index < ${#extract_lines[@]} ; extract_index +=
 done
 
 echo "🚀 Waiting for extractions to finish ..."
-condor_wait "${TEMP_CONDOR_DIRECTORY}extracts_condor.log"
+condor_wait "${TEMP_CONDOR_DIRECTORY}/extracts_condor.log"
 
 python3 extraction_dictionary.py -parallelization_key final

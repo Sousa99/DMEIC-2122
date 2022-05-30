@@ -68,4 +68,5 @@ def vector_unpacking_analysis(basis_dataframe: pd.DataFrame) -> pd.DataFrame:
     rezaii_model_df : pd.DataFrame = basis_dataframe.progress_apply(lambda row: create_and_train_models(row['Vector Unpacking - Embedding per Word Groups'], row['Vector Unpacking - Embedding Groups']), axis=1)
     basis_dataframe = basis_dataframe.merge(rezaii_model_df.fillna(DEFAULT_VALUE, inplace=False), left_index=True, right_index=True)
     
+    del word2vec_model
     return basis_dataframe

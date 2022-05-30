@@ -22,3 +22,6 @@ corpora
 
 # Virtual environments should not be sent
 venv
+
+# Test Zone made for local exploration only
+test-zone

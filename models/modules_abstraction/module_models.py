@@ -187,7 +187,7 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
         # Do profiling of current dataset
         module_exporter.change_current_directory([variation.generate_code(), 'Data Profiling'])
         print("🚀 Running profiling ...")
-        profiler = module_profiling.DatasetProfiling(dataframe_X, dataframe_Y)
+        profiler = module_profiling.DatasetProfiling(dataframe_X, dataframe_Y, fast=True)
         profiler.make_profiling()
 
         # Running the classifier itself

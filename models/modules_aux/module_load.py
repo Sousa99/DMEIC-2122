@@ -72,11 +72,16 @@ class TranscriptionInfo():
             self.transcription_info.append(TranscriptionInfoItem(line))
         file.close()
 
-    def get_info_items(self) -> List[TranscriptionInfoItem]: return self.transcription_info
-    def lemmatize_words(self, lemmatizer: module_nlp.Lemmatizer) -> List[str]:
+    def get_info_items(self) -> List[TranscriptionInfoItem]:
+        return self.transcription_info
+
+    def get_words(self) -> List[str]:
         original_words : List[str] = []
         for info_item in self.transcription_info: original_words.extend(info_item.get_words().split())
-        
+        return original_words
+
+    def lemmatize_words(self, lemmatizer: module_nlp.Lemmatizer) -> List[str]:
+        original_words : List[str] = self.get_words()
         lemmatized_words : List[str] = lemmatizer.process_words(original_words)
         return lemmatized_words
 

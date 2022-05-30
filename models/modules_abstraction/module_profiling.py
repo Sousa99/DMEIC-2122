@@ -39,12 +39,14 @@ def profile_for_types(df: pd.DataFrame) -> Dict[str, List[str]]:
 
 class DatasetProfiling():
 
-    def __init__(self, dataframe_X: pd.DataFrame, dataframe_Y: Optional[pd.Series]) -> None:
+    def __init__(self, dataframe_X: pd.DataFrame, dataframe_Y: Optional[pd.Series], fast: bool = False) -> None:
         # Correct Dataframe for Study
-        self.features = dataframe_X.copy(deep=True)
-        self.target = None
+        self.features       : pd.DataFrame              = dataframe_X.copy(deep=True)
+        self.target         : Optional[pd.Series]       = None
         # Complete Dataframe with Features and Target
-        self.complete = None
+        self.complete       : Optional[pd.DataFrame]    = None
+        # Other attributes
+        self.fast_execution : bool                      = fast
 
         if dataframe_Y is not None:
             self.target = dataframe_Y.copy(deep=True)
@@ -56,6 +58,9 @@ class DatasetProfiling():
 
         # Save dataset to be profiled
         module_exporter.export_csv(self.features, 'dataset')
+        if self.complete is not None:
+            module_exporter.export_csv(self.complete, 'dataset (target)')
+
         # Do profiling
         self.profile_dimensionality()
         self.profile_missing_values()
@@ -83,28 +88,39 @@ class DatasetProfiling():
 
         dataset_types = profile_for_types(self.features)
 
-        # Run Distribution - Boxplots Profiling
-        if len(dataset_types['Numeric']) != 0: module_exporter.boxplot_for_each('boxplots', self.features, dataset_types['Numeric'])
-        if len(dataset_types['Numeric']) != 0 and self.complete is not None: module_exporter.boxplot_for_each('boxplots (target)', self.complete, dataset_types['Numeric'], hue='Target')
-        # Run Distribution - Histogram (numeric) Profiling
-        if len(dataset_types['Numeric']) != 0: module_exporter.histogram_for_each_numeric('histogram - numeric', self.features, dataset_types['Numeric'])
-        if len(dataset_types['Numeric']) != 0 and self.complete is not None: module_exporter.histogram_for_each_numeric('histogram - numeric (target)', self.complete, dataset_types['Numeric'], hue='Target')
-        # Run Distribution - Histogram (symbolic) Profiling
-        if len(dataset_types['Symbolic']) != 0: module_exporter.histogram_for_each_symbolic('histogram - symbolic', self.features, dataset_types['Symbolic'])
-        if len(dataset_types['Symbolic']) != 0 and self.complete is not None: module_exporter.histogram_for_each_symbolic('histogram - symbolic (target)', self.complete, dataset_types['Symbolic'], hue='Target')
+        if not self.fast_execution:
+            # Run Distribution - Boxplots Profiling
+            if len(dataset_types['Numeric']) != 0: module_exporter.boxplot_for_each('boxplots', self.features, dataset_types['Numeric'])
+            if len(dataset_types['Numeric']) != 0 and self.complete is not None: module_exporter.boxplot_for_each('boxplots (target)', self.complete, dataset_types['Numeric'], hue='Target')
+            # Run Distribution - Histogram (numeric) Profiling
+            if len(dataset_types['Numeric']) != 0: module_exporter.histogram_for_each_numeric('histogram - numeric', self.features, dataset_types['Numeric'])
+            if len(dataset_types['Numeric']) != 0 and self.complete is not None: module_exporter.histogram_for_each_numeric('histogram - numeric (target)', self.complete, dataset_types['Numeric'], hue='Target')
+            # Run Distribution - Histogram (symbolic) Profiling
+            if len(dataset_types['Symbolic']) != 0: module_exporter.histogram_for_each_symbolic('histogram - symbolic', self.features, dataset_types['Symbolic'])
+            if len(dataset_types['Symbolic']) != 0 and self.complete is not None: module_exporter.histogram_for_each_symbolic('histogram - symbolic (target)', self.complete, dataset_types['Symbolic'], hue='Target')
 
     def profile_sparsity(self) -> None:
 
         dataset_types = profile_for_types(self.features)
 
         # Run Sparsity Plots
-        variables = dataset_types['Binary'] + dataset_types['Numeric'] + dataset_types['Symbolic']
-        # FIXME: Needs to be executed
-        #module_exporter.dataframe_all_variables_sparsity('sparsity - plots', self.features, variables)
-        #module_exporter.dataframe_all_variables_sparsity('sparsity - plots (target)', self.complete, variables, hue='Target')
+        if not self.fast_execution:
+            module_exporter.push_current_directory('Sparsity Graphs')
+            variables = dataset_types['Binary'] + dataset_types['Numeric'] + dataset_types['Symbolic']
+            module_exporter.dataframe_all_variables_sparsity_sep('sparsity - plots', self.features, variables)
+            if self.complete is not None:
+                module_exporter.dataframe_all_variables_sparsity_sep('sparsity - plots (target)', self.complete, variables, hue='Target')
+            module_exporter.pop_current_directory()
+
         # Run Confusion Matrix
-        correlation_matrix = abs(self.features.corr())
-        module_exporter.heatmap('sparcity - correlation', correlation_matrix, x_ticklabels=correlation_matrix.columns,
-        y_ticklabels=correlation_matrix.columns, margins={ 'bottom': 0.15, 'left': 0.17, 'top': 0.90, 'right': 0.95 })
+        if not self.fast_execution:
+            correlation_matrix = abs(self.features.corr())
+            module_exporter.heatmap('sparcity - correlation', correlation_matrix, x_ticklabels=correlation_matrix.columns,
+                y_ticklabels=correlation_matrix.columns, margins={ 'bottom': 0.15, 'left': 0.17, 'top': 0.90, 'right': 0.95 })
+            if self.complete is not None:
+                correlation_matrix = abs(self.complete.corr())
+                module_exporter.heatmap('sparcity - correlation (target)', correlation_matrix, x_ticklabels=correlation_matrix.columns,
+                    y_ticklabels=correlation_matrix.columns, margins={ 'bottom': 0.15, 'left': 0.17, 'top': 0.90, 'right': 0.95 })
+
 
 # =================================== PUBLIC METHODS ===================================

@@ -45,4 +45,5 @@ def lsa_analysis(basis_dataframe: pd.DataFrame) -> pd.DataFrame:
     basis_dataframe['LSA - First Order Coherence'] = basis_dataframe['LSA - Embedding Groups'].progress_apply(lambda embeddings: compute_coherence_score(embeddings, 1)).astype(float)
     basis_dataframe['LSA - Second Order Coherence'] = basis_dataframe['LSA - Embedding Groups'].progress_apply(lambda embeddings: compute_coherence_score(embeddings, 2)).astype(float)
     
+    del lsa_model
     return basis_dataframe

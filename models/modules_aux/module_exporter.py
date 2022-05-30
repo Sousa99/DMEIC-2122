@@ -10,6 +10,7 @@ import seaborn              as sns
 import networkx             as nx
 import matplotlib.pyplot    as plt
 
+from tqdm                   import tqdm
 from datetime               import datetime
 from typing                 import Any, Dict, List, Optional, Tuple
 from typing_extensions      import TypedDict
@@ -31,6 +32,9 @@ warnings.filterwarnings('ignore', category = UserWarning, module = 'openpyxl')
 # =================================== PRIVATE FUNCTIONS ===================================
 
 def compute_path(filename: str, extension: str) -> str:
+
+    filename = filename.replace(' / ', ' ')
+    filename = filename.replace('/', '_')
 
     timestampStr = EXECUTION_TIMESTAMP.strftime("%Y.%m.%d %H.%M.%S")
     directory_path = os.path.join(EXPORT_DIRECTORY, timestampStr, *CURRENT_DIRECTORIES)
@@ -67,6 +71,16 @@ def push_current_directory(directory: str):
 def pop_current_directory():
     global CURRENT_DIRECTORIES
     CURRENT_DIRECTORIES.pop()
+
+# ======================================== PUBLIC FUNCTIONS - AUXILIARY ========================================
+
+def get_current_path() -> str:
+
+    timestampStr = EXECUTION_TIMESTAMP.strftime("%Y.%m.%d %H.%M.%S")
+    directory_path = os.path.join(EXPORT_DIRECTORY, timestampStr, *CURRENT_DIRECTORIES)
+
+    if not os.path.exists(directory_path): os.makedirs(directory_path)
+    return os.path.join(directory_path, '')
 
 def get_tmp_directory(sub_directories: List[str] = []):
     timestampStr = EXECUTION_TIMESTAMP.strftime("%Y.%m.%d %H.%M.%S")
@@ -197,10 +211,10 @@ def dataframe_all_variables_sparsity(filename: str, dataframe: pd.DataFrame, var
     rows, cols = number_variables - 1, number_variables - 1
     fig, axs = plt.subplots(rows, cols, figsize=(cols * 2.6, rows * 2.6))
 
-    for var1_index in range(number_variables):
+    for var1_index in tqdm(range(number_variables), desc="⚙️  Processing Variables in first level", leave = False):
         var1 = variables[var1_index]
 
-        for var2_index in range(var1_index + 1, number_variables):
+        for var2_index in tqdm(range(var1_index + 1, number_variables), desc="⚙️  Processing Variables in second level", leave = False):
             var2 = variables[var2_index]
 
             sns.scatterplot(data=dataframe, x=var1, y=var2, hue=hue, ax=axs[var1_index, var2_index])
@@ -211,6 +225,27 @@ def dataframe_all_variables_sparsity(filename: str, dataframe: pd.DataFrame, var
     plt.tight_layout()
     plt.savefig(complete_path)
     plt.close('all')
+
+def dataframe_all_variables_sparsity_sep(filename: str, dataframe: pd.DataFrame, variables: List[str],
+    hue: Optional[str] = None, figsize: Tuple[int] = (10, 4)) -> None:
+    
+    number_variables = len(variables)
+    for var1_index in tqdm(range(number_variables), desc="⚙️  Processing Variables in first level", leave = False):
+        var1 = variables[var1_index]
+
+        for var2_index in tqdm(range(var1_index + 1, number_variables), desc="⚙️  Processing Variables in second level", leave = False):
+            var2 = variables[var2_index]
+
+            complete_path = compute_path(filename + ' - ' + f'{var1} x {var2}', EXPORT_IMAGE_EXTENSION)
+            plt.figure(figsize=figsize)
+
+            sns.scatterplot(data=dataframe, x=var1, y=var2, hue=hue)
+            plt.title("%s x %s"%(var1, var2))
+            plt.xlabel(var1)
+            plt.ylabel(var2)
+
+            plt.savefig(complete_path)
+            plt.close('all')
 
 def heatmap(filename: str, dataframe: pd.DataFrame, figsize: Tuple[int] = (6, 6),
     annot: bool = True, cmap: str = 'Blues', margins: Optional[Dict[str, Optional[float]]] = None,
