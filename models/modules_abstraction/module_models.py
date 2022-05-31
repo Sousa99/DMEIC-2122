@@ -37,7 +37,6 @@ VARIATIONS_FILTER_BY_INDEX  :   Optional[List[int]] = None
 
 PICKLE_EXTENSION = '.pkl'
 
-PARALLEL_TMP_DIRECTORY          = './tmp/'
 PARALLEL_FEATURE_SETS_FILE      = 'tmp_feature_set' + PICKLE_EXTENSION
 PARALLEL_NUMBER_VARIATIONS_FILE = 'tmp_number_variations.txt'
 
@@ -159,8 +158,10 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
     def __init__(self, arguments: argparse.Namespace) -> None:
         # Arguments and Logic        
         self.arguments = arguments
-        timestamp_argument = arguments.timestamp;
+        timestamp_argument = arguments.timestamp
         if timestamp_argument is not None: module_exporter.change_execution_timestamp(timestamp_argument)
+        checkpoint_argument = arguments.data_checkpoint
+        if checkpoint_argument is not None: module_exporter.change_checkpoint_directory(checkpoint_argument)
 
     def init_execution(self) -> None:
         # Load Informations
@@ -288,8 +289,7 @@ class ParallelModel(ModelAbstraction):
 
     def load_feature_sets_from_memory(self):
 
-        directory_path = PARALLEL_TMP_DIRECTORY
-        if self.arguments.timestamp is not None: directory_path = os.path.join(directory_path, self.arguments.timestamp)
+        directory_path = module_exporter.get_tmp_directory()
         full_path = os.path.join(directory_path, PARALLEL_FEATURE_SETS_FILE)
 
         file = open(full_path, 'rb')
@@ -298,9 +298,7 @@ class ParallelModel(ModelAbstraction):
 
     def save_feature_sets(self):
 
-        directory_path = PARALLEL_TMP_DIRECTORY
-        if self.arguments.timestamp is not None: directory_path = os.path.join(directory_path, self.arguments.timestamp)
-        if not os.path.exists(directory_path): os.makedirs(directory_path)
+        directory_path = module_exporter.get_tmp_directory()
         full_path = os.path.join(directory_path, PARALLEL_FEATURE_SETS_FILE)
 
         file = open(full_path, 'wb')
@@ -309,9 +307,7 @@ class ParallelModel(ModelAbstraction):
 
     def save_number_of_variations(self):
 
-        directory_path = PARALLEL_TMP_DIRECTORY
-        if self.arguments.timestamp is not None: directory_path = os.path.join(directory_path, self.arguments.timestamp)
-        if not os.path.exists(directory_path): os.makedirs(directory_path)
+        directory_path = module_exporter.get_tmp_directory()
         full_path = os.path.join(directory_path, PARALLEL_NUMBER_VARIATIONS_FILE)
 
         file = open(full_path, 'w')
@@ -329,9 +325,7 @@ class ParallelModel(ModelAbstraction):
         for score in best_scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
 
         # Save Temporarily Variation Summary
-        directory_path = PARALLEL_TMP_DIRECTORY
-        if self.arguments.timestamp is not None: directory_path = os.path.join(directory_path, self.arguments.timestamp)
-        if not os.path.exists(directory_path): os.makedirs(directory_path)
+        directory_path = module_exporter.get_tmp_directory()
         full_path = os.path.join(directory_path, variation.generate_code() + PICKLE_EXTENSION)
 
         file = open(full_path, 'wb')
@@ -341,8 +335,7 @@ class ParallelModel(ModelAbstraction):
     def load_variations_results(self):
 
         # Iterate Variation Summaries which should have been created
-        directory_path = PARALLEL_TMP_DIRECTORY
-        if self.arguments.timestamp is not None: directory_path = os.path.join(directory_path, self.arguments.timestamp)
+        directory_path = module_exporter.get_tmp_directory()
         for variation in self.variations_to_test:
             full_path = os.path.join(directory_path, variation.generate_code() + PICKLE_EXTENSION)
 
@@ -361,29 +354,39 @@ class ParallelModel(ModelAbstraction):
         parallelization = self.arguments.parallelization_key
         parallelization_index = self.arguments.parallelization_index
         print_variations = self.arguments.print_variations
+        timestamp = self.arguments.timestamp
 
         if print_variations:
 
             if feature_sets is None:
-                exit("🚨 Printing variations on 'SequentialModel' requires 'feature_sets'")
+                exit("🚨 Printing variations on 'ParallelModel' requires 'feature_sets'")
             self.load_feature_sets(feature_sets)
-            self.print_variations()            
+            self.print_variations()
 
-        elif parallelization == PARALLEL_FEATURE_EXTRACTION:
+        elif parallelization is not None:
 
-            if feature_sets is None:
-                exit("🚨 Execute on 'SequentialModel' requires 'feature_sets'")
+            if timestamp is None:
+                exit(f"🚨 Execute on 'ParallelModel' requires argument 'timestamp'")          
 
-            self.load_feature_sets(feature_sets)
-            self.study_feature_sets()
-            self.save_feature_sets()
-            self.save_number_of_variations()
+            if parallelization == PARALLEL_FEATURE_EXTRACTION:
 
-        elif parallelization == PARALLEL_RUN_MODELS:
-            self.load_feature_sets_from_memory()
-            self.run_variation_by_index(int(parallelization_index))
+                if feature_sets is None:
+                    exit("🚨 Execute on 'ParallelModel' requires 'feature_sets'")
 
-        elif parallelization == PARALLEL_RUN_FINAL:
-            self.load_feature_sets_from_memory()
-            self.load_variations_results()
-            self.export_final_results()
+                self.load_feature_sets(feature_sets)
+                self.study_feature_sets()
+                self.save_feature_sets()
+                self.save_number_of_variations()
+
+            elif parallelization == PARALLEL_RUN_MODELS:
+
+                if parallelization_index is None:
+                    exit(f"🚨 Execute on 'ParallelModel' when '{PARALLEL_RUN_MODELS}' requires argument 'parallelization_index'")
+
+                self.load_feature_sets_from_memory()
+                self.run_variation_by_index(int(parallelization_index))
+
+            elif parallelization == PARALLEL_RUN_FINAL:
+                self.load_feature_sets_from_memory()
+                self.load_variations_results()
+                self.export_final_results()

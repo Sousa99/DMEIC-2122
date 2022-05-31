@@ -18,6 +18,7 @@ parser.add_argument("-timestamp",               help="key for the timestamp iden
 parser.add_argument("-parallelization_key",     help="key for the parallelized model, if not given is executed sequentially")
 parser.add_argument("-parallelization_index",   help="key index for the parallelized model, must be given if task is to be parallelized")
 parser.add_argument("-print_variations",        help="tag as boolean to print only variations and their indexes", action='store_const', const=True, default=False)
+parser.add_argument("-data_checkpoint",         help="path to data checkpoint, if not given it is assumed that there is no checkpoint")
 
 # Define Requirements
 arguments_requirements = [

@@ -19,8 +19,7 @@ class SoundFeatureSet(module_featureset.FeatureSetAbstraction):
     def __init__(self) -> None:
         super().__init__(FEATURE_SET_ID)
 
-    def develop_basis_df(self):
-        if self.basis_dataframe is not None: return
+    def _develop_basis_df(self):
         print(f"🚀 Preparing for '{self.id}' analysis ...")
 
         # Dataframe to study sound features
@@ -33,9 +32,7 @@ class SoundFeatureSet(module_featureset.FeatureSetAbstraction):
         self.basis_dataframe = basics_dataframe
         self.drop_columns = ['Audio Path', 'Audio File', 'Audio File Path']
 
-    def develop_static_df(self):
-        if self.static_dataframe is not None: return
-        if self.basis_dataframe is None: self.develop_basis_df()
+    def _develop_static_df(self):
         static_dataframe = self.basis_dataframe.copy(deep=True)
 
         print(f"🚀 Developing '{self.id}' analysis ...")
@@ -47,5 +44,5 @@ class SoundFeatureSet(module_featureset.FeatureSetAbstraction):
         self.static_dataframe = static_dataframe
         print(f"✅ Finished processing '{self.id}' analysis!")
     
-    def develop_dynamic_df(self, train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
+    def _develop_dynamic_df(self, train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
         return (train_X, test_X)

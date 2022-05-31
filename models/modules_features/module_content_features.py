@@ -23,8 +23,7 @@ class ContentFeatureSet(module_featureset.FeatureSetAbstraction):
     def __init__(self) -> None:
         super().__init__(FEATURE_SET_ID)
 
-    def develop_basis_df(self):
-        if self.basis_dataframe is not None: return
+    def _develop_basis_df(self):
         print(f"🚀 Preparing for '{self.id}' analysis ...")
         lemmatizer : module_nlp.LemmatizerStanza = module_nlp.LemmatizerStanza()
 
@@ -47,9 +46,7 @@ class ContentFeatureSet(module_featureset.FeatureSetAbstraction):
 
         del lemmatizer
 
-    def develop_static_df(self):
-        if self.static_dataframe is not None: return
-        if self.basis_dataframe is None: self.develop_basis_df()
+    def _develop_static_df(self):
         static_dataframe = self.basis_dataframe.copy(deep=True)
 
         print(f"🚀 Developing '{self.id}' analysis ...")
@@ -64,7 +61,7 @@ class ContentFeatureSet(module_featureset.FeatureSetAbstraction):
         self.static_dataframe = static_dataframe
         print(f"✅ Finished processing '{self.id}' analysis!")
     
-    def develop_dynamic_df(self, train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
+    def _develop_dynamic_df(self, train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
         
         def copy_optional_df(df: Optional[pd.DataFrame]) -> Optional[pd.DataFrame]:
             if df is None: return None

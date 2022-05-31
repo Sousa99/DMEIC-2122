@@ -15,13 +15,17 @@ from datetime               import datetime
 from typing                 import Any, Dict, List, Optional, Tuple
 from typing_extensions      import TypedDict
 
-TMP_DIRECTORY = './tmp/'
-EXPORT_DIRECTORY = '../results/'
-EXECUTION_TIMESTAMP = datetime.now()
-EXPORT_CSV_EXTENSION = '.csv'
-EXPORT_IMAGE_EXTENSION = '.png'
+TMP_DIRECTORY           : str           = './tmp/'
+EXPORT_DIRECTORY        : str           = '../results/'
+CHECKPOINT_FOLDER       : str           = 'Data Checkpoints'
+CHECKPOINT_DIRECTORY    : Optional[str] = None
 
-CURRENT_DIRECTORIES = []
+EXECUTION_TIMESTAMP     : datetime      = datetime.now()
+
+EXPORT_CSV_EXTENSION    : str           = '.csv'
+EXPORT_IMAGE_EXTENSION  : str           = '.png'
+
+CURRENT_DIRECTORIES     : List[str]     = []
 
 matplotlib.use('Agg')
 
@@ -60,6 +64,10 @@ def change_execution_timestamp(timestamp: str):
     global EXECUTION_TIMESTAMP
     EXECUTION_TIMESTAMP = datetime.strptime(timestamp, "%Y.%m.%d %H.%M.%S")
 
+def change_checkpoint_directory(directory_path: str):
+    global CHECKPOINT_DIRECTORY
+    CHECKPOINT_DIRECTORY = directory_path
+
 def change_current_directory(current_directories: List[str] = []):
     global CURRENT_DIRECTORIES
     CURRENT_DIRECTORIES = current_directories
@@ -82,7 +90,26 @@ def get_current_path() -> str:
     if not os.path.exists(directory_path): os.makedirs(directory_path)
     return os.path.join(directory_path, '')
 
+def get_checkpoint_load_directory(sub_directories: List[str] = []) -> str:
+
+    timestampStr = EXECUTION_TIMESTAMP.strftime("%Y.%m.%d %H.%M.%S")
+    directory_path = os.path.join(EXPORT_DIRECTORY, timestampStr, CHECKPOINT_FOLDER, *sub_directories)
+    if CHECKPOINT_DIRECTORY is not None:
+        directory_path = os.path.join(CHECKPOINT_DIRECTORY, *sub_directories)
+
+    if not os.path.exists(directory_path): os.makedirs(directory_path)
+    return os.path.join(directory_path, '')
+
+def get_checkpoint_save_directory(sub_directories: List[str] = []) -> str:
+
+    timestampStr = EXECUTION_TIMESTAMP.strftime("%Y.%m.%d %H.%M.%S")
+    directory_path = os.path.join(EXPORT_DIRECTORY, timestampStr, CHECKPOINT_FOLDER, *sub_directories)
+
+    if not os.path.exists(directory_path): os.makedirs(directory_path)
+    return os.path.join(directory_path, '')
+
 def get_tmp_directory(sub_directories: List[str] = []):
+
     timestampStr = EXECUTION_TIMESTAMP.strftime("%Y.%m.%d %H.%M.%S")
     directory_path = os.path.join(TMP_DIRECTORY, timestampStr, *sub_directories)
 
