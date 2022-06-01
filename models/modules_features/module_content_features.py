@@ -22,6 +22,9 @@ class ContentFeatureSet(module_featureset.FeatureSetAbstraction):
 
     def __init__(self) -> None:
         super().__init__(FEATURE_SET_ID)
+        self.drop_columns = ['Trans Path', 'Trans File', 'Trans File Path', 'Trans Info', 'Lemmatized Text', 'Lemmatized Filtered Text',
+            'LCA - Word Groups', 'LCA - Embedding per Word Groups', 'LCA - Embedding Groups', 'LCA - Max Cossine w/ Frequent Words',
+            'SentiLex - Extracted Scores' ]
 
     def _develop_basis_df(self):
         print(f"🚀 Preparing for '{self.id}' analysis ...")
@@ -40,10 +43,6 @@ class ContentFeatureSet(module_featureset.FeatureSetAbstraction):
 
         # Save back 'basis dataframe' and 'drop_columns'
         self.basis_dataframe = basics_dataframe
-        self.drop_columns = ['Trans Path', 'Trans File', 'Trans File Path', 'Trans Info', 'Lemmatized Text', 'Lemmatized Filtered Text',
-            'LCA - Word Groups', 'LCA - Embedding per Word Groups', 'LCA - Embedding Groups', 'LCA - Max Cossine w/ Frequent Words',
-            'SentiLex - Extracted Scores' ]
-
         del lemmatizer
 
     def _develop_static_df(self):

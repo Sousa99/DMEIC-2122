@@ -23,6 +23,10 @@ class StructureFeatureSet(module_featureset.FeatureSetAbstraction):
 
     def __init__(self) -> None:
         super().__init__(FEATURE_SET_ID)
+        self.drop_columns = ['Trans Path', 'Trans File', 'Trans File Path', 'Trans Info', 'Lemmatized Text', 'Lemmatized Filtered Text',
+            'Word Graph', 'Word Graph - WCC', 'Word Graph - SCC', 'Word Graph - LWCC', 'Word Graph - LSCC',
+            'LSA - Word Groups', 'LSA - Embedding per Word Groups', 'LSA - Embedding Groups',
+            'Vector Unpacking - Word Groups', 'Vector Unpacking - Embedding per Word Groups', 'Vector Unpacking - Embedding Groups']
 
     def _develop_basis_df(self):
         print(f"🚀 Preparing for '{self.id}' analysis ...")
@@ -41,11 +45,6 @@ class StructureFeatureSet(module_featureset.FeatureSetAbstraction):
         
         # Save back 'basis dataframe' and 'drop_columns'
         self.basis_dataframe = basics_dataframe
-        self.drop_columns = ['Trans Path', 'Trans File', 'Trans File Path', 'Trans Info', 'Lemmatized Text', 'Lemmatized Filtered Text',
-            'Word Graph', 'Word Graph - WCC', 'Word Graph - SCC', 'Word Graph - LWCC', 'Word Graph - LSCC',
-            'LSA - Word Groups', 'LSA - Embedding per Word Groups', 'LSA - Embedding Groups',
-            'Vector Unpacking - Word Groups', 'Vector Unpacking - Embedding per Word Groups', 'Vector Unpacking - Embedding Groups']
-
         del lemmatizer
 
     def _develop_static_df(self):

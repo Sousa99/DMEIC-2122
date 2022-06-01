@@ -18,6 +18,7 @@ class SoundFeatureSet(module_featureset.FeatureSetAbstraction):
 
     def __init__(self) -> None:
         super().__init__(FEATURE_SET_ID)
+        self.drop_columns = ['Audio Path', 'Audio File', 'Audio File Path']
 
     def _develop_basis_df(self):
         print(f"🚀 Preparing for '{self.id}' analysis ...")
@@ -30,7 +31,6 @@ class SoundFeatureSet(module_featureset.FeatureSetAbstraction):
 
         # Save back 'basis dataframe' and 'drop_columns'
         self.basis_dataframe = basics_dataframe
-        self.drop_columns = ['Audio Path', 'Audio File', 'Audio File Path']
 
     def _develop_static_df(self):
         static_dataframe = self.basis_dataframe.copy(deep=True)
