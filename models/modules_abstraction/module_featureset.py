@@ -113,24 +113,26 @@ class FeatureSetAbstraction(abc.ABC):
         if self.static_dataframe is None: self.develop_static_df()
         filename : str = f'{code}.pkl'
 
-        dynamic_df : Tuple[pd.DataFrame, Optional[pd.DataFrame]]
+        dynamic_df_train    : pd.DataFrame
+        dynamic_df_test     : Optional[pd.DataFrame]
+
         # Get Dataframe
         load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['dynamic']), filename)
         if os.path.exists(load_path) and os.path.isfile(load_path):
             file = open(load_path, 'rb')
-            dynamic_df = pickle.load(file)
+            dynamic_df_train, dynamic_df_test = pickle.load(file)
             file.close()
             print(f"✅ Loaded '{self.id}' dynamic with code '{code}' dataframe from checkpoint!")
-        else: dynamic_df = self._develop_dynamic_df(train_X, train_Y, test_X)
+        else: dynamic_df_train, dynamic_df_test = self._develop_dynamic_df(train_X, train_Y, test_X)
 
         # Save back dataframe
         save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['dynamic']), filename)
         if not os.path.exists(save_path) or not os.path.isfile(save_path):
             file = open(save_path, 'wb')
-            pickle.dump(dynamic_df, file)
+            pickle.dump((dynamic_df_train, dynamic_df_test), file)
             file.close()
 
-        return dynamic_df
+        return dynamic_df_train, dynamic_df_test
     
     def filter_rows(self, dataframe: pd.DataFrame, variation: module_variations.Variation) -> pd.DataFrame:
         dataframe_filtered = dataframe.copy(deep=True)
@@ -251,7 +253,7 @@ class MergedFeatureSetAbstraction(FeatureSetAbstraction):
         for feature_set in self.feature_sets:
             train_X, test_X = feature_set._develop_dynamic_df(train_X, train_Y, test_X)
             dynamic_dfs_train.append(train_X)
-            if test_X is not None: dynamic_dfs_test.append(train_Y)
+            if test_X is not None: dynamic_dfs_test.append(test_X)
             all_drop_columns.update(feature_set.drop_columns)
         self.drop_columns = list(all_drop_columns)
 

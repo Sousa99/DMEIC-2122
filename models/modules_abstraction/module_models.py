@@ -209,7 +209,7 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
         classifier = variation.classifier(['Psychosis', 'Control'])
         for (split_index, (train_index, test_index)) in enumerate(tqdm(data_splits, desc="👉 Running classifier:", leave=False)):
             module_exporter.change_current_directory([variation.generate_code(), 'Feature Extraction', f'split {split_index}'])
-            (X_train, y_train), (X_test, y_test) = feature_set.get_df_for_classification(variation, (train_index, test_index))
+            (X_train, y_train), (X_test, y_test) = feature_set.get_df_for_classification(variation, split_index, (train_index, test_index))
             classifier.process_iteration(X_train, y_train, X_test, y_test)
 
         # Export Classifier Variations Results
