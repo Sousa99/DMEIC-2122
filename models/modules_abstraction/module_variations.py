@@ -67,6 +67,10 @@ class Variation():
     def generate_code(self) -> str:
         return ' - '.join([self.classifier_code_small, self.features_code, self.tasks_code, self.genders_code])
 
+    def generate_code_dataset(self, replace_feature_code: Optional[str] = None) -> str:
+        if replace_feature_code is None: return ' - '.join([self.features_code, self.tasks_code, self.genders_code])
+        else: return ' - '.join([replace_feature_code, self.tasks_code, self.genders_code])
+
 class VariationGenerator():
 
     def __init__(self, variations_key: Optional[str], variation_tasks: List[str], variation_genders: List[str],

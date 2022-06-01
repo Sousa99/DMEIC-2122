@@ -107,6 +107,31 @@ class FeatureSetAbstraction(abc.ABC):
             pickle.dump(self.static_dataframe, file)
             file.close()
 
+    def develop_dynamic_df(self, code: str, train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
+
+        if self.basis_dataframe is None: self.develop_basis_df()
+        if self.static_dataframe is None: self.develop_static_df()
+        filename : str = f'{code}.pkl'
+
+        dynamic_df : Tuple[pd.DataFrame, Optional[pd.DataFrame]]
+        # Get Dataframe
+        load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['dynamic']), filename)
+        if os.path.exists(load_path) and os.path.isfile(load_path):
+            file = open(load_path, 'rb')
+            dynamic_df = pickle.load(file)
+            file.close()
+            print(f"✅ Loaded '{self.id}' dynamic with code '{code}' dataframe from checkpoint!")
+        else: dynamic_df = self._develop_dynamic_df(train_X, train_Y, test_X)
+
+        # Save back dataframe
+        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['dynamic']), filename)
+        if not os.path.exists(save_path) or not os.path.isfile(save_path):
+            file = open(save_path, 'wb')
+            pickle.dump(dynamic_df, file)
+            file.close()
+
+        return dynamic_df
+    
     def filter_rows(self, dataframe: pd.DataFrame, variation: module_variations.Variation) -> pd.DataFrame:
         dataframe_filtered = dataframe.copy(deep=True)
         
@@ -137,7 +162,7 @@ class FeatureSetAbstraction(abc.ABC):
 
         return ((X_train, y_train), (X_test, y_test))
     
-    def get_df_for_classification(self, variation: module_variations.Variation, indexes: Tuple[List[int], List[int]]) -> Tuple[Tuple[pd.DataFrame, pd.Series], Tuple[pd.DataFrame, pd.Series]]:
+    def get_df_for_classification(self, variation: module_variations.Variation, index_key: str, indexes: Tuple[List[int], List[int]]) -> Tuple[Tuple[pd.DataFrame, pd.Series], Tuple[pd.DataFrame, pd.Series]]:
 
         if self.basis_dataframe is None: self.develop_basis_df()
         if self.static_dataframe is None: self.develop_static_df()
@@ -147,7 +172,7 @@ class FeatureSetAbstraction(abc.ABC):
 
         dataframe_X, dataframe_Y = self.separate_target(current_df)
         (train_X, train_Y), (test_X, test_Y) = self.separate_train_test(indexes, dataframe_X, dataframe_Y)
-        train_X, test_X = self._develop_dynamic_df(train_X, train_Y, test_X)
+        train_X, test_X = self.develop_dynamic_df(f'{variation.generate_code_dataset()} - {index_key}', train_X, train_Y, test_X)
 
         train_X = train_X.drop(self.drop_columns, axis=1)
         test_X = test_X.drop(self.drop_columns, axis=1)
@@ -170,7 +195,10 @@ class FeatureSetAbstraction(abc.ABC):
 
         dataframe_X, dataframe_Y = self.separate_target(current_df)
 
-        dataframe_X, _ = self._develop_dynamic_df(dataframe_X, dataframe_Y)
+        if variation is None: code = f'{self.id} - full'
+        else: code = f'{variation.generate_code_dataset()} - full'
+
+        dataframe_X, _ = self.develop_dynamic_df(code, dataframe_X, dataframe_Y)
         dataframe_X = dataframe_X.drop(self.drop_columns, axis=1)
         if not self.pivot_on_task:
             dataframe_X = dataframe_X.drop(self.general_drop_columns, axis=1)
