@@ -140,6 +140,9 @@ class FeatureSetAbstraction(abc.ABC):
         # Filter Dataframe by gender
         filter_gender = dataframe_filtered['Subject'].apply(lambda subject: self.subject_info.loc[subject]['Gender'] in variation.genders)
         dataframe_filtered = dataframe_filtered[filter_gender.values]
+        # Filter Dataframe by data variation
+        filter_data = dataframe_filtered['Subject'].apply(lambda subject: self.subject_info.loc[subject]['Data Variation'] in variation.datas)
+        dataframe_filtered = dataframe_filtered[filter_data.values]
 
         return dataframe_filtered
 
