@@ -1,17 +1,17 @@
 import os
 import abc
 import pickle
-import argparse
 import warnings
 
 from tqdm       import tqdm
-from typing     import List, Optional, Set, Tuple
+from typing     import Callable, List, Optional, Set, Tuple
 from functools  import reduce
 
 import pandas   as pd
 
 # Local Modules - Auxiliar
 import modules_aux.module_aux                   as module_aux
+import modules_aux.module_exporter              as module_exporter
 # Local Modules - Abstraction
 import modules_abstraction.module_variations    as module_variations
 
@@ -38,12 +38,12 @@ class FeatureSetAbstraction(abc.ABC):
 
     # =================================== FUNCTIONS ===================================
 
-    def __init__(self, id: str, paths_df: pd.DataFrame, preference_audio_tracks: List[str], preference_trans: List[str], trans_extension: str,
-        subject_info: pd.DataFrame, general_drop_columns: List[str], pivot_on_task: bool = False) -> None:
-
+    def __init__(self, id: str) -> None:
         super().__init__()
+        self.id = id
 
-        self.id                         = id
+    def init_execution(self, paths_df: pd.DataFrame, preference_audio_tracks: List[str], preference_trans: List[str], trans_extension: str,
+        subject_info: pd.DataFrame, general_drop_columns: List[str], pivot_on_task: bool = False) -> None:
 
         self.paths_df                   = paths_df
         self.preference_audio_tracks    = preference_audio_tracks
@@ -55,15 +55,85 @@ class FeatureSetAbstraction(abc.ABC):
         self.pivot_on_task              = pivot_on_task
 
     @abc.abstractmethod
-    def develop_basis_df(self):
-        exit(f"🚨 Method 'develop_basis_df' not defined for '{self.__class__.__name__}'")
+    def _develop_basis_df(self):
+        exit(f"🚨 Method '_develop_basis_df' not defined for '{self.__class__.__name__}'")
     @abc.abstractmethod
-    def develop_static_df(self):
-        exit(f"🚨 Method 'develop_static_df' not defined for '{self.__class__.__name__}'")
+    def _develop_static_df(self):
+        exit(f"🚨 Method '_develop_static_df' not defined for '{self.__class__.__name__}'")
     @abc.abstractmethod
-    def develop_dynamic_df(self, train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]: 
-        exit(f"🚨 Method 'develop_dynamic_df' not defined for '{self.__class__.__name__}'")
+    def _develop_dynamic_df(self, train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]: 
+        exit(f"🚨 Method '_develop_dynamic_df' not defined for '{self.__class__.__name__}'")
 
+    def develop_basis_df(self):
+
+        filename : str = f'{self.id}.pkl'
+
+        # Get Dataframe
+        if self.basis_dataframe is None:
+            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['basis']), filename)
+            if os.path.exists(load_path) and os.path.isfile(load_path):
+                file = open(load_path, 'rb')
+                self.basis_dataframe = pickle.load(file)
+                file.close()
+                print(f"✅ Loaded '{self.id}' basis dataframe from checkpoint!")
+            else: self._develop_basis_df()
+
+        # Save back dataframe
+        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['basis']), filename)
+        if not os.path.exists(save_path) or not os.path.isfile(save_path):
+            file = open(save_path, 'wb')
+            pickle.dump(self.basis_dataframe, file)
+            file.close()
+
+    def develop_static_df(self):
+
+        if self.basis_dataframe is None: self.develop_basis_df()
+        filename : str = f'{self.id}.pkl'
+
+        # Get Dataframe
+        if self.static_dataframe is None:
+            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['static']), filename)
+            if os.path.exists(load_path) and os.path.isfile(load_path):
+                file = open(load_path, 'rb')
+                self.static_dataframe = pickle.load(file)
+                file.close()
+                print(f"✅ Loaded '{self.id}' static dataframe from checkpoint!")
+            else: self._develop_static_df()
+
+        # Save back dataframe
+        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['static']), filename)
+        if not os.path.exists(save_path) or not os.path.isfile(save_path):
+            file = open(save_path, 'wb')
+            pickle.dump(self.static_dataframe, file)
+            file.close()
+
+    def develop_dynamic_df(self, code: str, train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
+
+        if self.basis_dataframe is None: self.develop_basis_df()
+        if self.static_dataframe is None: self.develop_static_df()
+        filename : str = f'{code}.pkl'
+
+        dynamic_df_train    : pd.DataFrame
+        dynamic_df_test     : Optional[pd.DataFrame]
+
+        # Get Dataframe
+        load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['dynamic']), filename)
+        if os.path.exists(load_path) and os.path.isfile(load_path):
+            file = open(load_path, 'rb')
+            dynamic_df_train, dynamic_df_test = pickle.load(file)
+            file.close()
+            print(f"✅ Loaded '{self.id}' dynamic with code '{code}' dataframe from checkpoint!")
+        else: dynamic_df_train, dynamic_df_test = self._develop_dynamic_df(train_X, train_Y, test_X)
+
+        # Save back dataframe
+        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['dynamic']), filename)
+        if not os.path.exists(save_path) or not os.path.isfile(save_path):
+            file = open(save_path, 'wb')
+            pickle.dump((dynamic_df_train, dynamic_df_test), file)
+            file.close()
+
+        return dynamic_df_train, dynamic_df_test
+    
     def filter_rows(self, dataframe: pd.DataFrame, variation: module_variations.Variation) -> pd.DataFrame:
         dataframe_filtered = dataframe.copy(deep=True)
         
@@ -72,6 +142,9 @@ class FeatureSetAbstraction(abc.ABC):
         # Filter Dataframe by gender
         filter_gender = dataframe_filtered['Subject'].apply(lambda subject: self.subject_info.loc[subject]['Gender'] in variation.genders)
         dataframe_filtered = dataframe_filtered[filter_gender.values]
+        # Filter Dataframe by data variation
+        filter_data = dataframe_filtered['Subject'].apply(lambda subject: self.subject_info.loc[subject]['Data Variation'] in variation.datas)
+        dataframe_filtered = dataframe_filtered[filter_data.values]
 
         return dataframe_filtered
 
@@ -94,7 +167,7 @@ class FeatureSetAbstraction(abc.ABC):
 
         return ((X_train, y_train), (X_test, y_test))
     
-    def get_df_for_classification(self, variation: module_variations.Variation, indexes: Tuple[List[int], List[int]]) -> Tuple[Tuple[pd.DataFrame, pd.Series], Tuple[pd.DataFrame, pd.Series]]:
+    def get_df_for_classification(self, variation: module_variations.Variation, index_key: str, indexes: Tuple[List[int], List[int]]) -> Tuple[Tuple[pd.DataFrame, pd.Series], Tuple[pd.DataFrame, pd.Series]]:
 
         if self.basis_dataframe is None: self.develop_basis_df()
         if self.static_dataframe is None: self.develop_static_df()
@@ -104,7 +177,7 @@ class FeatureSetAbstraction(abc.ABC):
 
         dataframe_X, dataframe_Y = self.separate_target(current_df)
         (train_X, train_Y), (test_X, test_Y) = self.separate_train_test(indexes, dataframe_X, dataframe_Y)
-        train_X, test_X = self.develop_dynamic_df(train_X, train_Y, test_X)
+        train_X, test_X = self.develop_dynamic_df(f'{variation.generate_code_dataset()} - {index_key}', train_X, train_Y, test_X)
 
         train_X = train_X.drop(self.drop_columns, axis=1)
         test_X = test_X.drop(self.drop_columns, axis=1)
@@ -127,7 +200,10 @@ class FeatureSetAbstraction(abc.ABC):
 
         dataframe_X, dataframe_Y = self.separate_target(current_df)
 
-        dataframe_X, _ = self.develop_dynamic_df(dataframe_X, dataframe_Y)
+        if variation is None: code = f'{self.id} - full'
+        else: code = f'{variation.generate_code_dataset()} - full'
+
+        dataframe_X, _ = self.develop_dynamic_df(code, dataframe_X, dataframe_Y)
         dataframe_X = dataframe_X.drop(self.drop_columns, axis=1)
         if not self.pivot_on_task:
             dataframe_X = dataframe_X.drop(self.general_drop_columns, axis=1)
@@ -139,16 +215,11 @@ class FeatureSetAbstraction(abc.ABC):
 
 class MergedFeatureSetAbstraction(FeatureSetAbstraction):
 
-    def __init__(self, feature_sets: List[FeatureSetAbstraction],
-        paths_df: pd.DataFrame, preference_audio_tracks: List[str], preference_trans: List[str], trans_extension: str,
-        subject_info: pd.DataFrame, general_drop_columns: List[str], pivot_on_task: bool = False) -> None:
-
-        super().__init__(' + '.join(map(lambda feature_set: feature_set.id, feature_sets)),
-            paths_df, preference_audio_tracks, preference_trans, trans_extension,
-            subject_info, general_drop_columns, pivot_on_task)
+    def __init__(self, feature_sets: List[FeatureSetAbstraction]) -> None:
+        super().__init__(' + '.join(map(lambda feature_set: feature_set.id, feature_sets)))
         self.feature_sets = feature_sets
     
-    def develop_basis_df(self):
+    def _develop_basis_df(self):
         basis_dfs : List[pd.DataFrame] = []
         all_drop_columns : Set[str] = set()
         for feature_set in self.feature_sets:
@@ -161,7 +232,7 @@ class MergedFeatureSetAbstraction(FeatureSetAbstraction):
         final_basis_df = reduce(lambda dataset_left, dataset_right: module_aux.join_dataframes(dataset_left, dataset_right), basis_dfs)
         self.basis_dataframe = final_basis_df
 
-    def develop_static_df(self):
+    def _develop_static_df(self):
         static_dfs : List[pd.DataFrame] = []
         all_drop_columns : Set[str] = set()
         for feature_set in self.feature_sets:
@@ -174,15 +245,15 @@ class MergedFeatureSetAbstraction(FeatureSetAbstraction):
         final_static_df = reduce(lambda dataset_left, dataset_right: module_aux.join_dataframes(dataset_left, dataset_right), static_dfs)
         self.static_dataframe = final_static_df
 
-    def develop_dynamic_df(self, train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
+    def _develop_dynamic_df(self, train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
         
         dynamic_dfs_train : List[pd.DataFrame] = []
         dynamic_dfs_test : List[pd.DataFrame] = []
         all_drop_columns : Set[str] = set()
         for feature_set in self.feature_sets:
-            train_X, test_X = feature_set.develop_dynamic_df(train_X, train_Y, test_X)
+            train_X, test_X = feature_set._develop_dynamic_df(train_X, train_Y, test_X)
             dynamic_dfs_train.append(train_X)
-            if test_X is not None: dynamic_dfs_test.append(train_Y)
+            if test_X is not None: dynamic_dfs_test.append(test_X)
             all_drop_columns.update(feature_set.drop_columns)
         self.drop_columns = list(all_drop_columns)
 

@@ -1,3 +1,4 @@
+import math
 import os
 import abc
 import pickle
@@ -36,7 +37,6 @@ VARIATIONS_FILTER_BY_INDEX  :   Optional[List[int]] = None
 
 PICKLE_EXTENSION = '.pkl'
 
-PARALLEL_TMP_DIRECTORY          = './tmp/'
 PARALLEL_FEATURE_SETS_FILE      = 'tmp_feature_set' + PICKLE_EXTENSION
 PARALLEL_NUMBER_VARIATIONS_FILE = 'tmp_number_variations.txt'
 
@@ -64,6 +64,7 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
     VARIATION_TASKS = [ 'Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7',
         'Verbal Fluency', 'Reading + Retelling', 'Description Affective Images' ]
     VARIATION_GENDERS = [ 'Male Gender', 'Female Gender', 'All Genders' ]
+    VARIATION_DATA = [ 'V1 Simple', 'V2 Simple', 'V2 Complex' ]
     VARIATION_CLASSIFIERS = [ 'Naive Bayes', 'Decision Tree', 'Support Vector Machine', 'Random Forest', 'Multi-Layer Perceptron' ]
     VARIATION_PREPROCESSING = [ [ 'DROP_ROWS_NAN' ] ]
 
@@ -139,19 +140,31 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
     def generate_variations(self):
         variation_features = list(map(lambda feature_set: feature_set.id, self.feature_sets))
         variation_generator = module_variations.VariationGenerator(self.arguments.variations_key,
-            self.VARIATION_TASKS, self.VARIATION_GENDERS, variation_features, self.VARIATION_CLASSIFIERS, self.VARIATION_PREPROCESSING)
+            self.VARIATION_TASKS, self.VARIATION_GENDERS, self.VARIATION_DATA, variation_features, self.VARIATION_CLASSIFIERS, self.VARIATION_PREPROCESSING)
 
         self.variations_to_test = variation_generator.generate_variations()
         if VARIATIONS_FILTER_BY_INDEX is not None:
             self.variations_to_test = [ self.variations_to_test[index] for index in VARIATIONS_FILTER_BY_INDEX ]
 
+    def print_variations(self):
+
+        number_variations = len(self.variations_to_test)
+        number_digits = int(math.floor(math.log10(number_variations))) + 1
+
+        print("🚀 Variations currently being carried out:")
+        for variation_index, variation in enumerate(self.variations_to_test):
+            print(f"⚙️  [{variation_index:0{number_digits}d}]: {variation.generate_code()}")
+
     @abc.abstractmethod
     def __init__(self, arguments: argparse.Namespace) -> None:
         # Arguments and Logic        
         self.arguments = arguments
-        timestamp_argument = arguments.timestamp;
+        timestamp_argument = arguments.timestamp
         if timestamp_argument is not None: module_exporter.change_execution_timestamp(timestamp_argument)
+        checkpoint_argument = arguments.data_checkpoint
+        if checkpoint_argument is not None: module_exporter.change_checkpoint_directory(checkpoint_argument)
 
+    def init_execution(self) -> None:
         # Load Informations
         self.load_subjects()
         self.load_subjects_info()
@@ -196,7 +209,7 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
         classifier = variation.classifier(['Psychosis', 'Control'])
         for (split_index, (train_index, test_index)) in enumerate(tqdm(data_splits, desc="👉 Running classifier:", leave=False)):
             module_exporter.change_current_directory([variation.generate_code(), 'Feature Extraction', f'split {split_index}'])
-            (X_train, y_train), (X_test, y_test) = feature_set.get_df_for_classification(variation, (train_index, test_index))
+            (X_train, y_train), (X_test, y_test) = feature_set.get_df_for_classification(variation, split_index, (train_index, test_index))
             classifier.process_iteration(X_train, y_train, X_test, y_test)
 
         # Export Classifier Variations Results
@@ -248,14 +261,26 @@ class SequentialModel(ModelAbstraction):
             self.variations_results.append(variation_summary)
 
     def execute(self, feature_sets: Optional[List[module_featureset.FeatureSetAbstraction]] = None):
-        
-        if feature_sets is None:
-            exit("🚨 Execute on 'SequentialModel' requires 'feature_sets'")
 
-        self.load_feature_sets(feature_sets)
-        self.study_feature_sets()
-        self.run_variations()
-        self.export_final_results()
+        print_variations = self.arguments.print_variations
+
+        if print_variations:
+            
+            if feature_sets is None:
+                exit("🚨 Printing variations on 'SequentialModel' requires 'feature_sets'")
+
+            self.load_feature_sets(feature_sets)
+            self.print_variations()
+        
+        else:
+            
+            if feature_sets is None:
+                exit("🚨 Execute on 'SequentialModel' requires 'feature_sets'")
+
+            self.load_feature_sets(feature_sets)
+            self.study_feature_sets()
+            self.run_variations()
+            self.export_final_results()
 
 class ParallelModel(ModelAbstraction):
 
@@ -265,8 +290,7 @@ class ParallelModel(ModelAbstraction):
 
     def load_feature_sets_from_memory(self):
 
-        directory_path = PARALLEL_TMP_DIRECTORY
-        if self.arguments.timestamp is not None: directory_path = os.path.join(directory_path, self.arguments.timestamp)
+        directory_path = module_exporter.get_tmp_directory()
         full_path = os.path.join(directory_path, PARALLEL_FEATURE_SETS_FILE)
 
         file = open(full_path, 'rb')
@@ -275,9 +299,7 @@ class ParallelModel(ModelAbstraction):
 
     def save_feature_sets(self):
 
-        directory_path = PARALLEL_TMP_DIRECTORY
-        if self.arguments.timestamp is not None: directory_path = os.path.join(directory_path, self.arguments.timestamp)
-        if not os.path.exists(directory_path): os.makedirs(directory_path)
+        directory_path = module_exporter.get_tmp_directory()
         full_path = os.path.join(directory_path, PARALLEL_FEATURE_SETS_FILE)
 
         file = open(full_path, 'wb')
@@ -286,9 +308,7 @@ class ParallelModel(ModelAbstraction):
 
     def save_number_of_variations(self):
 
-        directory_path = PARALLEL_TMP_DIRECTORY
-        if self.arguments.timestamp is not None: directory_path = os.path.join(directory_path, self.arguments.timestamp)
-        if not os.path.exists(directory_path): os.makedirs(directory_path)
+        directory_path = module_exporter.get_tmp_directory()
         full_path = os.path.join(directory_path, PARALLEL_NUMBER_VARIATIONS_FILE)
 
         file = open(full_path, 'w')
@@ -306,9 +326,7 @@ class ParallelModel(ModelAbstraction):
         for score in best_scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
 
         # Save Temporarily Variation Summary
-        directory_path = PARALLEL_TMP_DIRECTORY
-        if self.arguments.timestamp is not None: directory_path = os.path.join(directory_path, self.arguments.timestamp)
-        if not os.path.exists(directory_path): os.makedirs(directory_path)
+        directory_path = module_exporter.get_tmp_directory()
         full_path = os.path.join(directory_path, variation.generate_code() + PICKLE_EXTENSION)
 
         file = open(full_path, 'wb')
@@ -318,8 +336,7 @@ class ParallelModel(ModelAbstraction):
     def load_variations_results(self):
 
         # Iterate Variation Summaries which should have been created
-        directory_path = PARALLEL_TMP_DIRECTORY
-        if self.arguments.timestamp is not None: directory_path = os.path.join(directory_path, self.arguments.timestamp)
+        directory_path = module_exporter.get_tmp_directory()
         for variation in self.variations_to_test:
             full_path = os.path.join(directory_path, variation.generate_code() + PICKLE_EXTENSION)
 
@@ -337,22 +354,40 @@ class ParallelModel(ModelAbstraction):
         # Get pertinent arguments
         parallelization = self.arguments.parallelization_key
         parallelization_index = self.arguments.parallelization_index
+        print_variations = self.arguments.print_variations
+        timestamp = self.arguments.timestamp
 
-        if parallelization == PARALLEL_FEATURE_EXTRACTION:
+        if print_variations:
 
             if feature_sets is None:
-                exit("🚨 Execute on 'SequentialModel' requires 'feature_sets'")
-
+                exit("🚨 Printing variations on 'ParallelModel' requires 'feature_sets'")
             self.load_feature_sets(feature_sets)
-            self.study_feature_sets()
-            self.save_feature_sets()
-            self.save_number_of_variations()
+            self.print_variations()
 
-        elif parallelization == PARALLEL_RUN_MODELS:
-            self.load_feature_sets_from_memory()
-            self.run_variation_by_index(int(parallelization_index))
+        elif parallelization is not None:
 
-        elif parallelization == PARALLEL_RUN_FINAL:
-            self.load_feature_sets_from_memory()
-            self.load_variations_results()
-            self.export_final_results()
+            if timestamp is None:
+                exit(f"🚨 Execute on 'ParallelModel' requires argument 'timestamp'")          
+
+            if parallelization == PARALLEL_FEATURE_EXTRACTION:
+
+                if feature_sets is None:
+                    exit("🚨 Execute on 'ParallelModel' requires 'feature_sets'")
+
+                self.load_feature_sets(feature_sets)
+                self.study_feature_sets()
+                self.save_feature_sets()
+                self.save_number_of_variations()
+
+            elif parallelization == PARALLEL_RUN_MODELS:
+
+                if parallelization_index is None:
+                    exit(f"🚨 Execute on 'ParallelModel' when '{PARALLEL_RUN_MODELS}' requires argument 'parallelization_index'")
+
+                self.load_feature_sets_from_memory()
+                self.run_variation_by_index(int(parallelization_index))
+
+            elif parallelization == PARALLEL_RUN_FINAL:
+                self.load_feature_sets_from_memory()
+                self.load_variations_results()
+                self.export_final_results()

@@ -18,13 +18,12 @@ import modules_abstraction.module_featureset            as module_featureset
 
 FEATURE_SET_ID : str = 'entirety'
 class EntiretyFeatureSet(module_featureset.FeatureSetAbstraction):
-    
-    def __init__(self, paths_df: pd.DataFrame, preference_audio_tracks: List[str], preference_trans: List[str], trans_extension: str,
-        subject_info: pd.DataFrame, general_drop_columns: List[str], pivot_on_task: bool = False) -> None:
-        super().__init__(FEATURE_SET_ID, paths_df, preference_audio_tracks, preference_trans, trans_extension,
-            subject_info, general_drop_columns, pivot_on_task)
 
-    def develop_basis_df(self):
+    def __init__(self) -> None:
+        super().__init__(FEATURE_SET_ID)
+        self.drop_columns = ['Trans Path', 'Trans File', 'Trans File Path', 'Trans Info', 'Text']
+
+    def _develop_basis_df(self):
         print(f"🚀 Preparing for '{self.id}' analysis ...")
 
         # Dataframe to study content features
@@ -39,11 +38,8 @@ class EntiretyFeatureSet(module_featureset.FeatureSetAbstraction):
 
         # Save back 'basis dataframe' and 'drop_columns'
         self.basis_dataframe = basics_dataframe
-        self.drop_columns = ['Trans Path', 'Trans File', 'Trans File Path', 'Trans Info', 'Text']
 
-    def develop_static_df(self):
-        if self.static_dataframe is not None: return
-        if self.basis_dataframe is None: self.develop_basis_df()
+    def _develop_static_df(self):
         static_dataframe = self.basis_dataframe.copy(deep=True)
 
         print(f"🚀 Developing '{self.id}' analysis ...")
@@ -57,7 +53,7 @@ class EntiretyFeatureSet(module_featureset.FeatureSetAbstraction):
         self.static_dataframe = static_dataframe
         print(f"✅ Finished processing '{self.id}' analysis!")
     
-    def develop_dynamic_df(self, train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
+    def _develop_dynamic_df(self, train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
         
         def copy_optional_df(df: Optional[pd.DataFrame]) -> Optional[pd.DataFrame]:
             if df is None: return None
