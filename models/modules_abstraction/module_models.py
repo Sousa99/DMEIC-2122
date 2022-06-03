@@ -6,7 +6,7 @@ import argparse
 import warnings
 
 from tqdm import tqdm
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import pandas as pd
 
@@ -158,10 +158,14 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
 
         number_variations = len(self.variations_to_test)
         number_digits = int(math.floor(math.log10(number_variations))) + 1
+        different_dataframes_variations : Set[str] = set()
 
         print("🚀 Variations currently being carried out:")
         for variation_index, variation in enumerate(self.variations_to_test):
             print(f"⚙️  [{variation_index:0{number_digits}d}]: {variation.generate_code()}")
+            different_dataframes_variations.add(variation.generate_code_dataset())
+        print()
+        print(f"🚀 Different dataframes required by variations: {len(different_dataframes_variations)}")
 
     @abc.abstractmethod
     def __init__(self, arguments: argparse.Namespace) -> None:
