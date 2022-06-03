@@ -43,7 +43,8 @@ dictionary : gensim.corpora.Dictionary = gensim.corpora.Dictionary.load(PATH_TO_
 corpus : load_corpus.LemmatizedCorpusNotLoaded = load_corpus.LemmatizedCorpusNotLoaded(PATH_TO_DOCUMENTS, NUMBER_DOCUMENTS, True)
 bow_corpus : load_corpus.BOWCorpusNotLoaded = load_corpus.BOWCorpusNotLoaded(PATH_TO_DOCUMENTS, dictionary, NUMBER_DOCUMENTS, True)
 
-num_topics_max : int = min(NUMBER_DOCUMENTS, compute_max_number_of_topics_possible(dictionary, MAX_USABLE_RAM_GB))
+if NUMBER_DOCUMENTS is None: num_topics_max : int = compute_max_number_of_topics_possible(dictionary, MAX_USABLE_RAM_GB)
+else: num_topics_max : int = min(NUMBER_DOCUMENTS, compute_max_number_of_topics_possible(dictionary, MAX_USABLE_RAM_GB))
 num_topics_step : int = math.floor(num_topics_max / NUMBER_OF_TOPIC_VARIATIONS_TO_TEST)
 
 model_list : List[Dict[str, Any]] = []
