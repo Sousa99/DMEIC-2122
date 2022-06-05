@@ -17,16 +17,19 @@ PSYCHOSIS_TRANSCRIPTIONS="../data/recordings_transcribed_results/psychosis/"
 BIPOLAR_TRANSCRIPTIONS="../data/fixed_transcriptions/bipolars/"
 BIPOLAR_TRANSCRIPTIONS="../data/recordings_transcribed_results/bipolars/"
 
+VARIATION_KEY="simple"
+
 TEMP_CONDOR_DIRECTORY="./tmp_condor/${NOW_WITHOUT_SPACE}"
 TEMP_CONDOR_LOGS_DIRECTORY="./tmp_condor/${NOW_WITHOUT_SPACE}/logs/"
 TEMP_CONDOR_SCRIPTS_DIRECTORY="./tmp_condor/${NOW_WITHOUT_SPACE}/scripts/"
 
-python3 model_second.py                                                                                                                      \
+python3 model_second.py                                                                                                                     \
     -info_controls=${CONTROL_INFO}              -info_psychosis=${PSYCHOSIS_INFO}               -info_bipolars=${BIPOLAR_INFO}              \
     -audio_controls=${CONTROL_AUDIOS}           -audio_psychosis=${PSYCHOSIS_AUDIOS}            -audio_bipolars=${BIPOLAR_AUDIOS}           \
     -trans_controls=${CONTROL_TRANSCRIPTIONS}   -trans_psychosis=${PSYCHOSIS_TRANSCRIPTIONS}    -trans_bipolars=${BIPOLAR_TRANSCRIPTIONS}   \
     -parallelization_key="FEATURE_EXTRACTION"                                                                                               \
-    -timestamp="${NOW}"
+    -timestamp="${NOW}"                                                                                                                     \
+    -variations_key=${VARIATION_KEY}
 
 # Deal with Condor Directories
 if [ ! -d "${TEMP_CONDOR_DIRECTORY}" ]; then mkdir -p "${TEMP_CONDOR_DIRECTORY}"; fi
@@ -47,7 +50,8 @@ for parallel_index in $(seq 0 $(expr $number_of_variations - 1)); do
     echo "      -audio_controls=${CONTROL_AUDIOS}           -audio_psychosis=${PSYCHOSIS_AUDIOS}            -audio_bipolars=${BIPOLAR_AUDIOS}           \\" >> "${script_file}"
     echo "      -trans_controls=${CONTROL_TRANSCRIPTIONS}   -trans_psychosis=${PSYCHOSIS_TRANSCRIPTIONS}    -trans_bipolars=${BIPOLAR_TRANSCRIPTIONS}   \\" >> "${script_file}"
     echo "      -parallelization_key=\"RUN_MODELS\"         -parallelization_index=${parallel_index}                                                    \\" >> "${script_file}"
-    echo "      -timestamp=\"${NOW}\""                                                                                                                      >> "${script_file}"
+    echo "      -timestamp=\"${NOW}\"                                                                                                                   \\" >> "${script_file}"
+    echo "      -variations_key=\"${VARIATION_KEY}\""                                                                                                       >> "${script_file}"                                                                                                                      >> "${script_file}"
 
     chmod a+x "${script_file}"
 
@@ -72,4 +76,5 @@ python3 model_second.py                                                         
     -audio_controls=${CONTROL_AUDIOS}           -audio_psychosis=${PSYCHOSIS_AUDIOS}            -audio_bipolars=${BIPOLAR_AUDIOS}           \
     -trans_controls=${CONTROL_TRANSCRIPTIONS}   -trans_psychosis=${PSYCHOSIS_TRANSCRIPTIONS}    -trans_bipolars=${BIPOLAR_TRANSCRIPTIONS}   \
     -parallelization_key="RUN_FINAL"                                                                                                        \
-    -timestamp="${NOW}"
+    -timestamp="${NOW}"                                                                                                                     \
+    -variations_key=${VARIATION_KEY}

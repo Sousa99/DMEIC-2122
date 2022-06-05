@@ -6,7 +6,7 @@ import argparse
 import warnings
 
 from tqdm import tqdm
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import pandas as pd
 
@@ -67,6 +67,14 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
     VARIATION_DATA = [ 'V1 Simple', 'V2 Simple', 'V2 Complex' ]
     VARIATION_CLASSIFIERS = [ 'Naive Bayes', 'Decision Tree', 'Support Vector Machine', 'Random Forest', 'Multi-Layer Perceptron' ]
     VARIATION_PREPROCESSING = [ [ 'DROP_ROWS_NAN' ] ]
+
+    VARIATIONS_BY_KEY = {
+        'simple': {
+            'tasks': [ 'Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7' ],
+            'genders': [ 'All Genders' ],
+            'data': [ 'V1 Simple', 'V2 Simple', 'V2 Complex' ],
+        }
+    }
 
     TARGET_METRIC = 'F1-Measure'
 
@@ -139,7 +147,7 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
 
     def generate_variations(self):
         variation_features = list(map(lambda feature_set: feature_set.id, self.feature_sets))
-        variation_generator = module_variations.VariationGenerator(self.arguments.variations_key,
+        variation_generator = module_variations.VariationGenerator(self.arguments.variations_key, self.VARIATIONS_BY_KEY,
             self.VARIATION_TASKS, self.VARIATION_GENDERS, self.VARIATION_DATA, variation_features, self.VARIATION_CLASSIFIERS, self.VARIATION_PREPROCESSING)
 
         self.variations_to_test = variation_generator.generate_variations()
@@ -150,10 +158,14 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
 
         number_variations = len(self.variations_to_test)
         number_digits = int(math.floor(math.log10(number_variations))) + 1
+        different_dataframes_variations : Set[str] = set()
 
         print("🚀 Variations currently being carried out:")
         for variation_index, variation in enumerate(self.variations_to_test):
             print(f"⚙️  [{variation_index:0{number_digits}d}]: {variation.generate_code()}")
+            different_dataframes_variations.add(variation.generate_code_dataset())
+        print()
+        print(f"🚀 Different dataframes required by variations: {len(different_dataframes_variations)}")
 
     @abc.abstractmethod
     def __init__(self, arguments: argparse.Namespace) -> None:

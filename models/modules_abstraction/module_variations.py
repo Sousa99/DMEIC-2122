@@ -83,10 +83,12 @@ class Variation():
 
 class VariationGenerator():
 
-    def __init__(self, variations_key: Optional[str], variation_tasks: List[str], variation_genders: List[str], variation_data: List[str],
+    def __init__(self, variations_key: Optional[str], variations_by_key: Dict[str, Dict[str, List[str]]],
+        variation_tasks: List[str], variation_genders: List[str], variation_data: List[str],
         variation_features: List[str], variation_classifiers: List[str], variation_preprocessing: List[List[str]]) -> None:
 
         self.key = variations_key 
+        self.variations_by_key = variations_by_key
 
         self.task_keys = variation_tasks
         self.genders_keys = variation_genders
@@ -98,9 +100,34 @@ class VariationGenerator():
     def generate_variations(self) -> List[Variation]:
 
         if not self.key: return self.generate_default_variations()
-        # Add specific key for Generation of Variations
-        # ...
+        elif self.key in self.variations_by_key: return self.generate_variation_by_key(self.variations_by_key[self.key])
         else: exit("🚨 Variation key '{0}' not recognized".format(self.key)) 
+
+    def generate_variation_by_key(self, variation_config: Dict[str, List[str]]) -> List[Variation]:
+
+        if 'classifier' in variation_config: classifiers_keys               : List[str] = variation_config['classifier']
+        else: classifier_keys                                               : List[str] = self.classifier_keys
+        if 'features' in variation_config: feature_keys                     : List[str] = variation_config['features']
+        else: feature_keys                                                  : List[str] = self.feature_keys
+        if 'tasks' in variation_config: task_keys                           : List[str] = variation_config['tasks']
+        else: task_keys                                                     : List[str] = self.task_keys
+        if 'genders' in variation_config: genders_keys                      : List[str] = variation_config['genders']
+        else: genders_keys                                                  : List[str] = self.genders_keys
+        if 'data' in variation_config: data_keys                            : List[str] = variation_config['data']
+        else: data_keys                                                     : List[str] = self.data_keys
+        if 'preprocessing' in variation_config: preprocessing_pipeline_keys : List[str] = variation_config['preprocessing']
+        else: preprocessing_pipeline_keys                                   : List[str] = self.preprocessing_pipeline_keys
+
+        variations : List[Variation] = []
+        for (classifier_key, feature_key, task_key, gender_key, data_key, preprocessing_key) in \
+            itertools.product(classifier_keys, feature_keys, task_keys, genders_keys, data_keys, preprocessing_pipeline_keys):
+
+            variation_info = { 'tasks': task_key, 'genders': gender_key, 'data': data_key, 'features': feature_key,
+                'classifier': classifier_key, 'preprocessing': preprocessing_key }
+            variations.append(Variation(variation_info))
+
+        return variations
+
     
     def generate_default_variations(self) -> List[Variation]:
 
