@@ -99,7 +99,6 @@ class WebScraperCineCartaz(scraper.WebScraper[ScrapedInfoCineCartaz]):
                 review_item_link = review_item_header.find('a')
 
                 yield f"{self.BASE_LINK}{review_item_link['href']}"
-            return
 
     def scrape_page(self, link: str, driver: driver.Driver) -> List[ScrapedInfoCineCartaz]:
         
