@@ -56,6 +56,7 @@ class ScrapedInfoCineCartaz(scraper.ScrapedInfoValence):
         self.review_date        = review_date
 
     def get_text(self) -> str: return self.review_txt
+
     def get_valence_score(self, limit_floor: float, limit_ceil: float) -> float:
 
         movie_score_range   = self.movie_score_ceil - self.movie_score_floor
@@ -63,6 +64,10 @@ class ScrapedInfoCineCartaz(scraper.ScrapedInfoValence):
 
         value_normalized    = (self.movie_score - self.movie_score_floor) / (movie_score_range)
         return limit_floor + (value_normalized * limit_range)
+
+    def get_metadata(self) -> Dict[str, Any]:
+        return { 'scraper': 'CineCartaz', 'movie_title': self.movie_name, 'movie_author': self.movie_from,
+            'reviewer': self.review_from, 'review_date': self.review_date }
 
 # ============================================================ WEB SCRAPER SPECIALIZED ============================================================
 

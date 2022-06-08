@@ -26,7 +26,8 @@ for scraper_to_use in scrapers_to_use:
     for scraped_info in scraper_to_use.get_scraped_info(request_driver):
         scraped_information.append({
             'text': scraped_info.get_text(),
-            'valence': scraped_info.get_valence_score(SCORE_FLOOR, SCORE_CEIL)
+            'valence': scraped_info.get_valence_score(SCORE_FLOOR, SCORE_CEIL),
+            'metadata': scraped_info.get_metadata(),
         })
 
 file = open(PATH_TO_EXPORT_INFORMATION, "w")

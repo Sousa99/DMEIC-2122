@@ -1,7 +1,7 @@
 import abc
 import tqdm
 
-from typing import Generic, List, Generator, TypeVar
+from typing import Any, Dict, Generic, List, Generator, TypeVar
 
 import driver
 
@@ -43,3 +43,6 @@ class ScrapedInfoValence():
     @abc.abstractmethod
     def get_valence_score(self, limit_floor: float, limit_ceil: float) -> float:
         exit(f"🚨 Method 'get_text' not defined for '{self.__class__.__name__}'")
+    @abc.abstractclassmethod
+    def get_metadata(self) -> Dict[str, Any]:
+        return {}
