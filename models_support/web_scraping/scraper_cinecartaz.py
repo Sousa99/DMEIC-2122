@@ -1,17 +1,15 @@
-from tkinter import N
-import requests
+from typing import Any, Dict, Generator, List, Optional
+from bs4    import BeautifulSoup
 
-from typing import Any, Dict, Generator, Optional
-from bs4    import BeautifulSoup, NavigableString
-
+import driver
 import scraper
 
 # ============================================================== AUXILIARY FUNCTIONS ==============================================================
 
-def get_moview_info(link: str) -> Optional[Dict[str, Any]]:
+def get_moview_info(link: str, driver: driver.Driver) -> Optional[Dict[str, Any]]:
 
-    link_request_content    : str           = requests.get(link).content
-    link_soup               : BeautifulSoup = BeautifulSoup(link_request_content, 'html.parser')
+    driver.driver_get(link)
+    link_soup = BeautifulSoup(driver.driver_page_source(), 'html.parser')
 
     movie_box = link_soup.find('div', class_='fichatecfilme')
     if movie_box is None: return None
@@ -27,14 +25,15 @@ def get_moview_info(link: str) -> Optional[Dict[str, Any]]:
     if movie_readers_reviews is None: return None
     movie_form = movie_readers_reviews.findChild('form', id='votar')
     if movie_form is None: return None
-    movie_scores_inputs = movie_form.findChildren('input', recursive=False)
+    movie_scores_inputs = movie_form.findChildren('div', recursive=False)
     if len(movie_scores_inputs) == 0: return None
 
-    movie_score_floor = float(min(movie_scores_inputs, key = (lambda item: float(item['value'])))['value'])
-    movie_score_ceil = float(max(movie_scores_inputs, key = (lambda item: float(item['value'])))['value'])
-    movie_score_items = list(filter(lambda input: input.has_attr('checked') and input['checked'] == 'checked', movie_scores_inputs))
-    if len(movie_score_items) == 0: return None
-    movie_score = float(movie_score_items[0]['value'])
+    movie_score_values = list(map(lambda item: float(item.find('a').text), movie_scores_inputs))
+    movie_score_floor = min(movie_score_values)
+    movie_score_ceil = max(movie_score_values)
+    movie_score_items = movie_form.find('input')
+    if movie_score_items is None: return None
+    movie_score = float(movie_score_items['value'])
 
     return { 'movie_name': movie_name, 'movie_from': movie_from,
         'movie_score': movie_score, 'movie_score_floor': movie_score_floor, 'movie_score_ceil': movie_score_ceil }
@@ -75,16 +74,15 @@ class WebScraperCineCartaz(scraper.WebScraper[ScrapedInfoCineCartaz]):
     def __init__(self) -> None:
         super().__init__('CineCartaz')
 
-    def get_pages_to_scrape(self) -> Generator[str, None, None]:
+    def get_pages_to_scrape(self, driver: driver.Driver) -> Generator[str, None, None]:
 
         current_page : int   = 0
         while True:
             current_page = current_page + 1
 
             # ============================ In fact get page with important information ============================
-            link_page_to_check      : str           = f"{self.REVIEWS_LINK}?pagina={current_page}"
-            link_request_content    : str           = requests.get(link_page_to_check).content
-            link_soup               : BeautifulSoup = BeautifulSoup(link_request_content, 'html.parser')
+            driver.driver_get(f"{self.REVIEWS_LINK}?pagina={current_page}")
+            link_soup = BeautifulSoup(driver.driver_page_source(), 'html.parser')
 
             # Reader's Reviews: Get and Check if section is present
             reviews_from_readers_section = link_soup.find('section', id='criticas-leitores')
@@ -101,39 +99,40 @@ class WebScraperCineCartaz(scraper.WebScraper[ScrapedInfoCineCartaz]):
                 review_item_link = review_item_header.find('a')
 
                 yield f"{self.BASE_LINK}{review_item_link['href']}"
+            return
 
-    def scrape_page(self, link: str) -> ScrapedInfoCineCartaz:
+    def scrape_page(self, link: str, driver: driver.Driver) -> List[ScrapedInfoCineCartaz]:
         
-        link_request_content    : str           = requests.get(link).content
-        link_soup               : BeautifulSoup = BeautifulSoup(link_request_content, 'html.parser')
+        driver.driver_get(link)
+        link_soup = BeautifulSoup(driver.driver_page_source(), 'html.parser')
 
         review_article = link_soup.find('article', class_='critica')
-        if review_article is None: return None
+        if review_article is None: return []
 
         review_text_div = review_article.find('div', class_='grid_6 alpha')
-        if review_text_div is None: return None
+        if review_text_div is None: return []
         review_text_strings = review_text_div.findAll(text=True)
         review_text = ' '.join(map(lambda string: string.strip(), review_text_strings))
 
         review_footer = review_article.find('footer')
-        if review_footer is None: return None
+        if review_footer is None: return []
         review_footer_infos = review_footer.find_all('strong')
-        if len(review_footer_infos) != 2: return None
+        if len(review_footer_infos) != 2: return []
         review_author = review_footer_infos[0].contents[0]
         review_date = review_footer_infos[1].contents[0]
 
         movie_file_item = link_soup.find('ul', class_='fichatec')
-        if movie_file_item is None: return None
+        if movie_file_item is None: return []
         movie_file_items = movie_file_item.findChildren('li', recursive=False)
-        if len(movie_file_items) == 0: return None
+        if len(movie_file_items) == 0: return []
         movie_item_link = movie_file_items[0].find('a')
         movie_link = f"{self.BASE_LINK}{movie_item_link['href']}"
 
-        movie_info = get_moview_info(movie_link)
-        if movie_info is None: return None
+        movie_info = get_moview_info(movie_link, driver)
+        if movie_info is None: return []
 
-        return ScrapedInfoCineCartaz(movie_info['movie_name'], movie_info['movie_from'], movie_info['movie_score'],
+        return [ ScrapedInfoCineCartaz(movie_info['movie_name'], movie_info['movie_from'], movie_info['movie_score'],
             movie_info['movie_score_floor'], movie_info['movie_score_ceil'],
-            review_author, review_text, review_date)
+            review_author, review_text, review_date) ]
 
 # ============================================================ TEST ZONE ============================================================
