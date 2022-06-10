@@ -4,6 +4,7 @@ from bs4                                        import BeautifulSoup
 from tqdm                                       import tqdm
 from typing                                     import List, Optional, Tuple
 from selenium                                   import webdriver
+from fake_useragent                             import UserAgent
 from selenium.webdriver.common.by               import By
 from selenium.webdriver.common.action_chains    import ActionChains
 from selenium.webdriver.chrome.options          import Options
@@ -68,7 +69,8 @@ def check_proxies(list_proxies: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
 
 class Driver():
 
-    def __init__(self, headless : bool = False, rotate_proxies : bool = False, max_requests : Optional[int] = None) -> None:
+    def __init__(self, headless : bool = False, rotate_proxies : bool = False,
+        rotate_user_agents : bool = False, max_requests : Optional[int] = None) -> None:
 
         self.headless           : bool                          = headless
         self.max_requests       : Optional[int]                 = max_requests
@@ -76,6 +78,7 @@ class Driver():
         self.current_count_req  : int                           = 0
         self.selenium_webdriver : Optional[webdriver.Chrome]    = None
         self.proxies            : Optional[List[str, str]]      = None
+        self.user_agent_gen     : Optional[UserAgent]           = None
 
         if rotate_proxies:
             possible_proxies = scrape_proxies()
@@ -83,6 +86,7 @@ class Driver():
             valid_proxies = check_proxies(possible_proxies)
             print(f"🌐 Valid Proxies found: '{len(valid_proxies)}'")
             self.proxies = valid_proxies
+        if rotate_user_agents: self.user_agent_gen = UserAgent()
 
     def generate_new_driver(self) -> None:
         
@@ -91,21 +95,22 @@ class Driver():
         options.headless = self.headless
         options.add_argument("--window-size=1920,1200")
 
-        # Choose Proxies
+        # Choose Proxy
         if self.proxies is not None and len(self.proxies) > 0:
             ip_address, port = random.choice(self.proxies)
             options.add_argument(f'--proxy-server=http://{ip_address}:{port}')
+        # Choose User Agents
+        if self.user_agent_gen is not None:
+            options.add_argument(f'user-agent={self.user_agent_gen.random}')
 
         # Generate driver
         self.selenium_webdriver = webdriver.Chrome(options=options)
-        if self.max_requests is not None:
-            self.current_count_req = self.current_count_req - self.max_requests
+        if self.max_requests is not None: self.current_count_req = 0
 
     def driver_get(self, link : str) -> None:
-
+        
         if self.selenium_webdriver is None: self.generate_new_driver()
-        if self.max_requests is not None and self.current_count_req >= self.max_requests:
-            self.generate_new_driver()
+        if self.current_count_req >= self.max_requests: self.generate_new_driver()
         self.current_count_req = self.current_count_req + 1
 
         self.selenium_webdriver.get(link)
