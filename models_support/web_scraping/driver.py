@@ -56,9 +56,7 @@ def check_proxies(list_proxies: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
             tqdm.write(f"🚀 Proxy '{ip_address}:{port}' successful!")
             return True
 
-        except Exception as e:
-            print(e)
-            return False
+        except Exception as e: return False
         finally: driver.quit()
 
     list_proxies = list_proxies[0:2]
