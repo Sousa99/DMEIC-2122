@@ -6,10 +6,6 @@ from bs4                                import BeautifulSoup
 import driver
 import scraper
 
-# ============================================================== GLOBAL USAGE ==============================================================
-
-request_driver = driver.Driver()
-
 # ============================================================== AUXILIARY FUNCTIONS ==============================================================
 
 def get_data_variable(soup: BeautifulSoup) -> Optional[Any]:
@@ -67,18 +63,15 @@ class WebScraperShein(scraper.WebScraper[ScrapedInfoShein]):
     def __init__(self) -> None:
         super().__init__('Shein')
 
-    def get_pages_to_scrape(self) -> Generator[str, None, None]:
+    def get_pages_to_scrape(self, driver : driver.Driver) -> Generator[str, None, None]:
 
         current_page : int   = 0
         while True:
             current_page = current_page + 1
 
             # ============================ In fact get page with important information ============================
-            request_driver.driver_get(f"{self.REVIEWS_LINK}&page={current_page}")
-            link_soup = BeautifulSoup(request_driver.driver_page_source(), 'html.parser')
-
-            print(link_soup)
-            exit()
+            driver.driver_get(f"{self.REVIEWS_LINK}&page={current_page}")
+            link_soup = BeautifulSoup(driver.driver_page_source(), 'html.parser')
 
             # Get Variable with Information
             data = get_data_variable(link_soup)
@@ -88,18 +81,18 @@ class WebScraperShein(scraper.WebScraper[ScrapedInfoShein]):
             for good_url in goods_urls:
                 yield f'{self.BASE_LINK}{good_url}'
 
-    def scrape_page(self, link: str) -> List[ScrapedInfoShein]:
+    def scrape_page(self, link: str, driver : driver.Driver) -> List[ScrapedInfoShein]:
 
         reviews : List[ScrapedInfoShein] = []
 
         # Get Current Page
-        request_driver.driver_get(link)
-        link_soup = BeautifulSoup(request_driver.driver_page_source(), 'html.parser')
+        driver.driver_get(link)
+        link_soup = BeautifulSoup(driver.driver_page_source(), 'html.parser')
 
         for _ in range(2):
 
             # Parse current Click
-            link_soup = BeautifulSoup(request_driver.driver_page_source(), 'html.parser')
+            link_soup = BeautifulSoup(driver.driver_page_source(), 'html.parser')
             # Get Global Information
             clothe_title = link_soup.find('meta', { 'property': "og:title" })['content']
 
@@ -113,16 +106,17 @@ class WebScraperShein(scraper.WebScraper[ScrapedInfoShein]):
                 reviews.append(ScrapedInfoShein(clothe_title, 1, 5, review_author, review_text, review_score, review_date))
 
             # Click next Page
-            request_driver.driver_click_css("[aria-label='Page Next']")
+            driver.driver_click_css("[aria-label='Page Next']")
 
         return reviews
 
 # ============================================================ TEST ZONE ============================================================
 
+request_driver = driver.Driver()
 scraper_to_use = WebScraperShein()
-for page in scraper_to_use.get_pages_to_scrape():
+for page in scraper_to_use.get_pages_to_scrape(request_driver):
     print(f'⚙️  Page: {page}')
-    for review in scraper_to_use.scrape_page(page):
+    for review in scraper_to_use.scrape_page(page, request_driver):
         print(f'  ⚙️  Review: {vars(review)}')
 
     exit()
