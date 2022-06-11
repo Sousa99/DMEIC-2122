@@ -1,10 +1,19 @@
 import os
 import time
+import pickle
+import argparse
 import threading
 import subprocess
 
 from io     import TextIOWrapper
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
+
+from tqdm import tqdm
+
+# =================================================== CONSTANTS DEFINITION ===================================================
+
+TMP_DIRECTORY = './tmp_parallelization/'
+FILE_SAVE_NAME = 'parallelization_manager.pkl'
 
 # =================================================== CLASSES DEFINITION ===================================================
 
@@ -31,7 +40,8 @@ class ExecutionScript():
 
 class ParallelizationManager():
 
-    TMP_DIRECTORY = './tmp_condor/'
+    TMP_DIRECTORY = TMP_DIRECTORY
+    FILE_SAVE_NAME = FILE_SAVE_NAME
 
     def __init__(self, machines : List[Machine], timestamp_id : str, wait_seconds : float, max_jobs_per_machine : float) -> None:
         self.machines               : List[Machine] = machines
@@ -41,10 +51,12 @@ class ParallelizationManager():
 
         # Scripts Management
         self.scripts_stack      : List[ExecutionScript]                 = []
-        self.current_scripts    : Dict[Hostname, List[ExecutionScript]] = { (machine.get_hostname(), []) for machine in self.machines }
-        self.concluded_scripts  : Dict[Hostname, List[ExecutionScript]] = { (machine.get_hostname(), []) for machine in self.machines }
+        self.current_scripts    : Dict[Hostname, List[ExecutionScript]] = dict((machine.get_hostname(), []) for machine in self.machines)
+        self.concluded_scripts  : Dict[Hostname, List[ExecutionScript]] = dict((machine.get_hostname(), []) for machine in self.machines)
 
     def add_script_to_queue(self, script_id : str, script_path : FilePath) -> None:
+        if not os.path.exists(script_path) or not os.path.isfile(script_path):
+            exit(f"🚨 File at '{script_path}' does not exist")
         execution_script = ExecutionScript(script_id, script_path)
         self.scripts_stack.append(execution_script)
 
@@ -71,7 +83,7 @@ class ParallelizationManager():
 
             return (out_file, err_file)
 
-        def run_process_in_thread(self : ParallelizationManager, on_exit_callback, execution_script : ExecutionScript, machine : Machine):
+        def run_process_in_thread(self : ParallelizationManager, on_exit_callback, execution_script : ExecutionScript, machine : Machine, tracker : Optional[tqdm] = None):
             command = f"ssh {machine.get_hostname()} {execution_script.get_file_path()}"
             out_file, err_file = get_filepaths(self, execution_script.get_execution_id())
 
@@ -81,14 +93,19 @@ class ParallelizationManager():
             proc.wait()
             out_file.close()
             err_file.close()
-            on_exit_callback(self, execution_script, machine)
+            on_exit_callback(self, execution_script, machine, tracker)
             return
 
-        def on_process_exit(self : ParallelizationManager, execution_script : ExecutionScript, machine : Machine):
+        def on_process_exit(self : ParallelizationManager, execution_script : ExecutionScript, machine : Machine, tracker: Optional[tqdm] = None):
 
             current_scripts_machine = self.current_scripts[machine.get_hostname()]
             filtered_current_scripts = list(filter(lambda script_iter: script_iter.get_execution_id() != execution_script.get_execution_id(), current_scripts_machine))
             self.current_scripts = filtered_current_scripts
+            if tracker is not None: tracker.update(1)
+
+        print("🚀 Started execution of scripts...")
+        progress_tracker_submitted = tqdm(total=len(self.scripts_stack), desc="⚙️  Submiting execution scripts", leave=True, position=0)
+        progress_tracker_completed = tqdm(total=len(self.scripts_stack), desc="⚙️  Completed execution scripts", leave=True, position=1)
 
         # Submit jobs
         while len(self.scripts_stack) != 0:
@@ -102,7 +119,81 @@ class ParallelizationManager():
 
             # Execute script
             execution_script = self.scripts_stack.pop(0)
-            thread = threading.Thread(target=run_process_in_thread, args=(on_process_exit, execution_script, selected_machine))
+            thread = threading.Thread(target=run_process_in_thread, args=(on_process_exit, execution_script, selected_machine, progress_tracker_completed))
             thread.start()
-            
+            progress_tracker_submitted.update(1)
+
+        # Wait for remaining jobs to finish
+        while len(self.machines_available()) != len(self.machines): time.sleep(self.wait_seconds)
+        progress_tracker_submitted.close()
+        progress_tracker_completed.close()
+        print("🚀 Finished execution of scripts...")
+
+    def save_model(self) -> None:
+
+        path = os.path.join(self.TMP_DIRECTORY, self.timestamp_id)
+        if not os.path.exists(path) or not os.path.isdir(path): os.makedirs(path)
+        file_path = os.path.join(path, self.FILE_SAVE_NAME)
+        file = open(file_path, 'wb')
+        pickle.dump(self, file)
+        file.close()
+
+# =================================================== AUXILIARY FUNCTIONS ===================================================
+
+def load_manager(timestamp_id : str) -> ParallelizationManager:
+    file_path = os.path.join(TMP_DIRECTORY, timestamp_id, FILE_SAVE_NAME)
+    if not os.path.exists(file_path) or not os.path.isfile(file_path):
+        exit(f"🚨 File '{file_path}' does not exist")
     
+    file = open(file_path, 'rb')
+    parallelization_manager : ParallelizationManager = pickle.load(file)
+    file.close()
+
+    return parallelization_manager
+
+# ===================================================== MAIN EXECUTION =====================================================
+
+INITIALIZE_OPTION = 'init'
+ADD_EXECUTION_OPTION = 'add'
+RUN_OPTION = 'run'
+EXECUTION_OPTIONS = [INITIALIZE_OPTION, ADD_EXECUTION_OPTION, RUN_OPTION]
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-timestamp", required=True,    type=str,   help="key (timestamp) to uniquely identify execution")
+parser.add_argument("-execution", required=True,    type=str,   help="execution type", choices=EXECUTION_OPTIONS)
+# In case 'INITIALIZE_OPTION'
+parser.add_argument("-wait_seconds",                type=int,   help="number of seconds to wait until its check again for queue availability")
+parser.add_argument("-max_jobs_per_machine",        type=int,   help="maximum number of jobs to submit to each machine")
+# In case 'ADD_EXECUTION_SCRIPT_OPTION'
+parser.add_argument("-execution_id",                type=str,   help="id for the execution")
+parser.add_argument("-execution_file",              type=str,   help="path for the execution script")
+
+arguments = parser.parse_args()
+arguments_dict = vars(arguments)
+
+# Check argument groups
+requirements : List[str] = ['wait_seconds', 'max_jobs_per_machine']
+if arguments_dict['execution'] == INITIALIZE_OPTION and any(map(lambda argument: arguments_dict[argument] is None, requirements)):
+    exit(f"🚨 For execution mode '{arguments_dict['execution']}' the following is required: '{requirements}'")
+requirements : List[str] = ['execution_id', 'execution_file']
+if arguments_dict['execution'] == ADD_EXECUTION_OPTION and any(map(lambda argument: arguments_dict[argument] is None, requirements)):
+    exit(f"🚨 For execution mode '{arguments_dict['execution']}' the following is required: '{requirements}'")
+
+# Declare machines to use
+machines_cpu = [ Machine('x01', 'x01'), Machine('x02', 'x02'), Machine('x03', 'x03'), Machine('x04', 'x04'), Machine('x05', 'x05'), Machine('x06', 'x06'), 
+    Machine('x07', 'x07'), Machine('x08', 'x08'), Machine('x09', 'x09'), Machine('x10', 'x10'), Machine('x11', 'x11'), Machine('x12', 'x12') ]
+
+# Run main code - Init
+if arguments_dict['execution'] == INITIALIZE_OPTION:
+    parallelization_manager = ParallelizationManager(machines_cpu, arguments_dict['timestamp'],
+        arguments_dict['wait_seconds'], arguments_dict['max_jobs_per_machine'])
+    parallelization_manager.save_model()
+# Run main code - Add
+elif arguments_dict['execution'] == ADD_EXECUTION_OPTION:
+    parallelization_manager = load_manager(arguments_dict['timestamp'])
+    parallelization_manager.add_script_to_queue(arguments_dict['execution_id'], arguments_dict['execution_file'])
+    parallelization_manager.save_model()
+# Run main code - Run
+elif arguments_dict['execution'] == RUN_OPTION:
+    parallelization_manager = load_manager(arguments_dict['timestamp'])
+    parallelization_manager.run()

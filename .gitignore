@@ -15,6 +15,7 @@ __pycache__
 # Temp Files should not be sent
 tmp
 tmp_condor
+tmp_parallelization
 condor.log
 
 # Corpora should not be sent
