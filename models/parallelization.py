@@ -68,6 +68,14 @@ class ParallelizationManager():
 
         return available_machines
 
+    def machines_unoccupied(self) -> List[Machine]:
+        available_machines  : List[Machine] = []
+        for machine in self.machines:
+            if len(self.current_scripts[machine.get_hostname()]) == 0:
+                available_machines.append(machine)
+
+        return available_machines
+
     def run(self) -> None:
 
         def get_filepaths(self : ParallelizationManager, process_id : str) -> Tuple[TextIOWrapper, TextIOWrapper]:
@@ -84,11 +92,11 @@ class ParallelizationManager():
             return (out_file, err_file)
 
         def run_process_in_thread(self : ParallelizationManager, on_exit_callback, execution_script : ExecutionScript, machine : Machine, tracker : Optional[tqdm] = None):
-            command = f"ssh {machine.get_hostname()} {execution_script.get_file_path()}"
+            command = ["ssh", f"{machine.get_hostname()}", f"{execution_script.get_file_path()}"]
             out_file, err_file = get_filepaths(self, execution_script.get_execution_id())
 
             self.current_scripts[machine.get_hostname()].append(execution_script)
-            proc = subprocess.Popen(command, stdout=out_file, stderr=err_file, shell=True, preexec_fn=os.setsid)
+            proc = subprocess.Popen(command, stdout=out_file, stderr=err_file, preexec_fn=os.setsid)
 
             proc.wait()
             out_file.close()
@@ -100,7 +108,7 @@ class ParallelizationManager():
 
             current_scripts_machine = self.current_scripts[machine.get_hostname()]
             filtered_current_scripts = list(filter(lambda script_iter: script_iter.get_execution_id() != execution_script.get_execution_id(), current_scripts_machine))
-            self.current_scripts = filtered_current_scripts
+            self.current_scripts[machine.get_hostname()] = filtered_current_scripts
             if tracker is not None: tracker.update(1)
 
         print("🚀 Started execution of scripts...")
@@ -111,7 +119,9 @@ class ParallelizationManager():
         while len(self.scripts_stack) != 0:
 
             # Check for and get available machines
-            available_machines = self.machines_available()
+            available_machines = self.machines_unoccupied()
+            if len(available_machines) == 0:
+                available_machines = self.machines_available()
             if len(available_machines) == 0:
                 time.sleep(self.wait_seconds)
                 continue
@@ -119,12 +129,12 @@ class ParallelizationManager():
 
             # Execute script
             execution_script = self.scripts_stack.pop(0)
-            thread = threading.Thread(target=run_process_in_thread, args=(on_process_exit, execution_script, selected_machine, progress_tracker_completed))
+            thread = threading.Thread(target=run_process_in_thread, args=(self, on_process_exit, execution_script, selected_machine, progress_tracker_completed))
             thread.start()
             progress_tracker_submitted.update(1)
 
         # Wait for remaining jobs to finish
-        while len(self.machines_available()) != len(self.machines): time.sleep(self.wait_seconds)
+        while len(self.machines_unoccupied()) != len(self.machines): time.sleep(self.wait_seconds)
         progress_tracker_submitted.close()
         progress_tracker_completed.close()
         print("🚀 Finished execution of scripts...")
