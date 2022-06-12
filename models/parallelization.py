@@ -1,8 +1,8 @@
 import os
 import time
 import pickle
-import paramiko
 import argparse
+import warnings
 import threading
 
 from io     import TextIOWrapper
@@ -10,6 +10,9 @@ from dotenv import load_dotenv
 from typing import Dict, List, Optional, Tuple
 
 from tqdm import tqdm
+
+warnings.filterwarnings(action='ignore', module='paramiko')
+import paramiko
 
 # =================================================== CONSTANTS DEFINITION ===================================================
 
@@ -92,7 +95,7 @@ class ParallelizationManager():
             if not os.path.exists(log_path) or not os.path.isdir(log_path):
                 os.makedirs(log_path)
 
-            out_path = os.path.join(log_path, f'parallelization.err.{process_id}.log')
+            out_path = os.path.join(log_path, f'parallelization.out.{process_id}.log')
             err_path = os.path.join(log_path, f'parallelization.err.{process_id}.log')
 
             out_file = open(out_path, 'w')
@@ -108,13 +111,14 @@ class ParallelizationManager():
             out_file, err_file = get_filepaths(self, execution_script.get_execution_id())
 
             client = paramiko.SSHClient()
+            client.load_system_host_keys()
             client.connect(machine.get_address(), username=SSH_USER, password=SSH_KEY)
             _stdin, _stdout, _stderr = client.exec_command(execution_script.get_file_path())
 
             _stdout.channel.recv_exit_status()
 
-            out_file.write(_stdout.read().decode('ascii'))
-            err_file.write(_stderr.read().decode('ascii'))
+            out_file.write(_stdout.read().decode())
+            err_file.write(_stderr.read().decode())
             out_file.close()
             err_file.close()
             
@@ -148,8 +152,8 @@ class ParallelizationManager():
             # Execute script
             execution_script = self.scripts_stack.pop(0)
             thread = threading.Thread(target=run_process_in_thread, args=(self, on_process_exit, execution_script, selected_machine, progress_tracker_completed))
-            thread.start()
             progress_tracker_submitted.update(1)
+            thread.start()
 
         # Wait for remaining jobs to finish
         while len(self.machines_unoccupied()) != len(self.machines): time.sleep(self.wait_seconds)
@@ -208,9 +212,9 @@ if arguments_dict['execution'] == ADD_EXECUTION_OPTION and any(map(lambda argume
     exit(f"🚨 For execution mode '{arguments_dict['execution']}' the following is required: '{requirements}'")
 
 # Declare machines to use
-machines_cpu = [ Machine('x01', 'x01.hlt.inesc-id.pt"'), Machine('x02', 'x02.hlt.inesc-id.pt"'), Machine('x03', 'x03.hlt.inesc-id.pt"'), Machine('x04', 'x04.hlt.inesc-id.pt"'),
-    Machine('x05', 'x05.hlt.inesc-id.pt"'), Machine('x06', 'x06.hlt.inesc-id.pt"'), Machine('x07', 'x07.hlt.inesc-id.pt"'), Machine('x08', 'x08.hlt.inesc-id.pt"'),
-    Machine('x09', 'x09.hlt.inesc-id.pt"'), Machine('x10', 'x10.hlt.inesc-id.pt"'), Machine('x11', 'x11.hlt.inesc-id.pt"'), Machine('x12', 'x12.hlt.inesc-id.pt"') ]
+machines_cpu = [ Machine('x01', 'x01'), Machine('x02', 'x02'), Machine('x03', 'x03'), Machine('x04', 'x04'),
+    Machine('x05', 'x05'), Machine('x06', 'x06'), Machine('x07', 'x07'), Machine('x08', 'x08'),
+    Machine('x09', 'x09'), Machine('x10', 'x10'), Machine('x11', 'x11'), Machine('x12', 'x12') ]
 
 # Run main code - Init
 if arguments_dict['execution'] == INITIALIZE_OPTION:
