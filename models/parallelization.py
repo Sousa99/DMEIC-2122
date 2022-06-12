@@ -1,11 +1,12 @@
 import os
 import time
 import pickle
+import paramiko
 import argparse
 import threading
-import subprocess
 
 from io     import TextIOWrapper
+from dotenv import load_dotenv
 from typing import Dict, List, Optional, Tuple
 
 from tqdm import tqdm
@@ -14,6 +15,14 @@ from tqdm import tqdm
 
 TMP_DIRECTORY = './tmp_parallelization/'
 FILE_SAVE_NAME = 'parallelization_manager.pkl'
+
+load_dotenv()
+
+SSH_USER = os.getenv('SSH_USER')
+SSH_KEY = os.getenv('SSH_KEY')
+
+if SSH_USER is None or SSH_KEY is None:
+    exit("🚨 Please create a '.env' file with 'SSH_USER' and 'SSH_KEY' defined")
 
 # =================================================== CLASSES DEFINITION ===================================================
 
@@ -92,15 +101,24 @@ class ParallelizationManager():
             return (out_file, err_file)
 
         def run_process_in_thread(self : ParallelizationManager, on_exit_callback, execution_script : ExecutionScript, machine : Machine, tracker : Optional[tqdm] = None):
-            command = ["ssh", f"{machine.get_hostname()}", f"{execution_script.get_file_path()}"]
+
+            current_scripts = self.current_scripts[machine.get_hostname()]
+            current_scripts.append(execution_script)
+            self.current_scripts[machine.get_hostname()] = current_scripts
             out_file, err_file = get_filepaths(self, execution_script.get_execution_id())
 
-            self.current_scripts[machine.get_hostname()].append(execution_script)
-            proc = subprocess.Popen(command, stdout=out_file, stderr=err_file, preexec_fn=os.setsid)
+            client = paramiko.SSHClient()
+            client.connect(machine.get_address(), username=SSH_USER, password=SSH_KEY)
+            _stdin, _stdout, _stderr = client.exec_command(execution_script.get_file_path())
 
-            proc.wait()
+            _stdout.channel.recv_exit_status()
+
+            out_file.write(_stdout.read().decode('ascii'))
+            err_file.write(_stderr.read().decode('ascii'))
             out_file.close()
             err_file.close()
+            
+            client.close()
             on_exit_callback(self, execution_script, machine, tracker)
             return
 
@@ -190,8 +208,9 @@ if arguments_dict['execution'] == ADD_EXECUTION_OPTION and any(map(lambda argume
     exit(f"🚨 For execution mode '{arguments_dict['execution']}' the following is required: '{requirements}'")
 
 # Declare machines to use
-machines_cpu = [ Machine('x01', 'x01'), Machine('x02', 'x02'), Machine('x03', 'x03'), Machine('x04', 'x04'), Machine('x05', 'x05'), Machine('x06', 'x06'), 
-    Machine('x07', 'x07'), Machine('x08', 'x08'), Machine('x09', 'x09'), Machine('x10', 'x10'), Machine('x11', 'x11'), Machine('x12', 'x12') ]
+machines_cpu = [ Machine('x01', 'x01.hlt.inesc-id.pt"'), Machine('x02', 'x02.hlt.inesc-id.pt"'), Machine('x03', 'x03.hlt.inesc-id.pt"'), Machine('x04', 'x04.hlt.inesc-id.pt"'),
+    Machine('x05', 'x05.hlt.inesc-id.pt"'), Machine('x06', 'x06.hlt.inesc-id.pt"'), Machine('x07', 'x07.hlt.inesc-id.pt"'), Machine('x08', 'x08.hlt.inesc-id.pt"'),
+    Machine('x09', 'x09.hlt.inesc-id.pt"'), Machine('x10', 'x10.hlt.inesc-id.pt"'), Machine('x11', 'x11.hlt.inesc-id.pt"'), Machine('x12', 'x12.hlt.inesc-id.pt"') ]
 
 # Run main code - Init
 if arguments_dict['execution'] == INITIALIZE_OPTION:
