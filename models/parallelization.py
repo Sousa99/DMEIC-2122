@@ -126,7 +126,7 @@ class ParallelizationManager():
             client = paramiko.SSHClient()
             client.load_system_host_keys()
             client.connect(machine.get_address(), username=SSH_USER, password=SSH_KEY)
-            _stdin, _stdout, _stderr = client.exec_command(execution_script.get_file_path())
+            _stdin, _stdout, _stderr = client.exec_command(execution_script.get_file_path(), get_pty=True)
 
             for line in iter(lambda: _stdout.readline(2048), ""):
                 out_file.write(line)
