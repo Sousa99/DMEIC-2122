@@ -111,8 +111,8 @@ class ParallelizationManager():
             out_path = os.path.join(log_path, f'parallelization.out.{process_id}.log')
             err_path = os.path.join(log_path, f'parallelization.err.{process_id}.log')
 
-            out_file = open(out_path, 'wb')
-            err_file = open(err_path, 'wb')
+            out_file = open(out_path, 'w')
+            err_file = open(err_path, 'w')
 
             return (out_file, err_file)
 
@@ -128,12 +128,13 @@ class ParallelizationManager():
             client.connect(machine.get_address(), username=SSH_USER, password=SSH_KEY)
             _stdin, _stdout, _stderr = client.exec_command(execution_script.get_file_path())
 
-            while not _stdout.channel.exit_status_ready():
-                out_file.write(_stdout.read())
-                err_file.write(_stderr.read())
-                
-            out_file.write(_stdout.read())
-            err_file.write(_stderr.read())
+            for line in iter(lambda: _stdout.readline(2048), ""):
+                out_file.write(line)
+                out_file.flush()
+                os.fsync(out_file.fileno())
+
+            out_file.write(_stdout.read().decode())
+            err_file.write(_stderr.read().decode())
 
             out_file.close()
             err_file.close()
