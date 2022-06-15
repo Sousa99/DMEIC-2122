@@ -66,6 +66,8 @@ class ParallelizationManager():
         self.current_scripts    : Dict[Hostname, List[ExecutionScript]] = dict((machine.get_hostname(), []) for machine in self.machines)
         self.concluded_scripts  : Dict[Hostname, List[ExecutionScript]] = dict((machine.get_hostname(), []) for machine in self.machines)
 
+        self.check_connectability()
+
     def add_script_to_queue(self, script_id : str, script_path : FilePath) -> None:
         if not os.path.exists(script_path) or not os.path.isfile(script_path):
             exit(f"🚨 File at '{script_path}' does not exist")
@@ -87,6 +89,15 @@ class ParallelizationManager():
                 available_machines.append(machine)
 
         return available_machines
+
+    def check_connectability(self) -> None:
+
+        for machine in self.machines:
+            client = paramiko.SSHClient()
+            client.load_system_host_keys()
+
+            try: client.connect(machine.get_address(), username=SSH_USER, password=SSH_KEY)
+            except: exit(f"🚨 Connectability could not be established with '{machine.get_address()}'")
 
     def run(self) -> None:
 
