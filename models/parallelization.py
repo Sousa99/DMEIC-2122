@@ -96,7 +96,9 @@ class ParallelizationManager():
             client = paramiko.SSHClient()
             client.load_system_host_keys()
 
-            try: client.connect(machine.get_address(), username=SSH_USER, password=SSH_KEY)
+            try:
+                client.connect(machine.get_address(), username=SSH_USER, password=SSH_KEY)
+                client.close()
             except: exit(f"🚨 Connectability could not be established with '{machine.get_address()}'")
 
     def run(self) -> None:
