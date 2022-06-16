@@ -7,6 +7,16 @@ import random
 
 from typing import Iterable, List, Optional, Union
 
+# ============================================================ AUXILIARY FUNCTION ============================================================
+
+def get_number_of_documents(path_to_corpora_files: str, documents_to_use: Optional[Union[int, float]] = None) -> int:
+
+    filenames : List[str] = os.listdir(path_to_corpora_files)
+
+    if documents_to_use is None: return len(filenames)
+    elif type(documents_to_use) == int: return documents_to_use
+    else: return round(len(filenames) * documents_to_use)
+
 # ============================================================ MAIN CLASS DEFINITION ============================================================
 
 class CorpusNotLoaded(abc.ABC):
