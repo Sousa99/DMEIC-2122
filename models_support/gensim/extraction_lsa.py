@@ -5,14 +5,14 @@ import gensim
 import pprint
 import load_corpus
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import seaborn as sns
 import matplotlib.pyplot as plt
 
 # =============================================== DEBUG CONSTANTS ================================================
 
-NUMBER_DOCUMENTS : Optional[int] = None
+NUMBER_DOCUMENTS : Optional[Union[int, float]] = None
 MAX_USABLE_RAM_GB : float = 40.0
 NUMBER_OF_TOPIC_VARIATIONS_TO_TEST : int = 20
 

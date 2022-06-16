@@ -1,11 +1,11 @@
 import gensim
 import load_corpus
 
-from typing import Optional
+from typing import Optional, Union
 
 # =============================================== DEBUG CONSTANTS ================================================
 
-NUMBER_DOCUMENTS : Optional[int] = None
+NUMBER_DOCUMENTS : Optional[Union[int, float]] = None
 
 # ================================================== CONSTANTS ===================================================
 
