@@ -89,7 +89,7 @@ class WebScraperShein(scraper.WebScraper[ScrapedInfoShein]):
         driver.driver_get(link)
         link_soup = BeautifulSoup(driver.driver_page_source(), 'html.parser')
 
-        for _ in range(2):
+        while True:
 
             # Parse current Click
             link_soup = BeautifulSoup(driver.driver_page_source(), 'html.parser')
@@ -106,7 +106,10 @@ class WebScraperShein(scraper.WebScraper[ScrapedInfoShein]):
                 reviews.append(ScrapedInfoShein(clothe_title, 1, 5, review_author, review_text, review_score, review_date))
 
             # Click next Page
-            driver.driver_click_css("[aria-label='Page Next']")
+            driver.driver_click_css('body > div.c-outermost-ctn.j-outermost-ctn > div.c-vue-coupon > div.S-dialog > div > i', throw_exception=False)
+            element = link_soup.find(attrs={"aria-label": "Page Next"})
+            if element.has_attr('aria-disabled') and element['aria-disabled'] == "true": break
+            else: driver.driver_click_css('[aria-label="Page Next"]')
 
         return reviews
 
@@ -118,5 +121,3 @@ for page in scraper_to_use.get_pages_to_scrape(request_driver):
     print(f'⚙️  Page: {page}')
     for review in scraper_to_use.scrape_page(page, request_driver):
         print(f'  ⚙️  Review: {vars(review)}')
-
-    exit()
