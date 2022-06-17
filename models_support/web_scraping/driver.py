@@ -30,6 +30,7 @@ class Driver():
         if rotate_user_agents: self.user_agent_gen = UserAgent()
 
     def generate_new_driver(self) -> None:
+        if self.selenium_webdriver is not None: self.driver_quit()
         
         attempts : int = 0
         while attempts < self.max_attempts_driver:
