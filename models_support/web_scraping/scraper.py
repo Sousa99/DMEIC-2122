@@ -19,15 +19,15 @@ class WebScraper(abc.ABC, Generic[ScrapedInfo]):
     def get_pages_to_scrape(self, driver: driver.Driver) -> Generator[str, None, None]:
         exit(f"🚨 Method 'get_pages_to_scrape' not defined for '{self.__class__.__name__}'")
     @abc.abstractmethod
-    def scrape_page(self, link: str, driver: driver.Driver) -> List[ScrapedInfo]:
+    def scrape_page(self, link: str, driver: driver.Driver) -> Generator[ScrapedInfo, None, None]:
         exit(f"🚨 Method 'scrape_page' not defined for '{self.__class__.__name__}'")
 
     def get_scraped_info(self, driver: driver.Driver) -> List[ScrapedInfo]:
 
         all_scrapped_info : List[ScrapedInfo] = []
         for page_to_scrape in tqdm.tqdm(self.get_pages_to_scrape(driver), desc=f"🌐 Scrapping '{self.name}' for its information", leave=True):
-            scrapped_info = self.scrape_page(page_to_scrape, driver)
-            all_scrapped_info.extend(scrapped_info)
+            for scrapped_info in self.scrape_page(page_to_scrape, driver):
+                all_scrapped_info.extend(scrapped_info)
         
         return all_scrapped_info
 

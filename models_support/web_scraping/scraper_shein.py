@@ -81,9 +81,7 @@ class WebScraperShein(scraper.WebScraper[ScrapedInfoShein]):
             for good_url in goods_urls:
                 yield f'{self.BASE_LINK}{good_url}'
 
-    def scrape_page(self, link: str, driver : driver.Driver) -> List[ScrapedInfoShein]:
-
-        reviews : List[ScrapedInfoShein] = []
+    def scrape_page(self, link: str, driver : driver.Driver) -> Generator[ScrapedInfoShein, None, None]:
 
         # Get Current Page
         driver.driver_get(link)
@@ -103,15 +101,13 @@ class WebScraperShein(scraper.WebScraper[ScrapedInfoShein]):
                 review_text     : str   = item.find('div', class_="rate-des").text.replace('\n', ' ').strip()
                 review_date     : str   = item.find('div', class_="date").text.strip()
                 
-                reviews.append(ScrapedInfoShein(clothe_title, 1, 5, review_author, review_text, review_score, review_date))
+                yield ScrapedInfoShein(clothe_title, 1, 5, review_author, review_text, review_score, review_date)
 
             # Click next Page
             driver.driver_click_css('body > div.c-outermost-ctn.j-outermost-ctn > div.c-vue-coupon > div.S-dialog > div > i', throw_exception=False)
             element = link_soup.find(attrs={"aria-label": "Page Next"})
             if element.has_attr('aria-disabled') and element['aria-disabled'] == "true": break
             else: driver.driver_click_css('[aria-label="Page Next"]')
-
-        return reviews
 
 # ============================================================ TEST ZONE ============================================================
 
