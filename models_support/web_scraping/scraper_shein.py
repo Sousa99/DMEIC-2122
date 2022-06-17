@@ -1,6 +1,6 @@
 import json
 
-from typing                             import Any, Generator, List, Optional
+from typing                             import Any, Dict, Generator, List, Optional
 from bs4                                import BeautifulSoup
 
 import driver
@@ -52,6 +52,10 @@ class ScrapedInfoShein(scraper.ScrapedInfoValence):
 
         value_normalized    = (self.review_score - self.clothe_score_floor) / (clothe_score_range)
         return limit_floor + (value_normalized * limit_range)
+
+    def get_metadata(self) -> Dict[str, Any]:
+        return { 'scraper': 'Shein', 'clothe_title': self.clothe_title,
+            'reviewer': self.review_from, 'review_date': self.review_date }
 
 # ============================================================ WEB SCRAPER SPECIALIZED ============================================================
 
@@ -108,12 +112,3 @@ class WebScraperShein(scraper.WebScraper[ScrapedInfoShein]):
             element = link_soup.find(attrs={"aria-label": "Page Next"})
             if element.has_attr('aria-disabled') and element['aria-disabled'] == "true": break
             else: driver.driver_click_css('[aria-label="Page Next"]')
-
-# ============================================================ TEST ZONE ============================================================
-
-request_driver = driver.Driver()
-scraper_to_use = WebScraperShein()
-for page in scraper_to_use.get_pages_to_scrape(request_driver):
-    print(f'⚙️  Page: {page}')
-    for review in scraper_to_use.scrape_page(page, request_driver):
-        print(f'  ⚙️  Review: {vars(review)}')
