@@ -1,9 +1,6 @@
-import random
 
-from bs4                                        import BeautifulSoup
-from tqdm                                       import tqdm
 from fp.fp                                      import FreeProxy
-from typing                                     import List, Optional, Tuple
+from typing                                     import Optional
 from selenium                                   import webdriver
 from fake_useragent                             import UserAgent
 from selenium.common.exceptions                 import SessionNotCreatedException
