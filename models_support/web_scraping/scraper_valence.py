@@ -36,13 +36,14 @@ def create_checkpoint(scrapers_in_use: List[scraper.WebScraper], scraped_informa
 
 # ============================================================ MAIN FUNCTIONALITY ============================================================
 
-request_driver : driver.Driver = driver.Driver(rotate_proxies=True, rotate_user_agents=True, max_requests=50)
+request_driver : driver.Driver = driver.Driver(headless=False, rotate_proxies=True, rotate_user_agents=True, max_requests=50)
 if not os.path.exists(PATH_TO_EXPORTS): os.makedirs(PATH_TO_EXPORTS)
 
 scraped_information : List[Dict[str, Any]] = []
 scrapers_to_use : List[scraper.WebScraper] = [ scraper_cinecartaz.WebScraperCineCartaz(), scraper_shein.WebScraperShein() ]
 
 for scraper_to_use in scrapers_to_use:
+    request_driver.set_callback_accessible(scraper_to_use.callback_accessible)
     for scraped_info in scraper_to_use.get_scraped_info(request_driver):
 
         scraped_information.append({

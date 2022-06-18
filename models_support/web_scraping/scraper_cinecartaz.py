@@ -1,4 +1,4 @@
-from typing import Any, Dict, Generator, List, Optional
+from typing import Any, Dict, Generator, Optional
 from bs4    import BeautifulSoup
 
 import driver
@@ -139,4 +139,5 @@ class WebScraperCineCartaz(scraper.WebScraper[ScrapedInfoCineCartaz]):
             movie_info['movie_score_floor'], movie_info['movie_score_ceil'],
             review_author, review_text, review_date)
 
-# ============================================================ TEST ZONE ============================================================
+    def callback_accessible(self, page_source: str) -> bool:
+        super().callback_accessible(page_source)

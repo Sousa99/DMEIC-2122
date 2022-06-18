@@ -1,7 +1,8 @@
 import abc
 import tqdm
 
-from typing import Any, Dict, Generic, List, Generator, TypeVar
+from selenium   import webdriver
+from typing     import Any, Dict, Generic, Generator, TypeVar
 
 import driver
 
@@ -21,6 +22,9 @@ class WebScraper(abc.ABC, Generic[ScrapedInfo]):
     @abc.abstractmethod
     def scrape_page(self, link: str, driver: driver.Driver) -> Generator[ScrapedInfo, None, None]:
         exit(f"🚨 Method 'scrape_page' not defined for '{self.__class__.__name__}'")
+    @abc.abstractmethod
+    def callback_accessible(self, page_source: str) -> bool:
+        return True
 
     def get_scraped_info(self, driver: driver.Driver) -> Generator[ScrapedInfo, None, None]:
 

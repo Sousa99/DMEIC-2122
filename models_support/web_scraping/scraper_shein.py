@@ -1,7 +1,7 @@
 import json
 
-from typing                             import Any, Dict, Generator, List, Optional
-from bs4                                import BeautifulSoup
+from typing     import Any, Dict, Generator, List, Optional
+from bs4        import BeautifulSoup
 
 import driver
 import scraper
@@ -112,3 +112,7 @@ class WebScraperShein(scraper.WebScraper[ScrapedInfoShein]):
             element = link_soup.find(attrs={"aria-label": "Page Next"})
             if element.has_attr('aria-disabled') and element['aria-disabled'] == "true": break
             else: driver.driver_click_css('[aria-label="Page Next"]')
+
+    def callback_accessible(self, page_source: str) -> bool:
+        if "Access Denied" in page_source: return False
+        return True
