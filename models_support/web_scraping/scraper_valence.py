@@ -14,7 +14,7 @@ from typing     import Any, Dict, List
 SCORE_FLOOR : float = - 1.0
 SCORE_CEIL  : float = + 1.0
 
-STEPS_PER_CHECKPOINT    : int = 5000
+STEPS_PER_CHECKPOINT    : int = 500
 
 PATH_TO_EXPORTS             : str = '../exports/web_scraping/'
 PATH_TO_EXPORT_INFORMATION  : str = PATH_TO_EXPORTS + 'valence_information.json'
@@ -36,11 +36,11 @@ def create_checkpoint(scrapers_in_use: List[scraper.WebScraper], scraped_informa
 
 # ============================================================ MAIN FUNCTIONALITY ============================================================
 
-request_driver : driver.Driver = driver.Driver(headless=False, rotate_proxies=True, rotate_user_agents=True, max_requests=50)
+request_driver : driver.Driver = driver.Driver(headless=False, rotate_proxies=True, rotate_user_agents=True, max_requests=200, max_attempts_driver=20)
 if not os.path.exists(PATH_TO_EXPORTS): os.makedirs(PATH_TO_EXPORTS)
 
 scraped_information : List[Dict[str, Any]] = []
-scrapers_to_use : List[scraper.WebScraper] = [ scraper_cinecartaz.WebScraperCineCartaz(), scraper_shein.WebScraperShein() ]
+scrapers_to_use : List[scraper.WebScraper] = [ scraper_shein.WebScraperShein() ]
 
 for scraper_to_use in scrapers_to_use:
     request_driver.set_callback_accessible(scraper_to_use.callback_accessible)
@@ -53,7 +53,7 @@ for scraper_to_use in scrapers_to_use:
         })
 
         if len(scraped_information) % STEPS_PER_CHECKPOINT == 0:
-            create_checkpoint(scraped_info)
+            create_checkpoint(scrapers_to_use, scraped_info)
 
-create_checkpoint(scraped_info)
+create_checkpoint(scrapers_to_use, scraped_info)
 request_driver.driver_quit()

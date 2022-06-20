@@ -1,5 +1,6 @@
 
 from bs4                                        import BeautifulSoup
+from tqdm                                       import tqdm
 from fp.fp                                      import FreeProxy
 from typing                                     import Callable, List, Optional
 from selenium                                   import webdriver
@@ -91,18 +92,24 @@ class Driver():
                 self.selenium_webdriver.get(link)
                 page_source = self.selenium_webdriver.page_source
 
-                if self.callback_accessible is None or self.callback_accessible(page_source):
+                if self.callback_accessible is not None and not self.callback_accessible(page_source):
                     raise Exception("🚨 Page not accessible!")
-
+                
+                if attempts != 0: tqdm.write("✅ Eventually webdriver was initialized successfully!")
                 return
             
             except SessionNotCreatedException as e:
+                tqdm.write("⚠️ Webdriver session could not be created!")
+                self.selenium_webdriver = None
                 attempts = attempts + 1
             except Exception as e:
+                tqdm.write(f"⚠️ Exception while initializing webdriver: '{e}'")
+                self.selenium_webdriver.quit()
+                self.selenium_webdriver = None
                 attempts = attempts + 1
         
-        exit(f"🚨 Driver could not be initialized '{self.max_attempts_driver}' times in a row!")
-
+        if attempts >= self.max_attempts_driver:
+            exit(f"🚨 Driver could not be initialized '{self.max_attempts_driver}' times in a row!")
 
     def driver_page_source(self) -> str:
         return self.selenium_webdriver.page_source

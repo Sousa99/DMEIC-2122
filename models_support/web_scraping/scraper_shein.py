@@ -2,6 +2,7 @@ import json
 
 from typing     import Any, Dict, Generator, List, Optional
 from bs4        import BeautifulSoup
+from tqdm       import tqdm
 
 import driver
 import scraper
@@ -110,9 +111,12 @@ class WebScraperShein(scraper.WebScraper[ScrapedInfoShein]):
             # Click next Page
             driver.driver_click_css('body > div.c-outermost-ctn.j-outermost-ctn > div.c-vue-coupon > div.S-dialog > div > i', throw_exception=False)
             element = link_soup.find(attrs={"aria-label": "Page Next"})
-            if element.has_attr('aria-disabled') and element['aria-disabled'] == "true": break
+            if element is None or (element.has_attr('aria-disabled') and element['aria-disabled'] == "true"): break
             else: driver.driver_click_css('[aria-label="Page Next"]')
 
     def callback_accessible(self, page_source: str) -> bool:
         if "Access Denied" in page_source: return False
+        elif "This site can't be reached" in page_source: return False
+        elif "Your connection is not private" in page_source: return False
+        elif "No internet" in page_source: return False
         return True
