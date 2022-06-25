@@ -73,9 +73,11 @@ class FeatureSetAbstraction(abc.ABC):
             load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['basis']), filename)
             if os.path.exists(load_path) and os.path.isfile(load_path):
                 file = open(load_path, 'rb')
-                self.basis_dataframe = pickle.load(file)
-                file.close()
-                print(f"✅ Loaded '{self.id}' basis dataframe from checkpoint!")
+                try: 
+                    self.basis_dataframe = pickle.load(file)
+                    print(f"✅ Loaded '{self.id}' basis dataframe from checkpoint!")
+                except: self._develop_basis_df()
+                finally: file.close()
             else: self._develop_basis_df()
 
         # Save back dataframe
@@ -95,9 +97,11 @@ class FeatureSetAbstraction(abc.ABC):
             load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['static']), filename)
             if os.path.exists(load_path) and os.path.isfile(load_path):
                 file = open(load_path, 'rb')
-                self.static_dataframe = pickle.load(file)
-                file.close()
-                print(f"✅ Loaded '{self.id}' static dataframe from checkpoint!")
+                try:
+                    self.static_dataframe = pickle.load(file)
+                    print(f"✅ Loaded '{self.id}' static dataframe from checkpoint!")
+                except: self._develop_static_df()
+                finally: file.close()
             else: self._develop_static_df()
 
         # Save back dataframe
@@ -120,9 +124,11 @@ class FeatureSetAbstraction(abc.ABC):
         load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['dynamic']), filename)
         if os.path.exists(load_path) and os.path.isfile(load_path):
             file = open(load_path, 'rb')
-            dynamic_df_train, dynamic_df_test = pickle.load(file)
-            file.close()
-            print(f"✅ Loaded '{self.id}' dynamic with code '{code}' dataframe from checkpoint!")
+            try:
+                dynamic_df_train, dynamic_df_test = pickle.load(file)
+                print(f"✅ Loaded '{self.id}' dynamic with code '{code}' dataframe from checkpoint!")
+            except: dynamic_df_train, dynamic_df_test = self._develop_dynamic_df(train_X, train_Y, test_X)
+            finally: file.close()
         else: dynamic_df_train, dynamic_df_test = self._develop_dynamic_df(train_X, train_Y, test_X)
 
         # Save back dataframe

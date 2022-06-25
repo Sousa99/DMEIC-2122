@@ -25,13 +25,13 @@ if ( not args.data or not args.times or not args.output or not args.tag):
 
 # =================================== AUXILIARY FUNCTIONS ===================================
 
-def read_times(file_path: str, blacklist_rows: List[str]):
+def read_times(file_path: str, blacklist_rows: List[str]) -> pd.DataFrame:
     dataframe = pd.read_json(file_path, orient='index')
     dataframe = dataframe.drop(blacklist_rows)
 
     return dataframe
 
-def convert_time(time: float):
+def convert_time(time: float) -> int:
 
     minutes = math.floor(time)
     seconds = (time % 1) * 100
@@ -86,6 +86,8 @@ for index_value, (index, row) in tqdm(list(enumerate(cut_times_dataframe.iterrow
 
                 start = convert_time(time_interval[0])
                 end = convert_time(time_interval[1])
+
+                if start > end: exit(f"🚨 End of track comes before start for subject '{current_folder}' and task '{index}'")
                 
                 sub_audio = AudioSegment.from_file(audio_file['file'])
                 sub_audio = sub_audio[start : end]
