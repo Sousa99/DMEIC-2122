@@ -28,6 +28,7 @@ print()
 # =================================== IGNORE CERTAIN ERRORS ===================================
 
 warnings.filterwarnings('ignore', category = UserWarning, module = 'openpyxl')
+warnings.filterwarnings('ignore', module = 'stanza')
 
 # =================================== FLAGS PARSING ===================================
 
@@ -104,7 +105,7 @@ def callbackWordLength(paths):
     total_words = 0
     for file_path in paths:
         file = open(file_path, 'r')
-        for line in file.readline():
+        for line in file.readlines():
             line_split = line.split()
             for _ in line_split[4:]: total_words = total_words + 1
         file.close()
@@ -118,7 +119,7 @@ def callbackWordFrequency(paths):
         
         text : str = ''
         file = open(file_path, 'r')
-        for line in file.readline():
+        for line in file.readlines():
             line_split = line.split()
             for word in line_split[4:]:
                 text = text + ' ' + word
@@ -131,6 +132,7 @@ def callbackWordFrequency(paths):
 
         # Add to dict
         for word in processed_lemmas:
+            if word is None: continue
             if not word.isalpha() or word in nltk.corpus.stopwords.words('portuguese'): continue
 
             if word not in word_frequencies: word_frequencies[word] = 1
@@ -212,15 +214,18 @@ print("Exporting 'duration' plots ...")
 sns.set_theme(palette="deep")
 
 plt.clf()
-sns.displot(data=task_df, x="duration", col="task", hue='type', multiple='dodge', kde=True, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
+try: sns.displot(data=task_df, x="duration", col="task", hue='type', multiple='dodge', kde=True, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
+except: sns.displot(data=task_df, x="duration", col="task", hue='type', multiple='dodge', kde=False, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
 plt.savefig(args.save + ' - task duration by type.png')
 
 plt.clf()
-sns.displot(data=task_df, x="duration", row="gender", col="task", hue='type', multiple='dodge', kde=True, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
+try: sns.displot(data=task_df, x="duration", row="gender", col="task", hue='type', multiple='dodge', kde=True, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
+except: sns.displot(data=task_df, x="duration", row="gender", col="task", hue='type', multiple='dodge', kde=False, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
 plt.savefig(args.save + ' - task duration by gender.png')
 
 plt.clf()
-sns.displot(data=task_df, x="duration", row="schooling", col="task", hue='type', multiple='dodge', kde=True, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
+try: sns.displot(data=task_df, x="duration", row="schooling", col="task", hue='type', multiple='dodge', kde=True, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
+except: sns.displot(data=task_df, x="duration", row="schooling", col="task", hue='type', multiple='dodge', kde=False, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
 plt.savefig(args.save + ' - task duration by schooling.png')
 
 # ================================================================== WORD COUNT ==================================================================
@@ -229,7 +234,8 @@ print("Exporting 'word count' plots ...")
 sns.set_theme(palette="deep")
 
 plt.clf()
-sns.displot(data=task_df, x="word count", col="task", hue='type', multiple='dodge', kde=True, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
+try: sns.displot(data=task_df, x="word count", col="task", hue='type', multiple='dodge', kde=True, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
+except: sns.displot(data=task_df, x="word count", col="task", hue='type', multiple='dodge', kde=False, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
 plt.savefig(args.save + ' - word count by type.png')
 
 # ================================================================== WORD FREQUENCIES ==================================================================

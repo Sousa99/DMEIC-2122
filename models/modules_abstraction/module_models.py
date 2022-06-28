@@ -227,7 +227,7 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
         # Export Classifier Variations Results
         module_exporter.change_current_directory([variation.generate_code(), 'Classifier'])
         variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 
-            'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code }
+            'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code, 'Data': variation.data_code }
         classifier.export_variations_results(variation_summary, self.TARGET_METRIC)
         # Export Best Classifier Variation Results
         _, best_scorer = classifier.get_best_scorer(self.TARGET_METRIC)
@@ -268,7 +268,7 @@ class SequentialModel(ModelAbstraction):
             best_scorer_key, best_scorer = self.run_variation(variation)
             # Update General Scores
             variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 'Classifier Variation': best_scorer_key,
-                'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code }
+                'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code, 'Data': variation.data_code }
             for score in best_scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
             self.variations_results.append(variation_summary)
 
@@ -334,7 +334,7 @@ class ParallelModel(ModelAbstraction):
 
         # Update General Scores
         variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 'Classifier Variation': best_scorer_key,
-            'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code }
+            'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code, 'Data': variation.data_code }
         for score in best_scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
 
         # Save Temporarily Variation Summary
