@@ -66,77 +66,102 @@ class FeatureSetAbstraction(abc.ABC):
 
     def develop_basis_df(self):
 
-        filename : str = f'{self.id}.pkl'
+        filename_h5 : str = f'{self.id}.h5'
+        filename_pkl : str = f'{self.id}.pkl'
 
-        # Get Dataframe
+        # Get Dataframe - H5
         if self.basis_dataframe is None:
-            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['basis']), filename)
+            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['basis']), filename_h5)
+            if os.path.exists(load_path) and os.path.isfile(load_path):
+                try:
+                    self.basis_dataframe = pd.read_hdf(load_path, key='df', mode='r')
+                    print(f"✅ Loaded '{self.id}' basis dataframe from h5 checkpoint!")
+                except: self.basis_dataframe = None
+        # Get Dataframe - Pickle
+        if self.basis_dataframe is None:
+            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['basis']), filename_pkl)
             if os.path.exists(load_path) and os.path.isfile(load_path):
                 file = open(load_path, 'rb')
                 try: 
                     self.basis_dataframe = pickle.load(file)
-                    print(f"✅ Loaded '{self.id}' basis dataframe from checkpoint!")
+                    print(f"✅ Loaded '{self.id}' basis dataframe from pickle checkpoint!")
                 except: self._develop_basis_df()
-                finally: file.close()
-            else: self._develop_basis_df()
+        if self.basis_dataframe is None: self._develop_basis_df()
 
         # Save back dataframe
-        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['basis']), filename)
+        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['basis']), filename_h5)
         if not os.path.exists(save_path) or not os.path.isfile(save_path):
-            file = open(save_path, 'wb')
-            pickle.dump(self.basis_dataframe, file)
-            file.close()
+            self.basis_dataframe.to_hdf(save_path, 'df', mode='w')
 
     def develop_static_df(self):
 
         if self.basis_dataframe is None: self.develop_basis_df()
-        filename : str = f'{self.id}.pkl'
+        filename_h5 : str = f'{self.id}.h5'
+        filename_pkl : str = f'{self.id}.pkl'
 
-        # Get Dataframe
+        # Get Dataframe - H5
         if self.static_dataframe is None:
-            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['static']), filename)
+            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['static']), filename_h5)
+            if os.path.exists(load_path) and os.path.isfile(load_path):
+                try:
+                    self.static_dataframe = pd.read_hdf(load_path, key='df', mode='r')
+                    print(f"✅ Loaded '{self.id}' static dataframe from h5 checkpoint!")
+                except: self.static_dataframe = None
+        # Get Dataframe - Pickle
+        if self.static_dataframe is None:
+            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['static']), filename_pkl)
             if os.path.exists(load_path) and os.path.isfile(load_path):
                 file = open(load_path, 'rb')
-                try:
+                try: 
                     self.static_dataframe = pickle.load(file)
-                    print(f"✅ Loaded '{self.id}' static dataframe from checkpoint!")
-                except: self._develop_static_df()
+                    print(f"✅ Loaded '{self.id}' static dataframe from pickle checkpoint!")
                 finally: file.close()
-            else: self._develop_static_df()
+        if self.static_dataframe is None: self._develop_static_df()
 
         # Save back dataframe
-        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['static']), filename)
+        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['static']), filename_h5)
         if not os.path.exists(save_path) or not os.path.isfile(save_path):
-            file = open(save_path, 'wb')
-            pickle.dump(self.static_dataframe, file)
-            file.close()
+            self.static_dataframe.to_hdf(save_path, 'df', mode='w')
 
     def develop_dynamic_df(self, code: str, train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
 
         if self.basis_dataframe is None: self.develop_basis_df()
         if self.static_dataframe is None: self.develop_static_df()
-        filename : str = f'{code}.pkl'
+        filename_h5 : str = f'{self.id}.h5'
+        filename_pkl : str = f'{self.id}.pkl'
+
+        loaded : bool = False
 
         dynamic_df_train    : pd.DataFrame
-        dynamic_df_test     : Optional[pd.DataFrame]
+        dynamic_df_test     : Optional[pd.DataFrame] = None
 
-        # Get Dataframe
-        load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['dynamic']), filename)
-        if os.path.exists(load_path) and os.path.isfile(load_path):
-            file = open(load_path, 'rb')
-            try:
-                dynamic_df_train, dynamic_df_test = pickle.load(file)
-                print(f"✅ Loaded '{self.id}' dynamic with code '{code}' dataframe from checkpoint!")
-            except: dynamic_df_train, dynamic_df_test = self._develop_dynamic_df(train_X, train_Y, test_X)
-            finally: file.close()
-        else: dynamic_df_train, dynamic_df_test = self._develop_dynamic_df(train_X, train_Y, test_X)
+        # Get Dataframe - H5
+        if not loaded:
+            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['dynamic']), filename_h5)
+            if os.path.exists(load_path) and os.path.isfile(load_path):
+                try:
+                    dynamic_df_train = pd.read_hdf(load_path, key='df_train', mode='r')
+                    loaded = True
+                    print(f"✅ Loaded '{self.id}' dynamic with code '{code}' dataframe from h5 checkpoint!")
+                    dynamic_df_test = pd.read_hdf(load_path, key='df_test', mode='r')
+                except: pass
+        # Get Dataframe - Pickle
+        if not loaded:
+            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['dynamic']), filename_pkl)
+            if os.path.exists(load_path) and os.path.isfile(load_path):
+                file = open(load_path, 'rb')
+                try: 
+                    dynamic_df_train, dynamic_df_test = pickle.load(file)
+                    loaded = True
+                    print(f"✅ Loaded '{self.id}' dynamic with code '{code}' dataframe from pickle checkpoint!")
+                finally: file.close()
+        if not loaded: dynamic_df_train, dynamic_df_test = self._develop_dynamic_df(train_X, train_Y, test_X)
 
         # Save back dataframe
-        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['dynamic']), filename)
+        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['dynamic']), filename_h5)
         if not os.path.exists(save_path) or not os.path.isfile(save_path):
-            file = open(save_path, 'wb')
-            pickle.dump((dynamic_df_train, dynamic_df_test), file)
-            file.close()
+            dynamic_df_train.to_hdf(save_path, 'df_train', mode='w')
+            if dynamic_df_test is not None: dynamic_df_train.to_hdf(save_path, 'df_test', mode='a')
 
         return dynamic_df_train, dynamic_df_test
     
