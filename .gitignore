@@ -15,6 +15,7 @@ __pycache__
 # Temp Files should not be sent
 tmp
 tmp_condor
+tmp_parallelization
 condor.log
 
 # Corpora should not be sent
@@ -22,6 +23,9 @@ corpora
 
 # Virtual environments should not be sent
 venv
+
+# Environment files should not be sent
+.env
 
 # Test Zone made for local exploration only
 test-zone

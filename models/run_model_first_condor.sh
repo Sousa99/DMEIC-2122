@@ -1,9 +1,6 @@
 #!/bin/bash
-CURRENT_DIR=`pwd`
 NOW=$(date +"%Y.%m.%d %H.%M.%S")
-
-typeset -i WAIT_SECONDS=$("20")
-typeset -i MAX_JOBS_PER_MACHINE=$("4")
+NOW_WITHOUT_SPACE=$(tr ' ' ':' <<< $NOW)
 
 CONTROL_INFO="../data/control_info.xlsx"
 PSYCHOSIS_INFO="../data/psychosis_info.xlsx"
@@ -22,6 +19,10 @@ BIPOLAR_TRANSCRIPTIONS="../data/recordings_transcribed_results/bipolars/"
 
 VARIATION_KEY="simple"
 
+TEMP_CONDOR_DIRECTORY="./tmp_condor/${NOW_WITHOUT_SPACE}"
+TEMP_CONDOR_LOGS_DIRECTORY="./tmp_condor/${NOW_WITHOUT_SPACE}/logs/"
+TEMP_CONDOR_SCRIPTS_DIRECTORY="./tmp_condor/${NOW_WITHOUT_SPACE}/scripts/"
+
 python3 model_first.py                                                                                                                      \
     -info_controls=${CONTROL_INFO}              -info_psychosis=${PSYCHOSIS_INFO}               -info_bipolars=${BIPOLAR_INFO}              \
     -audio_controls=${CONTROL_AUDIOS}           -audio_psychosis=${PSYCHOSIS_AUDIOS}            -audio_bipolars=${BIPOLAR_AUDIOS}           \
@@ -30,19 +31,19 @@ python3 model_first.py                                                          
     -timestamp="${NOW}"                                                                                                                     \
     -variations_key=${VARIATION_KEY}
 
-python3 ./parallelization.py -timestamp="${NOW}" -execution="init" -wait_seconds=${WAIT_SECONDS} -max_jobs_per_machine=${MAX_JOBS_PER_MACHINE}
-ret=$?
-if [ $ret -ne 0 ]; then exit; fi
+# Deal with Condor Directories
+if [ ! -d "${TEMP_CONDOR_DIRECTORY}" ]; then mkdir -p "${TEMP_CONDOR_DIRECTORY}"; fi
+if [ ! -d "${TEMP_CONDOR_LOGS_DIRECTORY}" ]; then mkdir -p "${TEMP_CONDOR_LOGS_DIRECTORY}"; fi
+if [ ! -d "${TEMP_CONDOR_SCRIPTS_DIRECTORY}" ]; then mkdir -p "${TEMP_CONDOR_SCRIPTS_DIRECTORY}"; fi
 
 echo
-echo "🚀 Developing solution variations ..."
+echo "🚀 Running solution variations ..."
 typeset -i number_of_variations=$(cat "./tmp/${NOW}/tmp_number_variations.txt")
 for parallel_index in $(seq 0 $(expr $number_of_variations - 1)); do
     process_id=$(printf "first_variation_%05d" $parallel_index)
     script_file="${TEMP_CONDOR_SCRIPTS_DIRECTORY}${process_id}.sh"
 
     echo "#!/bin/bash" > "${script_file}"
-    echo "cd ${CURRENT_DIR}"                                                                                                                                >> "${script_file}"
     echo "source ./venv/bin/activate"                                                                                                                       >> "${script_file}"
     echo "python3 model_first.py		                                                                                                                \\" >> "${script_file}"
     echo "      -info_controls=${CONTROL_INFO}              -info_psychosis=${PSYCHOSIS_INFO}               -info_bipolars=${BIPOLAR_INFO}              \\" >> "${script_file}"
@@ -53,14 +54,22 @@ for parallel_index in $(seq 0 $(expr $number_of_variations - 1)); do
     echo "      -variations_key=\"${VARIATION_KEY}\""                                                                                                       >> "${script_file}"
 
     chmod a+x "${script_file}"
-    python3 ./parallelization.py -timestamp="${NOW}" -execution="add" -execution_id="${process_id}" -execution_file="${script_file}"
-	ret=$?
-	if [ $ret -ne 0 ]; then exit; fi
+
+    # Fix Files for Condor Old Syntax
+    output="${TEMP_CONDOR_LOGS_DIRECTORY}condor.out.${process_id}.log"
+    error="${TEMP_CONDOR_LOGS_DIRECTORY}condor.err.${process_id}.log"
+    log="${TEMP_CONDOR_DIRECTORY}/first_variations_condor.log"
+
+    condor_submit \
+            -a "Executable = ${script_file}"    \
+            -a "Output = ${output}"             \
+            -a "Error = ${error}"               \
+            -a "Log = ${log}"                   \
+            `pwd`/condor_cpu.config;
 done
 
-python3 ./parallelization.py -timestamp="${NOW}" -execution="run"
-ret=$?
-if [ $ret -ne 0 ]; then exit; fi
+echo "🚀 Waiting for models to finish ..."
+condor_wait "${TEMP_CONDOR_DIRECTORY}/first_variations_condor.log"
 
 python3 model_first.py                                                                                                                      \
     -info_controls=${CONTROL_INFO}              -info_psychosis=${PSYCHOSIS_INFO}               -info_bipolars=${BIPOLAR_INFO}              \
