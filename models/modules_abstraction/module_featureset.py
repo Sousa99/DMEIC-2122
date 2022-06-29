@@ -119,10 +119,14 @@ class FeatureSetAbstraction(abc.ABC):
                 finally: file.close()
         if self.static_dataframe is None: self._develop_static_df()
 
+        print(f"ℹ️ Attempting to save '{self.id}' h5 checkpoint")
+        
         # Save back dataframe
         save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['static']), filename_h5)
         if not os.path.exists(save_path) or not os.path.isfile(save_path):
             self.static_dataframe.to_hdf(save_path, 'df', mode='w')
+
+        print(f"ℹ️ Finished development of static '{self.id}' dataframe")
 
     def develop_dynamic_df(self, code: str, train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
 
