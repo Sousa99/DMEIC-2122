@@ -103,8 +103,8 @@ class Classifier(metaclass=abc.ABCMeta):
             scorer = self.scorers[scorer_key]
             parameters = self.variations[scorer_key]
 
-            y_train_pred, y_test_pred = self.make_prediction(parameters, train_X.copy(deep=True), train_Y.copy(deep=True), test_X.copy(deep=True))
-            scorer.add_points(train_Y.copy(deep=True), y_train_pred, test_Y.copy(deep=True), y_test_pred)
+            y_train_pred, y_test_pred = self.make_prediction(parameters, train_X.copy(), train_Y.copy(), test_X.copy())
+            scorer.add_points(train_Y.copy(), y_train_pred, test_Y.copy(), y_test_pred)
 
     def get_scorers(self) -> Dict[str, module_scorer.Scorer]: return self.scorers
     def get_best_scorer(self, metric: str) -> Optional[Tuple[str, module_scorer.Scorer]]:

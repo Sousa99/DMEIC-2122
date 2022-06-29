@@ -43,7 +43,7 @@ class EntiretyFeatureSet(module_featureset.FeatureSetAbstraction):
         static_dataframe = self.basis_dataframe.copy(deep=True)
 
         print(f"🚀 Developing '{self.id}' analysis ...")
-        entirety_roberta_df = module_entirety_roberta.entirety_roberta_analysis(static_dataframe.copy(deep=True))
+        entirety_roberta_df = module_entirety_roberta.entirety_roberta_analysis(static_dataframe.copy())
 
         # Final Dataframe
         all_content_dataframes : List[pd.DataFrame] = [entirety_roberta_df]
@@ -57,10 +57,10 @@ class EntiretyFeatureSet(module_featureset.FeatureSetAbstraction):
         
         def copy_optional_df(df: Optional[pd.DataFrame]) -> Optional[pd.DataFrame]:
             if df is None: return None
-            else: return df.copy(deep=True)
+            else: return df.copy()
 
         # Feature models to use
-        entirety_roberta_train_X, entirety_roberta_test_X   = module_entirety_roberta.entirety_roberta_analysis_dynamic(train_X.copy(deep=True), train_Y.copy(deep=True), copy_optional_df(test_X))
+        entirety_roberta_train_X, entirety_roberta_test_X   = module_entirety_roberta.entirety_roberta_analysis_dynamic(train_X.copy(), train_Y.copy(), copy_optional_df(test_X))
 
         # Final Dataframe
         all_content_train : List[pd.DataFrame] = [entirety_roberta_train_X]

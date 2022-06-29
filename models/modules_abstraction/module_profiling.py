@@ -41,7 +41,7 @@ class DatasetProfiling():
 
     def __init__(self, dataframe_X: pd.DataFrame, dataframe_Y: Optional[pd.Series], fast: bool = False) -> None:
         # Correct Dataframe for Study
-        self.features       : pd.DataFrame              = dataframe_X.copy(deep=True)
+        self.features       : pd.DataFrame              = dataframe_X.copy()
         self.target         : Optional[pd.Series]       = None
         # Complete Dataframe with Features and Target
         self.complete       : Optional[pd.DataFrame]    = None
@@ -49,9 +49,9 @@ class DatasetProfiling():
         self.fast_execution : bool                      = fast
 
         if dataframe_Y is not None:
-            self.target = dataframe_Y.copy(deep=True)
+            self.target = dataframe_Y.copy()
             self.target.index = self.features.index
-            self.complete = self.features.copy(deep=True)
+            self.complete = self.features.copy()
             self.complete['Target'] = self.target
 
     def make_profiling(self) -> None:

@@ -76,7 +76,7 @@ def lca_analysis_dynamic(train_X: pd.DataFrame, train_Y: pd.Series, test_X: Opti
 
     word2vec_model = module_gensim.ModelWord2Vec()
 
-    lca_cossines_matrix = train_full_df[['Target', 'LCA - Max Cossine w/ Frequent Words']].copy(deep=True)
+    lca_cossines_matrix = train_full_df[['Target', 'LCA - Max Cossine w/ Frequent Words']].copy()
     lca_cossines_matrix = pd.concat([lca_cossines_matrix.drop(['LCA - Max Cossine w/ Frequent Words'], axis=1),
         lca_cossines_matrix['LCA - Max Cossine w/ Frequent Words'].apply(pd.Series)], axis=1)
     grouped_by_lca_cossines : pd.DataFrame = lca_cossines_matrix.groupby('Target').mean().transpose()

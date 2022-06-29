@@ -49,8 +49,8 @@ class ContentFeatureSet(module_featureset.FeatureSetAbstraction):
         static_dataframe = self.basis_dataframe.copy(deep=True)
 
         print(f"🚀 Developing '{self.id}' analysis ...")
-        lca_df      = module_lca.lca_analysis(static_dataframe.copy(deep=True))
-        sentilex_df = module_sentilex.sentilex_analysis(static_dataframe.copy(deep=True))
+        lca_df      = module_lca.lca_analysis(static_dataframe.copy())
+        sentilex_df = module_sentilex.sentilex_analysis(static_dataframe.copy())
 
         # Final Dataframe
         all_content_dataframes : List[pd.DataFrame] = [lca_df, sentilex_df]
@@ -64,10 +64,10 @@ class ContentFeatureSet(module_featureset.FeatureSetAbstraction):
         
         def copy_optional_df(df: Optional[pd.DataFrame]) -> Optional[pd.DataFrame]:
             if df is None: return None
-            else: return df.copy(deep=True)
+            else: return df.copy()
 
         # Feature models to use
-        lca_train_X, lca_test_X = module_lca.lca_analysis_dynamic(train_X.copy(deep=True), train_Y.copy(deep=True), copy_optional_df(test_X))
+        lca_train_X, lca_test_X = module_lca.lca_analysis_dynamic(train_X.copy(), train_Y.copy(), copy_optional_df(test_X))
 
         # Final Dataframe
         all_content_train : List[pd.DataFrame] = [lca_train_X]
