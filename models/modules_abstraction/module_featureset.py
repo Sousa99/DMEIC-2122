@@ -85,7 +85,7 @@ class FeatureSetAbstraction(abc.ABC):
                 try: 
                     self.basis_dataframe = pickle.load(file)
                     print(f"✅ Loaded '{self.id}' basis dataframe from pickle checkpoint!")
-                except: self._develop_basis_df()
+                except: self.static_dataframe = None
         if self.basis_dataframe is None: self._develop_basis_df()
 
         # Save back dataframe
@@ -115,6 +115,7 @@ class FeatureSetAbstraction(abc.ABC):
                 try: 
                     self.static_dataframe = pickle.load(file)
                     print(f"✅ Loaded '{self.id}' static dataframe from pickle checkpoint!")
+                except: self.static_dataframme = None
                 finally: file.close()
         if self.static_dataframe is None: self._develop_static_df()
 
@@ -166,7 +167,7 @@ class FeatureSetAbstraction(abc.ABC):
         return dynamic_df_train, dynamic_df_test
     
     def filter_rows(self, dataframe: pd.DataFrame, variation: module_variations.Variation) -> pd.DataFrame:
-        dataframe_filtered = dataframe.copy(deep=True)
+        dataframe_filtered = dataframe.copy()
         
         # Filter Dataframe by task
         dataframe_filtered = dataframe_filtered[dataframe_filtered['Task'].isin(variation.tasks)]
