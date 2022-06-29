@@ -29,5 +29,8 @@ def sentilex_analysis(basis_df: pd.DataFrame) -> pd.DataFrame:
     basis_df['SentiLex - avg Score']        = basis_df['SentiLex - Extracted Scores'].progress_apply(lambda scores: sum(scores, DEFAULT_VALUE) / len(scores) if len(scores) != 0 else DEFAULT_VALUE).astype(float)
     basis_df['SentiLex - number Scores']    = basis_df['SentiLex - Extracted Scores'].progress_apply(lambda scores: len(scores)).astype(int)
 
+    drop_columns : List[str] = ['SentiLex - Extracted Scores']
+    basis_df = basis_df.drop(drop_columns, axis=1, errors='ignore')
+
     del model_sentilex
     return basis_df

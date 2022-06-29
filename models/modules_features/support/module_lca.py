@@ -67,7 +67,10 @@ def lca_analysis(basis_df: pd.DataFrame) -> pd.DataFrame:
     basis_df['LCA - Embedding per Word Groups'] = basis_df['LCA - Word Groups'].progress_apply(lambda groups_of_words: module_nlp.convert_groups_of_words_to_embeddings(groups_of_words, word2vec_model))
     basis_df['LCA - Embedding Groups'] = basis_df['LCA - Embedding per Word Groups'].progress_apply(module_nlp.sum_normalize_embedding_per_group)
     basis_df['LCA - Max Cossine w/ Frequent Words'] = basis_df['LCA - Embedding Groups'].progress_apply(lambda sentence_embeddings: get_max_cossine_similarity_freq_words(sentence_embeddings, model_frequent_word_embeddings))
-    
+
+    drop_columns : List[str] = ['LCA - Word Groups', 'LCA - Embedding per Word Groups']
+    basis_df = basis_df.drop(drop_columns, axis=1, errors='ignore')
+
     del word2vec_model
     return basis_df
 

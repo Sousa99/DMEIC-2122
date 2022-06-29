@@ -89,10 +89,14 @@ class FeatureSetAbstraction(abc.ABC):
                 except: self.static_dataframe = None
         if self.basis_dataframe is None: self._develop_basis_df()
 
+        print(f"ℹ️ Attempting to save basis '{self.id}' h5 checkpoint")
+
         # Save back dataframe
         save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['basis']), filename_h5)
         if not os.path.exists(save_path) or not os.path.isfile(save_path):
             self.basis_dataframe.to_hdf(save_path, 'df', mode='w')
+
+        print(f"ℹ️ Finished development of basis '{self.id}' dataframe")
 
     def develop_static_df(self):
 
@@ -120,7 +124,7 @@ class FeatureSetAbstraction(abc.ABC):
                 finally: file.close()
         if self.static_dataframe is None: self._develop_static_df()
 
-        print(f"ℹ️ Attempting to save '{self.id}' h5 checkpoint")
+        print(f"ℹ️ Attempting to save static '{self.id}' h5 checkpoint")
         
         # Save back dataframe
         save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['static']), filename_h5)

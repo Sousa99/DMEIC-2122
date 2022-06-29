@@ -22,6 +22,7 @@ class ContentFeatureSet(module_featureset.FeatureSetAbstraction):
 
     def __init__(self) -> None:
         super().__init__(FEATURE_SET_ID)
+        self.basis_drop_columns = ['Trans Path', 'Trans File', 'Trans File Path', 'Trans Info', 'Lemmatized Text']
         self.drop_columns = ['Trans Path', 'Trans File', 'Trans File Path', 'Trans Info', 'Lemmatized Text', 'Lemmatized Filtered Text',
             'LCA - Word Groups', 'LCA - Embedding per Word Groups', 'LCA - Embedding Groups', 'LCA - Max Cossine w/ Frequent Words',
             'SentiLex - Extracted Scores' ]
@@ -41,6 +42,8 @@ class ContentFeatureSet(module_featureset.FeatureSetAbstraction):
         basics_dataframe['Lemmatized Text'] = basics_dataframe['Trans Info'].apply(lambda trans_info: trans_info.lemmatize_words(lemmatizer))
         basics_dataframe['Lemmatized Filtered Text'] = basics_dataframe['Lemmatized Text'].apply(module_nlp.filter_out_stop_words)
 
+        basics_dataframe = basics_dataframe.drop(self.basis_drop_columns, axis=1, errors='ignore')
+
         # Save back 'basis dataframe' and 'drop_columns'
         self.basis_dataframe = basics_dataframe
         del lemmatizer
@@ -51,6 +54,8 @@ class ContentFeatureSet(module_featureset.FeatureSetAbstraction):
         print(f"🚀 Developing '{self.id}' analysis ...")
         lca_df      = module_lca.lca_analysis(static_dataframe.copy())
         sentilex_df = module_sentilex.sentilex_analysis(static_dataframe.copy())
+
+        print(f"ℹ️ Finished processing '{self.id}' sub analyses!")
 
         # Final Dataframe
         all_content_dataframes : List[pd.DataFrame] = [lca_df, sentilex_df]
