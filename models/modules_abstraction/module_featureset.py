@@ -69,7 +69,16 @@ class FeatureSetAbstraction(abc.ABC):
 
         filename_h5 : str = f'{self.id}.h5'
         filename_pkl : str = f'{self.id}.pkl'
+        filename_parquet : str = f'{self.id}.parquet'
 
+        # Get Dataframe - Parquet
+        if self.basis_dataframe is None:
+            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['basis']), filename_parquet)
+            if os.path.exists(load_path) and os.path.isfile(load_path):
+                try:
+                    self.basis_dataframe = pd.read_parquet(load_path)
+                    print(f"✅ Loaded '{self.id}' basis dataframe from parquet checkpoint!")
+                except: self.basis_dataframe = None
         # Get Dataframe - H5
         if self.basis_dataframe is None:
             load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['basis']), filename_h5)
@@ -89,12 +98,12 @@ class FeatureSetAbstraction(abc.ABC):
                 except: self.static_dataframe = None
         if self.basis_dataframe is None: self._develop_basis_df()
 
-        print(f"ℹ️ Attempting to save basis '{self.id}' h5 checkpoint")
+        print(f"ℹ️ Attempting to save basis '{self.id}' parquet checkpoint")
 
         # Save back dataframe
-        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['basis']), filename_h5)
+        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['basis']), filename_parquet)
         if not os.path.exists(save_path) or not os.path.isfile(save_path):
-            self.basis_dataframe.to_hdf(save_path, 'df', mode='w')
+            self.basis_dataframe.to_parquet(save_path)
 
         print(f"ℹ️ Finished development of basis '{self.id}' dataframe")
 
@@ -103,7 +112,16 @@ class FeatureSetAbstraction(abc.ABC):
         if self.basis_dataframe is None: self.develop_basis_df()
         filename_h5 : str = f'{self.id}.h5'
         filename_pkl : str = f'{self.id}.pkl'
+        filename_parquet : str = f'{self.id}.parquet'
 
+        # Get Dataframe - H5
+        if self.static_dataframe is None:
+            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['static']), filename_parquet)
+            if os.path.exists(load_path) and os.path.isfile(load_path):
+                try:
+                    self.static_dataframe = pd.read_parquet(load_path)
+                    print(f"✅ Loaded '{self.id}' static dataframe from parquet checkpoint!")
+                except: self.static_dataframe = None
         # Get Dataframe - H5
         if self.static_dataframe is None:
             load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['static']), filename_h5)
@@ -124,12 +142,12 @@ class FeatureSetAbstraction(abc.ABC):
                 finally: file.close()
         if self.static_dataframe is None: self._develop_static_df()
 
-        print(f"ℹ️ Attempting to save static '{self.id}' h5 checkpoint")
+        print(f"ℹ️ Attempting to save static '{self.id}' parquet checkpoint")
         
         # Save back dataframe
-        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['static']), filename_h5)
+        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['static']), filename_parquet)
         if not os.path.exists(save_path) or not os.path.isfile(save_path):
-            self.static_dataframe.to_hdf(save_path, 'df', mode='w')
+            self.static_dataframe.to_parquet(save_path)
 
         print(f"ℹ️ Finished development of static '{self.id}' dataframe")
 
@@ -139,12 +157,30 @@ class FeatureSetAbstraction(abc.ABC):
         if self.static_dataframe is None: self.develop_static_df()
         filename_h5 : str = f'{self.id}.h5'
         filename_pkl : str = f'{self.id}.pkl'
+        filename_parquet_train : str = f'{self.id} - train.pkl'
+        filename_parquet_test : str = f'{self.id} - test.pkl'
 
         loaded : bool = False
 
         dynamic_df_train    : pd.DataFrame
         dynamic_df_test     : Optional[pd.DataFrame] = None
 
+        # Get Dataframe - Parquet
+        if not loaded:
+            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['dynamic']), filename_parquet_train)
+            if os.path.exists(load_path) and os.path.isfile(load_path):
+                try:
+                    dynamic_df_train = pd.read_parquet(load_path)
+                    loaded = True
+                except: pass
+        if loaded:
+            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['dynamic']), filename_parquet_test)
+            if os.path.exists(load_path) and os.path.isfile(load_path):
+                try:
+                    dynamic_df_test = pd.read_parquet(load_path)
+                    print(f"✅ Loaded '{self.id}' dynamic with code '{code}' dataframe from parquet checkpoint!")
+                except: loaded = False
+            else: print(f"✅ Loaded '{self.id}' dynamic with code '{code}' dataframe from parquet checkpoint!")
         # Get Dataframe - H5
         if not loaded:
             load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['dynamic']), filename_h5)
@@ -168,10 +204,12 @@ class FeatureSetAbstraction(abc.ABC):
         if not loaded: dynamic_df_train, dynamic_df_test = self._develop_dynamic_df(train_X, train_Y, test_X)
 
         # Save back dataframe
-        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['dynamic']), filename_h5)
+        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['dynamic']), filename_parquet_train)
         if not os.path.exists(save_path) or not os.path.isfile(save_path):
-            dynamic_df_train.to_hdf(save_path, 'df_train', mode='w')
-            if dynamic_df_test is not None: dynamic_df_train.to_hdf(save_path, 'df_test', mode='a')
+            dynamic_df_train.to_parquet(save_path)
+        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['dynamic']), filename_parquet_test)
+        if dynamic_df_test is not None and (not os.path.exists(save_path) or not os.path.isfile(save_path)):
+            dynamic_df_train.to_parquet(save_path)
 
         return dynamic_df_train, dynamic_df_test
     
