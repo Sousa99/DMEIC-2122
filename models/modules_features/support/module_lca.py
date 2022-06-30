@@ -20,8 +20,8 @@ NDArray = Iterable
 # =================================== CONSTANTS DEFINITIONS ===================================
 
 DEFAULT_VALUE                       : float     = 0
-NUMBER_OF_WORDS_PER_BAG             : int       = 15
-PERCENTAGE_OF_MOST_FREQUENT_WORDS   : float     = 0.95
+NUMBER_OF_WORDS_PER_BAG             : int       = 15 # TODO: Turn back to 0.95
+PERCENTAGE_OF_MOST_FREQUENT_WORDS   : float     = 0.33
 NUMBER_WORDS_FOR_CLUSTERING         : int       = 50
 NUMBER_CLUSTERS_TO_TEST             : List[int] = [ x for x in range(3, 11) ]
 
@@ -71,7 +71,7 @@ def lca_analysis(basis_df: pd.DataFrame) -> pd.DataFrame:
     drop_columns : List[str] = ['LCA - Word Groups', 'LCA - Embedding per Word Groups']
     basis_df = basis_df.drop(drop_columns, axis=1, errors='ignore')
 
-    del word2vec_model
+    del word2vec_model, model_frequent_words, model_frequent_word_embeddings
     return basis_df
 
 def lca_analysis_dynamic(train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
