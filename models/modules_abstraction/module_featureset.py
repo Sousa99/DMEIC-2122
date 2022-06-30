@@ -71,6 +71,16 @@ class FeatureSetAbstraction(abc.ABC):
         filename_pkl : str = f'{self.id}.pkl'
         filename_parquet : str = f'{self.id}.parquet'
 
+        # Get Dataframe - Pickle
+        if self.basis_dataframe is None:
+            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['basis']), filename_pkl)
+            if os.path.exists(load_path) and os.path.isfile(load_path):
+                file = open(load_path, 'rb')
+                try: 
+                    self.basis_dataframe = pickle.load(file)
+                    print(f"✅ Loaded '{self.id}' basis dataframe from pickle checkpoint!")
+                except: self.static_dataframe = None
+                file.close()
         # Get Dataframe - Parquet
         if self.basis_dataframe is None:
             load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['basis']), filename_parquet)
@@ -87,23 +97,16 @@ class FeatureSetAbstraction(abc.ABC):
                     self.basis_dataframe = pd.read_hdf(load_path, key='df', mode='r')
                     print(f"✅ Loaded '{self.id}' basis dataframe from h5 checkpoint!")
                 except: self.basis_dataframe = None
-        # Get Dataframe - Pickle
-        if self.basis_dataframe is None:
-            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['basis']), filename_pkl)
-            if os.path.exists(load_path) and os.path.isfile(load_path):
-                file = open(load_path, 'rb')
-                try: 
-                    self.basis_dataframe = pickle.load(file)
-                    print(f"✅ Loaded '{self.id}' basis dataframe from pickle checkpoint!")
-                except: self.static_dataframe = None
         if self.basis_dataframe is None: self._develop_basis_df()
 
         print(f"ℹ️ Attempting to save basis '{self.id}' parquet checkpoint")
 
         # Save back dataframe
-        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['basis']), filename_parquet)
+        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['basis']), filename_pkl)
         if not os.path.exists(save_path) or not os.path.isfile(save_path):
-            self.basis_dataframe.to_parquet(save_path)
+            file = open(save_path, 'wb')
+            pickle.dump(self.basis_dataframe, file)
+            file.close()
 
         print(f"ℹ️ Finished development of basis '{self.id}' dataframe")
 
@@ -114,6 +117,16 @@ class FeatureSetAbstraction(abc.ABC):
         filename_pkl : str = f'{self.id}.pkl'
         filename_parquet : str = f'{self.id}.parquet'
 
+        # Get Dataframe - Pickle
+        if self.static_dataframe is None:
+            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['static']), filename_pkl)
+            if os.path.exists(load_path) and os.path.isfile(load_path):
+                file = open(load_path, 'rb')
+                try: 
+                    self.static_dataframe = pickle.load(file)
+                    print(f"✅ Loaded '{self.id}' static dataframe from pickle checkpoint!")
+                except: self.static_dataframme = None
+                file.close()
         # Get Dataframe - H5
         if self.static_dataframe is None:
             load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['static']), filename_parquet)
@@ -130,24 +143,16 @@ class FeatureSetAbstraction(abc.ABC):
                     self.static_dataframe = pd.read_hdf(load_path, key='df', mode='r')
                     print(f"✅ Loaded '{self.id}' static dataframe from h5 checkpoint!")
                 except: self.static_dataframe = None
-        # Get Dataframe - Pickle
-        if self.static_dataframe is None:
-            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['static']), filename_pkl)
-            if os.path.exists(load_path) and os.path.isfile(load_path):
-                file = open(load_path, 'rb')
-                try: 
-                    self.static_dataframe = pickle.load(file)
-                    print(f"✅ Loaded '{self.id}' static dataframe from pickle checkpoint!")
-                except: self.static_dataframme = None
-                finally: file.close()
         if self.static_dataframe is None: self._develop_static_df()
 
-        print(f"ℹ️ Attempting to save static '{self.id}' parquet checkpoint")
+        print(f"ℹ️ Attempting to save static '{self.id}' pickle checkpoint")
         
         # Save back dataframe
-        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['static']), filename_parquet)
+        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['static']), filename_pkl)
         if not os.path.exists(save_path) or not os.path.isfile(save_path):
-            self.static_dataframe.to_parquet(save_path)
+            file = open(save_path, 'wb')
+            pickle.dump(self.static_dataframe, file)
+            file.close()
 
         print(f"ℹ️ Finished development of static '{self.id}' dataframe")
 
@@ -204,12 +209,11 @@ class FeatureSetAbstraction(abc.ABC):
         if not loaded: dynamic_df_train, dynamic_df_test = self._develop_dynamic_df(train_X, train_Y, test_X)
 
         # Save back dataframe
-        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['dynamic']), filename_parquet_train)
+        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['dynamic']), filename_pkl)
         if not os.path.exists(save_path) or not os.path.isfile(save_path):
-            dynamic_df_train.to_parquet(save_path)
-        save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['dynamic']), filename_parquet_test)
-        if dynamic_df_test is not None and (not os.path.exists(save_path) or not os.path.isfile(save_path)):
-            dynamic_df_train.to_parquet(save_path)
+            file = open(save_path, 'wb')
+            pickle.dump((dynamic_df_train, dynamic_df_test), file)
+            file.close()
 
         return dynamic_df_train, dynamic_df_test
     
