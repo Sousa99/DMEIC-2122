@@ -99,7 +99,7 @@ class FeatureSetAbstraction(abc.ABC):
                 except: self.basis_dataframe = None
         if self.basis_dataframe is None: self._develop_basis_df()
 
-        print(f"ℹ️ Attempting to save basis '{self.id}' parquet checkpoint")
+        print(f"ℹ️ Attempting to save basis '{self.id}' pickle checkpoint")
 
         # Save back dataframe
         save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['basis']), filename_pkl)
@@ -127,7 +127,7 @@ class FeatureSetAbstraction(abc.ABC):
                     print(f"✅ Loaded '{self.id}' static dataframe from pickle checkpoint!")
                 except: self.static_dataframme = None
                 file.close()
-        # Get Dataframe - H5
+        # Get Dataframe - Parquet
         if self.static_dataframe is None:
             load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['static']), filename_parquet)
             if os.path.exists(load_path) and os.path.isfile(load_path):
