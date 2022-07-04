@@ -81,22 +81,6 @@ class FeatureSetAbstraction(abc.ABC):
                     print(f"✅ Loaded '{self.id}' basis dataframe from pickle checkpoint!")
                 except: self.static_dataframe = None
                 file.close()
-        # Get Dataframe - Parquet
-        if self.basis_dataframe is None:
-            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['basis']), filename_parquet)
-            if os.path.exists(load_path) and os.path.isfile(load_path):
-                try:
-                    self.basis_dataframe = pd.read_parquet(load_path)
-                    print(f"✅ Loaded '{self.id}' basis dataframe from parquet checkpoint!")
-                except: self.basis_dataframe = None
-        # Get Dataframe - H5
-        if self.basis_dataframe is None:
-            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['basis']), filename_h5)
-            if os.path.exists(load_path) and os.path.isfile(load_path):
-                try:
-                    self.basis_dataframe = pd.read_hdf(load_path, key='df', mode='r')
-                    print(f"✅ Loaded '{self.id}' basis dataframe from h5 checkpoint!")
-                except: self.basis_dataframe = None
         if self.basis_dataframe is None: self._develop_basis_df()
 
         print(f"ℹ️ Attempting to save basis '{self.id}' pickle checkpoint")
@@ -127,22 +111,6 @@ class FeatureSetAbstraction(abc.ABC):
                     print(f"✅ Loaded '{self.id}' static dataframe from pickle checkpoint!")
                 except: self.static_dataframme = None
                 file.close()
-        # Get Dataframe - Parquet
-        if self.static_dataframe is None:
-            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['static']), filename_parquet)
-            if os.path.exists(load_path) and os.path.isfile(load_path):
-                try:
-                    self.static_dataframe = pd.read_parquet(load_path)
-                    print(f"✅ Loaded '{self.id}' static dataframe from parquet checkpoint!")
-                except: self.static_dataframe = None
-        # Get Dataframe - H5
-        if self.static_dataframe is None:
-            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['static']), filename_h5)
-            if os.path.exists(load_path) and os.path.isfile(load_path):
-                try:
-                    self.static_dataframe = pd.read_hdf(load_path, key='df', mode='r')
-                    print(f"✅ Loaded '{self.id}' static dataframe from h5 checkpoint!")
-                except: self.static_dataframe = None
         if self.static_dataframe is None: self._develop_static_df()
 
         print(f"ℹ️ Attempting to save static '{self.id}' pickle checkpoint")
@@ -169,33 +137,7 @@ class FeatureSetAbstraction(abc.ABC):
 
         dynamic_df_train    : pd.DataFrame
         dynamic_df_test     : Optional[pd.DataFrame] = None
-
-        # Get Dataframe - Parquet
-        if not loaded:
-            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['dynamic']), filename_parquet_train)
-            if os.path.exists(load_path) and os.path.isfile(load_path):
-                try:
-                    dynamic_df_train = pd.read_parquet(load_path)
-                    loaded = True
-                except: pass
-        if loaded:
-            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['dynamic']), filename_parquet_test)
-            if os.path.exists(load_path) and os.path.isfile(load_path):
-                try:
-                    dynamic_df_test = pd.read_parquet(load_path)
-                    print(f"✅ Loaded '{self.id}' dynamic with code '{code}' dataframe from parquet checkpoint!")
-                except: loaded = False
-            else: print(f"✅ Loaded '{self.id}' dynamic with code '{code}' dataframe from parquet checkpoint!")
-        # Get Dataframe - H5
-        if not loaded:
-            load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['dynamic']), filename_h5)
-            if os.path.exists(load_path) and os.path.isfile(load_path):
-                try:
-                    dynamic_df_train = pd.read_hdf(load_path, key='df_train', mode='r')
-                    loaded = True
-                    print(f"✅ Loaded '{self.id}' dynamic with code '{code}' dataframe from h5 checkpoint!")
-                    dynamic_df_test = pd.read_hdf(load_path, key='df_test', mode='r')
-                except: pass
+        
         # Get Dataframe - Pickle
         if not loaded:
             load_path = os.path.join(module_exporter.get_checkpoint_load_directory(['dynamic']), filename_pkl)
