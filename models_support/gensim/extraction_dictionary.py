@@ -38,8 +38,8 @@ arguments_dict = vars(arguments)
 PARALLELIZATION_EXTRACT = "extract"
 PARALLELIZATION_FINAL = "final"
 
-if not os.path.exists(PATH_TO_EXPORTS): os.makedirs(PATH_TO_EXPORTS)
-if not os.path.exists(PATH_TO_EXPORT_DOCUMENTS): os.makedirs(PATH_TO_EXPORT_DOCUMENTS)
+if not os.path.exists(PATH_TO_EXPORTS): os.makedirs(PATH_TO_EXPORTS, exist_ok=True)
+if not os.path.exists(PATH_TO_EXPORT_DOCUMENTS): os.makedirs(PATH_TO_EXPORT_DOCUMENTS, exist_ok=True)
 
 NUMBER_EXTRACTS_PRINT : int = 1
 if arguments_dict['extracts_per_run'] is None: NUMBER_EXTRACTS_BREAK : Optional[int] = None

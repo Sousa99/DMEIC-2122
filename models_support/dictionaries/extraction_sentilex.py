@@ -42,7 +42,7 @@ for line in tqdm.tqdm(sentilex_file.readlines(), desc='🚀 Creating SentiLex Ma
 sentilex_file.close()
 
 # Save back mapping
-if not os.path.exists(PATH_TO_EXPORT): os.makedirs(PATH_TO_EXPORT)
+if not os.path.exists(PATH_TO_EXPORT): os.makedirs(PATH_TO_EXPORT, exist_ok=True)
 file = open(PATH_TO_EXPORT_SENTILEX_MODEL, 'wb')
 pickle.dump(mapping, file)
 file.close()

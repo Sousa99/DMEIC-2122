@@ -107,7 +107,7 @@ class ParallelizationManager():
         def get_filepaths(self : ParallelizationManager, process_id : str) -> Tuple[TextIOWrapper, TextIOWrapper]:
             log_path = os.path.join(self.TMP_DIRECTORY, self.timestamp_id, LOGS_DIRECTORY)
             if not os.path.exists(log_path) or not os.path.isdir(log_path):
-                os.makedirs(log_path)
+                os.makedirs(log_path, exist_ok=True)
 
             out_path = os.path.join(log_path, f'parallelization.out.{process_id}.log')
             err_path = os.path.join(log_path, f'parallelization.err.{process_id}.log')
@@ -182,7 +182,7 @@ class ParallelizationManager():
     def save_model(self) -> None:
 
         path = os.path.join(self.TMP_DIRECTORY, self.timestamp_id)
-        if not os.path.exists(path) or not os.path.isdir(path): os.makedirs(path)
+        if not os.path.exists(path) or not os.path.isdir(path): os.makedirs(path, exist_ok=True)
         file_path = os.path.join(path, self.FILE_SAVE_NAME)
         file = open(file_path, 'wb')
         pickle.dump(self, file)

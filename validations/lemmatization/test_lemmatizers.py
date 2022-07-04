@@ -32,7 +32,7 @@ import NLPyPort.FullPipeline    as nlpyport
 
 # ===================================================== SETUP =====================================================
 
-if not os.path.exists('./exports/'): os.makedirs('./exports')
+if not os.path.exists('./exports/'): os.makedirs('./exports', exist_ok=True)
 NUMBER_EXTRACTS_PRINT : int = 1
 
 NUMBER_EXTRACTS_TO_USE : int = 2500
@@ -58,7 +58,7 @@ def compute_path(filename: str, extension: str) -> str:
     directory_path = os.path.join(EXPORT_DIRECTORY, timestampStr, *CURRENT_DIRECTORIES)
     filename_full = filename + extension
 
-    if not os.path.exists(directory_path): os.makedirs(directory_path)
+    if not os.path.exists(directory_path): os.makedirs(directory_path, exist_ok=True)
     return os.path.join(directory_path, filename_full)
 
 # =========================================== DEFINITION OF CONSTANTS ===========================================
