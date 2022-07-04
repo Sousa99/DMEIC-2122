@@ -129,13 +129,16 @@ class ParallelizationManager():
             client.connect(machine.get_address(), username=SSH_USER, password=SSH_KEY)
             _stdin, _stdout, _stderr = client.exec_command(f"\"{execution_script.get_file_path()}\"", get_pty=True)
 
+            _stdout._set_mode('b')
+            _stderr._set_mode('b')
+
             for line in iter(lambda: _stdout.readline(2048), ""):
-                out_file.write(line)
+                out_file.write(line.read().decode('utf-8', errors='ignore'))
                 out_file.flush()
                 os.fsync(out_file.fileno())
 
-            out_file.write(_stdout.read().decode())
-            err_file.write(_stderr.read().decode())
+            out_file.write(_stdout.read().decode('utf-8', errors='ignore'))
+            err_file.write(_stderr.read().decode('utf-8', errors='ignore'))
 
             out_file.close()
             err_file.close()
