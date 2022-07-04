@@ -2,8 +2,8 @@
 CURRENT_DIR=`pwd`
 NOW=$(date +"%Y.%m.%d %H.%M.%S")
 
-typeset -i WAIT_SECONDS=$("20")
-typeset -i MAX_JOBS_PER_MACHINE=$("4")
+typeset -i WAIT_SECONDS=20
+typeset -i MAX_JOBS_PER_MACHINE=3
 
 CONTROL_INFO="../data/control_info.xlsx"
 PSYCHOSIS_INFO="../data/psychosis_info.xlsx"
