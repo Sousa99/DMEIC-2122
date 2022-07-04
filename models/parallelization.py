@@ -17,6 +17,7 @@ import paramiko
 # =================================================== CONSTANTS DEFINITION ===================================================
 
 TMP_DIRECTORY = './tmp_parallelization/'
+LOGS_DIRECTORY = 'logs'
 FILE_SAVE_NAME = 'parallelization_manager.pkl'
 
 load_dotenv()
@@ -104,7 +105,7 @@ class ParallelizationManager():
     def run(self) -> None:
 
         def get_filepaths(self : ParallelizationManager, process_id : str) -> Tuple[TextIOWrapper, TextIOWrapper]:
-            log_path = os.path.join(self.TMP_DIRECTORY, self.timestamp_id)
+            log_path = os.path.join(self.TMP_DIRECTORY, self.timestamp_id, LOGS_DIRECTORY)
             if not os.path.exists(log_path) or not os.path.isdir(log_path):
                 os.makedirs(log_path)
 

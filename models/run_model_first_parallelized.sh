@@ -20,6 +20,8 @@ PSYCHOSIS_TRANSCRIPTIONS="../data/recordings_transcribed_results/psychosis/"
 BIPOLAR_TRANSCRIPTIONS="../data/fixed_transcriptions/bipolars/"
 BIPOLAR_TRANSCRIPTIONS="../data/recordings_transcribed_results/bipolars/"
 
+PARALLELIZATION_DIRECTORY="./tmp_parallelization/scripts/"
+
 VARIATION_KEY="simple"
 
 python3 model_first.py                                                                                                                      \
@@ -39,7 +41,7 @@ echo "🚀 Developing solution variations ..."
 typeset -i number_of_variations=$(cat "./tmp/${NOW}/tmp_number_variations.txt")
 for parallel_index in $(seq 0 $(expr $number_of_variations - 1)); do
     process_id=$(printf "first_variation_%05d" $parallel_index)
-    script_file="${TEMP_CONDOR_SCRIPTS_DIRECTORY}${process_id}.sh"
+    script_file="${PARALLELIZATION_DIRECTORY}${process_id}.sh"
 
     echo "#!/bin/bash" > "${script_file}"
     echo "cd ${CURRENT_DIR}"                                                                                                                                >> "${script_file}"
