@@ -133,7 +133,7 @@ class ParallelizationManager():
             _stderr._set_mode('b')
 
             for line in iter(lambda: _stdout.readline(2048), ""):
-                out_file.write(line.read().decode('utf-8', errors='ignore'))
+                out_file.write(line.decode('utf-8', errors='ignore'))
                 out_file.flush()
                 os.fsync(out_file.fileno())
 
