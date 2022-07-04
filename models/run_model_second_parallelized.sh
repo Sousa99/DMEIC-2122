@@ -21,6 +21,7 @@ BIPOLAR_TRANSCRIPTIONS="../data/fixed_transcriptions/bipolars/"
 BIPOLAR_TRANSCRIPTIONS="../data/recordings_transcribed_results/bipolars/"
 
 PARALLELIZATION_DIRECTORY="./tmp_parallelization/${NOW}/scripts/"
+mkdir -p "${PARALLELIZATION_DIRECTORY}"
 
 VARIATION_KEY="simple"
 
