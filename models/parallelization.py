@@ -17,7 +17,7 @@ import paramiko
 # =================================================== CONSTANTS DEFINITION ===================================================
 
 TMP_DIRECTORY = './tmp_parallelization/'
-LOGS_DIRECTORY = 'logs'
+LOGS_DIRECTORY = 'logs/'
 FILE_SAVE_NAME = 'parallelization_manager.pkl'
 
 load_dotenv()
@@ -127,7 +127,7 @@ class ParallelizationManager():
             client = paramiko.SSHClient()
             client.load_system_host_keys()
             client.connect(machine.get_address(), username=SSH_USER, password=SSH_KEY)
-            _stdin, _stdout, _stderr = client.exec_command(execution_script.get_file_path(), get_pty=True)
+            _stdin, _stdout, _stderr = client.exec_command(f"\"{execution_script.get_file_path()}\"", get_pty=True)
 
             for line in iter(lambda: _stdout.readline(2048), ""):
                 out_file.write(line)
