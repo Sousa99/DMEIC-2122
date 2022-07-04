@@ -20,7 +20,7 @@ PSYCHOSIS_TRANSCRIPTIONS="../data/recordings_transcribed_results/psychosis/"
 BIPOLAR_TRANSCRIPTIONS="../data/fixed_transcriptions/bipolars/"
 BIPOLAR_TRANSCRIPTIONS="../data/recordings_transcribed_results/bipolars/"
 
-PARALLELIZATION_DIRECTORY="./tmp_parallelization/scripts/"
+PARALLELIZATION_DIRECTORY="./tmp_parallelization/${NOW}/scripts/"
 
 VARIATION_KEY="simple"
 
