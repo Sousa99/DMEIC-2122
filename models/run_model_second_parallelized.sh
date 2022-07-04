@@ -20,7 +20,7 @@ PSYCHOSIS_TRANSCRIPTIONS="../data/recordings_transcribed_results/psychosis/"
 BIPOLAR_TRANSCRIPTIONS="../data/fixed_transcriptions/bipolars/"
 BIPOLAR_TRANSCRIPTIONS="../data/recordings_transcribed_results/bipolars/"
 
-PARALLELIZATION_DIRECTORY="/tmp_parallelization/${NOW}/scripts/"
+PARALLELIZATION_DIRECTORY="${CURRENT_DIR}/tmp_parallelization/${NOW}/scripts/"
 mkdir -p "${PARALLELIZATION_DIRECTORY}"
 
 VARIATION_KEY="simple"
@@ -42,7 +42,7 @@ echo "🚀 Developing solution variations ..."
 typeset -i number_of_variations=$(cat "./tmp/${NOW}/tmp_number_variations.txt")
 for parallel_index in $(seq 0 $(expr $number_of_variations - 1)); do
     process_id=$(printf "second_variation_%05d" $parallel_index)
-    script_file="${CURRENT_DIR}${PARALLELIZATION_DIRECTORY}${process_id}.sh"
+    script_file="${PARALLELIZATION_DIRECTORY}${process_id}.sh"
 
     echo "#!/bin/bash" > "${script_file}"
     echo "cd ${CURRENT_DIR}"                                                                                                                                >> "${script_file}"
