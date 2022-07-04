@@ -20,8 +20,8 @@ NDArray = Iterable
 # =================================== CONSTANTS DEFINITIONS ===================================
 
 DEFAULT_VALUE                       : float     = 0
-NUMBER_OF_WORDS_PER_BAG             : int       = 15 # TODO: Turn back to 0.95
-PERCENTAGE_OF_MOST_FREQUENT_WORDS   : float     = 0.33
+NUMBER_OF_WORDS_PER_BAG             : int       = 15
+PERCENTAGE_OF_MOST_FREQUENT_WORDS   : float     = 0.10 # TODO: Verify if impossible 0.95
 NUMBER_WORDS_FOR_CLUSTERING         : int       = 50
 NUMBER_CLUSTERS_TO_TEST             : List[int] = [ x for x in range(3, 11) ]
 
