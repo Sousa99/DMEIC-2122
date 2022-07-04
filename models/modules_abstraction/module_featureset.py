@@ -67,9 +67,7 @@ class FeatureSetAbstraction(abc.ABC):
 
     def develop_basis_df(self):
 
-        filename_h5 : str = f'{self.id}.h5'
         filename_pkl : str = f'{self.id}.pkl'
-        filename_parquet : str = f'{self.id}.parquet'
 
         # Get Dataframe - Pickle
         if self.basis_dataframe is None:
@@ -97,9 +95,7 @@ class FeatureSetAbstraction(abc.ABC):
     def develop_static_df(self):
 
         if self.basis_dataframe is None: self.develop_basis_df()
-        filename_h5 : str = f'{self.id}.h5'
         filename_pkl : str = f'{self.id}.pkl'
-        filename_parquet : str = f'{self.id}.parquet'
 
         # Get Dataframe - Pickle
         if self.static_dataframe is None:
@@ -128,10 +124,7 @@ class FeatureSetAbstraction(abc.ABC):
 
         if self.basis_dataframe is None: self.develop_basis_df()
         if self.static_dataframe is None: self.develop_static_df()
-        filename_h5 : str = f'{self.id}.h5'
-        filename_pkl : str = f'{self.id}.pkl'
-        filename_parquet_train : str = f'{self.id} - train.pkl'
-        filename_parquet_test : str = f'{self.id} - test.pkl'
+        filename_pkl : str = f'{code}.pkl'
 
         loaded : bool = False
 
