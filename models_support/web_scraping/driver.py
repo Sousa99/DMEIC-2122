@@ -16,7 +16,7 @@ from selenium.webdriver.chrome.options          import Options
 
 class Driver():
 
-    def __init__(self, headless : bool = False, rotate_proxies : bool = False,
+    def __init__(self, headless : bool = False, rotate_proxies : bool = False, rotate_proxies_rand : bool = False,
         rotate_user_agents : bool = False, max_requests : Optional[int] = None, max_attempts_driver: int = 5) -> None:
 
         self.headless               : bool                              = headless
@@ -30,7 +30,7 @@ class Driver():
 
         self.callback_accessible    : Optional[Callable[[str], bool]]   = None
 
-        if rotate_proxies: self.proxies_gen = FreeProxy(rand=True)
+        if rotate_proxies: self.proxies_gen = FreeProxy(rand=rotate_proxies_rand)
         if rotate_user_agents: self.user_agent_gen = UserAgent()
 
     def set_callback_accessible(self, callback: Callable[[str], bool]) -> None:
@@ -99,11 +99,11 @@ class Driver():
                 return
             
             except SessionNotCreatedException as e:
-                tqdm.write("⚠️ Webdriver session could not be created!")
+                tqdm.write("⚠️  Webdriver session could not be created!")
                 self.selenium_webdriver = None
                 attempts = attempts + 1
             except Exception as e:
-                tqdm.write(f"⚠️ Exception while initializing webdriver: '{e}'")
+                tqdm.write(f"⚠️  Exception while initializing webdriver: '{e}'")
                 self.selenium_webdriver.quit()
                 self.selenium_webdriver = None
                 attempts = attempts + 1

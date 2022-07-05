@@ -40,7 +40,7 @@ request_driver : driver.Driver = driver.Driver(headless=False, rotate_proxies=Tr
 if not os.path.exists(PATH_TO_EXPORTS): os.makedirs(PATH_TO_EXPORTS, exist_ok=True)
 
 scraped_information : List[Dict[str, Any]] = []
-scrapers_to_use : List[scraper.WebScraper] = [ scraper_shein.WebScraperShein() ]
+scrapers_to_use : List[scraper.WebScraper] = [ scraper_cinecartaz.WebScraperCineCartaz(), scraper_shein.WebScraperShein() ]
 
 for scraper_to_use in scrapers_to_use:
     request_driver.set_callback_accessible(scraper_to_use.callback_accessible)
