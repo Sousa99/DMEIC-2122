@@ -30,6 +30,12 @@ def compute_file_paths(file_path: str, extension_preference_order: List[str], ex
     return files[0][0]
 
 def join_dataframes(dataframe1: pd.DataFrame, dataframe2: pd.DataFrame) -> pd.DataFrame:
-    joined_df = pd.merge(dataframe1, dataframe2, left_index=True, right_index=True, how='outer', suffixes=('', '_duplicate'))
+
+    columns_1 = set(dataframe1.columns)
+    columns_2 = set(dataframe2.columns)
+    intersection_columns = columns_1.intersection(columns_2)
+    dataframe2 = dataframe2.drop(intersection_columns, axis=1)
+
+    joined_df = pd.merge(dataframe1, dataframe2, left_index=True, right_index=True, how='outer')
     joined_df = joined_df.drop(joined_df.filter(regex='_duplicate$').columns.tolist(), axis=1)
     return joined_df

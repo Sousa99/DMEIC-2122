@@ -44,7 +44,7 @@ def compute_path(filename: str, extension: str) -> str:
     directory_path = os.path.join(EXPORT_DIRECTORY, timestampStr, *CURRENT_DIRECTORIES)
     filename_full = filename + extension
 
-    if not os.path.exists(directory_path): os.makedirs(directory_path)
+    if not os.path.exists(directory_path): os.makedirs(directory_path, exist_ok=True)
     return os.path.join(directory_path, filename_full)
 
 def optimal_grid(number: int) -> Tuple[int, int]:
@@ -87,7 +87,7 @@ def get_current_path() -> str:
     timestampStr = EXECUTION_TIMESTAMP.strftime("%Y.%m.%d %H.%M.%S")
     directory_path = os.path.join(EXPORT_DIRECTORY, timestampStr, *CURRENT_DIRECTORIES)
 
-    if not os.path.exists(directory_path): os.makedirs(directory_path)
+    if not os.path.exists(directory_path): os.makedirs(directory_path, exist_ok=True)
     return os.path.join(directory_path, '')
 
 def get_checkpoint_load_directory(sub_directories: List[str] = []) -> str:
@@ -97,7 +97,7 @@ def get_checkpoint_load_directory(sub_directories: List[str] = []) -> str:
     if CHECKPOINT_DIRECTORY is not None:
         directory_path = os.path.join(CHECKPOINT_DIRECTORY, *sub_directories)
 
-    if not os.path.exists(directory_path): os.makedirs(directory_path)
+    if not os.path.exists(directory_path): os.makedirs(directory_path, exist_ok=True)
     return os.path.join(directory_path, '')
 
 def get_checkpoint_save_directory(sub_directories: List[str] = []) -> str:
@@ -105,7 +105,7 @@ def get_checkpoint_save_directory(sub_directories: List[str] = []) -> str:
     timestampStr = EXECUTION_TIMESTAMP.strftime("%Y.%m.%d %H.%M.%S")
     directory_path = os.path.join(EXPORT_DIRECTORY, timestampStr, CHECKPOINT_FOLDER, *sub_directories)
 
-    if not os.path.exists(directory_path): os.makedirs(directory_path)
+    if not os.path.exists(directory_path): os.makedirs(directory_path, exist_ok=True)
     return os.path.join(directory_path, '')
 
 def get_tmp_directory(sub_directories: List[str] = []):
@@ -113,7 +113,7 @@ def get_tmp_directory(sub_directories: List[str] = []):
     timestampStr = EXECUTION_TIMESTAMP.strftime("%Y.%m.%d %H.%M.%S")
     directory_path = os.path.join(TMP_DIRECTORY, timestampStr, *sub_directories)
 
-    if not os.path.exists(directory_path): os.makedirs(directory_path)
+    if not os.path.exists(directory_path): os.makedirs(directory_path, exist_ok=True)
     return directory_path
 
 # =================================== PUBLIC FUNCTIONS - SPECIFIC PARAMETERS ===================================

@@ -51,9 +51,9 @@ class StructureFeatureSet(module_featureset.FeatureSetAbstraction):
         static_dataframe = self.basis_dataframe.copy(deep=True)
 
         print(f"🚀 Developing '{self.id}' analysis ...")
-        word_graph_df = module_word_graph.word_graph_analysis(static_dataframe.copy(deep=True))
-        lsa_df = module_lsa.lsa_analysis(static_dataframe.copy(deep=True))
-        vector_unpacking_df = module_vector_unpacking.vector_unpacking_analysis(static_dataframe.copy(deep=True))
+        word_graph_df = module_word_graph.word_graph_analysis(static_dataframe.copy())
+        lsa_df = module_lsa.lsa_analysis(static_dataframe.copy())
+        vector_unpacking_df = module_vector_unpacking.vector_unpacking_analysis(static_dataframe.copy())
         
         # Final Dataframe
         all_structure_dataframes : List[pd.DataFrame] = [word_graph_df, lsa_df, vector_unpacking_df]

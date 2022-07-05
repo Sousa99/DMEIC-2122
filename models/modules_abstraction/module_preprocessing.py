@@ -48,8 +48,8 @@ class Preprocesser():
             self.pipeline.append(convert_key(pipeline_key))
 
     def preprocess_train(self, dataframe_X: pd.DataFrame, dataframe_Y: pd.Series) -> Tuple[pd.DataFrame, pd.Series]:
-        current_dataframe_X = dataframe_X.copy(deep=True)
-        current_dataframe_Y = dataframe_Y.copy(deep=True)
+        current_dataframe_X = dataframe_X.copy()
+        current_dataframe_Y = dataframe_Y.copy()
 
         for stage in self.pipeline:
             stage.fitting(current_dataframe_X, current_dataframe_Y)
@@ -58,8 +58,8 @@ class Preprocesser():
         return (current_dataframe_X, current_dataframe_Y)
 
     def preprocess_test(self, dataframe_X: pd.DataFrame, dataframe_Y: pd.Series) -> Tuple[pd.DataFrame, pd.Series]:
-        current_dataframe_X = dataframe_X.copy(deep=True)
-        current_dataframe_Y = dataframe_Y.copy(deep=True)
+        current_dataframe_X = dataframe_X.copy()
+        current_dataframe_Y = dataframe_Y.copy()
 
         for stage in self.pipeline:
             current_dataframe_X, current_dataframe_Y = stage.transform(current_dataframe_X, current_dataframe_Y)

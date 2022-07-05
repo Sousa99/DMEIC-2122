@@ -21,7 +21,7 @@ NDArray = Iterable
 
 DEFAULT_VALUE                       : float     = 0
 NUMBER_OF_WORDS_PER_BAG             : int       = 15
-PERCENTAGE_OF_MOST_FREQUENT_WORDS   : float     = 0.95
+PERCENTAGE_OF_MOST_FREQUENT_WORDS   : float     = 0.10 # TODO: Verify if impossible 0.95
 NUMBER_WORDS_FOR_CLUSTERING         : int       = 50
 NUMBER_CLUSTERS_TO_TEST             : List[int] = [ x for x in range(3, 11) ]
 
@@ -67,8 +67,11 @@ def lca_analysis(basis_df: pd.DataFrame) -> pd.DataFrame:
     basis_df['LCA - Embedding per Word Groups'] = basis_df['LCA - Word Groups'].progress_apply(lambda groups_of_words: module_nlp.convert_groups_of_words_to_embeddings(groups_of_words, word2vec_model))
     basis_df['LCA - Embedding Groups'] = basis_df['LCA - Embedding per Word Groups'].progress_apply(module_nlp.sum_normalize_embedding_per_group)
     basis_df['LCA - Max Cossine w/ Frequent Words'] = basis_df['LCA - Embedding Groups'].progress_apply(lambda sentence_embeddings: get_max_cossine_similarity_freq_words(sentence_embeddings, model_frequent_word_embeddings))
-    
-    del word2vec_model
+
+    drop_columns : List[str] = ['LCA - Word Groups', 'LCA - Embedding per Word Groups']
+    basis_df = basis_df.drop(drop_columns, axis=1, errors='ignore')
+
+    del word2vec_model, model_frequent_words, model_frequent_word_embeddings
     return basis_df
 
 def lca_analysis_dynamic(train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
@@ -76,7 +79,7 @@ def lca_analysis_dynamic(train_X: pd.DataFrame, train_Y: pd.Series, test_X: Opti
 
     word2vec_model = module_gensim.ModelWord2Vec()
 
-    lca_cossines_matrix = train_full_df[['Target', 'LCA - Max Cossine w/ Frequent Words']].copy(deep=True)
+    lca_cossines_matrix = train_full_df[['Target', 'LCA - Max Cossine w/ Frequent Words']].copy()
     lca_cossines_matrix = pd.concat([lca_cossines_matrix.drop(['LCA - Max Cossine w/ Frequent Words'], axis=1),
         lca_cossines_matrix['LCA - Max Cossine w/ Frequent Words'].apply(pd.Series)], axis=1)
     grouped_by_lca_cossines : pd.DataFrame = lca_cossines_matrix.groupby('Target').mean().transpose()

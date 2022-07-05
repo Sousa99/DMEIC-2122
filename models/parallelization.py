@@ -17,6 +17,7 @@ import paramiko
 # =================================================== CONSTANTS DEFINITION ===================================================
 
 TMP_DIRECTORY = './tmp_parallelization/'
+LOGS_DIRECTORY = 'logs/'
 FILE_SAVE_NAME = 'parallelization_manager.pkl'
 
 load_dotenv()
@@ -104,9 +105,9 @@ class ParallelizationManager():
     def run(self) -> None:
 
         def get_filepaths(self : ParallelizationManager, process_id : str) -> Tuple[TextIOWrapper, TextIOWrapper]:
-            log_path = os.path.join(self.TMP_DIRECTORY, self.timestamp_id)
+            log_path = os.path.join(self.TMP_DIRECTORY, self.timestamp_id, LOGS_DIRECTORY)
             if not os.path.exists(log_path) or not os.path.isdir(log_path):
-                os.makedirs(log_path)
+                os.makedirs(log_path, exist_ok=True)
 
             out_path = os.path.join(log_path, f'parallelization.out.{process_id}.log')
             err_path = os.path.join(log_path, f'parallelization.err.{process_id}.log')
@@ -126,15 +127,18 @@ class ParallelizationManager():
             client = paramiko.SSHClient()
             client.load_system_host_keys()
             client.connect(machine.get_address(), username=SSH_USER, password=SSH_KEY)
-            _stdin, _stdout, _stderr = client.exec_command(execution_script.get_file_path(), get_pty=True)
+            _stdin, _stdout, _stderr = client.exec_command(f"\"{execution_script.get_file_path()}\"", get_pty=True)
 
-            for line in iter(lambda: _stdout.readline(2048), ""):
-                out_file.write(line)
+            _stdout._set_mode('b')
+            _stderr._set_mode('b')
+
+            for line in iter(lambda: _stdout.readline(2048), b""):
+                out_file.write(line.decode('utf-8', errors='ignore'))
                 out_file.flush()
                 os.fsync(out_file.fileno())
 
-            out_file.write(_stdout.read().decode())
-            err_file.write(_stderr.read().decode())
+            out_file.write(_stdout.read().decode('utf-8', errors='ignore'))
+            err_file.write(_stderr.read().decode('utf-8', errors='ignore'))
 
             out_file.close()
             err_file.close()
@@ -181,7 +185,7 @@ class ParallelizationManager():
     def save_model(self) -> None:
 
         path = os.path.join(self.TMP_DIRECTORY, self.timestamp_id)
-        if not os.path.exists(path) or not os.path.isdir(path): os.makedirs(path)
+        if not os.path.exists(path) or not os.path.isdir(path): os.makedirs(path, exist_ok=True)
         file_path = os.path.join(path, self.FILE_SAVE_NAME)
         file = open(file_path, 'wb')
         pickle.dump(self, file)
