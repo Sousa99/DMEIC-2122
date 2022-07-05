@@ -53,7 +53,7 @@ for scraper_to_use in scrapers_to_use:
         })
 
         if len(scraped_information) % STEPS_PER_CHECKPOINT == 0:
-            create_checkpoint(scrapers_to_use, scraped_info)
+            create_checkpoint(scrapers_to_use, scraped_information)
 
 create_checkpoint(scrapers_to_use, scraped_info)
 request_driver.driver_quit()

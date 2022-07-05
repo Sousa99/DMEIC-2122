@@ -103,7 +103,9 @@ class Driver():
                 self.selenium_webdriver = None
                 attempts = attempts + 1
             except Exception as e:
-                tqdm.write(f"⚠️  Exception while initializing webdriver: '{e}'")
+                error_message = str(e)
+                error_message = error_message[:error_message.find('\n')]
+                tqdm.write(f"⚠️  Exception while initializing webdriver: '{error_message}'")
                 self.selenium_webdriver.quit()
                 self.selenium_webdriver = None
                 attempts = attempts + 1
