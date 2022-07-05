@@ -14,7 +14,7 @@ from typing     import Any, Dict, List
 SCORE_FLOOR : float = - 1.0
 SCORE_CEIL  : float = + 1.0
 
-STEPS_PER_CHECKPOINT    : int = 500
+STEPS_PER_CHECKPOINT    : int = 100
 
 PATH_TO_EXPORTS             : str = '../exports/web_scraping/'
 PATH_TO_EXPORT_INFORMATION  : str = PATH_TO_EXPORTS + 'valence_information.json'
