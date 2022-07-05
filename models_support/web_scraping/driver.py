@@ -42,12 +42,12 @@ class Driver():
         # Definition of Selenium WebDriver Options
         options : Options = Options()
         options.headless = self.headless
-        options.add_argument("--window-size=1920,1200")
+        options.add_argument("--window-size=1344,840")
 
         # Spoof Selenium
         options.add_argument('--no-sandbox')
         options.add_argument('--start-maximized')
-        options.add_argument('--start-fullscreen')
+        #options.add_argument('--start-fullscreen')
         options.add_argument('--single-process')
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument("--incognito")
@@ -95,7 +95,7 @@ class Driver():
                 if self.callback_accessible is not None and not self.callback_accessible(page_source):
                     raise Exception("🚨 Page not accessible!")
                 
-                if attempts != 0: tqdm.write("✅ Eventually webdriver was initialized successfully!")
+                if attempts > 1: tqdm.write("✅ Eventually webdriver was initialized successfully!")
                 return
             
             except SessionNotCreatedException as e:

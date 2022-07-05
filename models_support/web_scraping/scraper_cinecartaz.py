@@ -140,4 +140,4 @@ class WebScraperCineCartaz(scraper.WebScraper[ScrapedInfoCineCartaz]):
             review_author, review_text, review_date)
 
     def callback_accessible(self, page_source: str) -> bool:
-        super().callback_accessible(page_source)
+        return super().callback_accessible(page_source)
