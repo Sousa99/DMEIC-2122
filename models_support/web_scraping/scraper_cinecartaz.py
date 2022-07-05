@@ -77,16 +77,15 @@ class WebScraperCineCartaz(scraper.WebScraper[ScrapedInfoCineCartaz]):
     REVIEWS_LINK : str = 'https://cinecartaz.publico.pt/Criticas'
 
     def __init__(self) -> None:
-        super().__init__('CineCartaz')
+        super().__init__('CineCartaz', { 'current_page': 0 })
 
     def get_pages_to_scrape(self, driver: driver.Driver) -> Generator[str, None, None]:
 
-        current_page : int   = 0
         while True:
-            current_page = current_page + 1
+            self.state['current_page'] = self.state['current_page'] + 1
 
             # ============================ In fact get page with important information ============================
-            driver.driver_get(f"{self.REVIEWS_LINK}?pagina={current_page}")
+            driver.driver_get(f"{self.REVIEWS_LINK}?pagina={self.state['current_page']}")
             link_soup = BeautifulSoup(driver.driver_page_source(), 'html.parser')
 
             # Reader's Reviews: Get and Check if section is present

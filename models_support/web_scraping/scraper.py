@@ -12,9 +12,10 @@ ScrapedInfo = TypeVar("ScrapedInfo")
 
 class WebScraper(abc.ABC, Generic[ScrapedInfo]):
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, state: Dict[str, Any]) -> None:
         super().__init__()
         self.name : str = name
+        self.state : Dict[str, Any] = state
 
     @abc.abstractmethod
     def get_pages_to_scrape(self, driver: driver.Driver) -> Generator[str, None, None]:
