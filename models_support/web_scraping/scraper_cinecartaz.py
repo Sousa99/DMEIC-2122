@@ -78,12 +78,11 @@ class WebScraperCineCartaz(scraper.WebScraper[ScrapedInfoCineCartaz]):
     REVIEWS_LINK : str = 'https://cinecartaz.publico.pt/Criticas'
 
     def __init__(self) -> None:
-        super().__init__('CineCartaz', '0.1', { 'current_page': 0 })
+        super().__init__('CineCartaz', '0.2', { 'finished': False, 'current_page': 1, 'number_reviews_parsed': 0 })
 
     def get_pages_to_scrape(self, driver: driver.Driver) -> Generator[str, None, None]:
 
-        while True:
-            self.state['current_page'] = self.state['current_page'] + 1
+        while not self.state['finished']:
 
             # ============================ In fact get page with important information ============================
             driver.driver_get(f"{self.REVIEWS_LINK}?pagina={self.state['current_page']}")
@@ -91,19 +90,28 @@ class WebScraperCineCartaz(scraper.WebScraper[ScrapedInfoCineCartaz]):
 
             # Reader's Reviews: Get and Check if section is present
             reviews_from_readers_section = link_soup.find('section', id='criticas-leitores')
-            if reviews_from_readers_section is None: return
+            if reviews_from_readers_section is None: break
             # Reader's Reviews: Get and Check if list element
             reviews_from_readers_list = reviews_from_readers_section.find('ul', recursive=False)
-            if reviews_from_readers_list is None: return
+            if reviews_from_readers_list is None: break
             # Reader's Reviews: Get and Check if list items
             reviews_from_readers = reviews_from_readers_list.findChildren(recursive=False)
-            if len(reviews_from_readers) == 0: return
+            if len(reviews_from_readers) == 0: break
             # Reader's Reviews: Iterate and Get Link
+            for _ in range(self.state['number_reviews_parsed']): reviews_from_readers.pop(0)
             for review_item in reviews_from_readers:
                 review_item_header = review_item.find('h3')
                 review_item_link = review_item_header.find('a')
 
+                # Update State
+                self.state['number_reviews_parsed'] = self.state['number_reviews_parsed'] + 1
                 yield f"{self.BASE_LINK}{review_item_link['href']}"
+
+            # Update State
+            self.state['current_page'] = self.state['current_page'] + 1
+            self.state['number_reviews_parsed'] = 0
+        # Update State
+        self.state['finished'] = True
 
     def scrape_page(self, link: str, driver: driver.Driver) -> Generator[ScrapedInfoCineCartaz, None, None]:
         
