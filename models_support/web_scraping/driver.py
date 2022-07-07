@@ -124,5 +124,8 @@ class Driver():
         except Exception as e:
             if throw_exception: raise(e)
         
+    def driver_get_current_url(self) -> str:
+        return self.selenium_webdriver.current_url;
+
     def driver_quit(self) -> None:
         self.selenium_webdriver.quit()
