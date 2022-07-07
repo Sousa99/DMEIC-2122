@@ -3,6 +3,7 @@ from bs4    import BeautifulSoup
 
 import driver
 import scraper
+import scraper_valence
 
 # ============================================================== AUXILIARY FUNCTIONS ==============================================================
 
@@ -77,7 +78,7 @@ class WebScraperCineCartaz(scraper.WebScraper[ScrapedInfoCineCartaz]):
     REVIEWS_LINK : str = 'https://cinecartaz.publico.pt/Criticas'
 
     def __init__(self) -> None:
-        super().__init__('CineCartaz', { 'current_page': 0 })
+        super().__init__('CineCartaz', '0.1', { 'current_page': 0 })
 
     def get_pages_to_scrape(self, driver: driver.Driver) -> Generator[str, None, None]:
 
@@ -144,3 +145,10 @@ class WebScraperCineCartaz(scraper.WebScraper[ScrapedInfoCineCartaz]):
         elif "Your connection is not private" in page_source: return False
         elif "No internet" in page_source: return False
         return True
+
+# ============================================================ MAIN FUNCTIONALITY ============================================================
+
+scraper_to_use : WebScraperCineCartaz = WebScraperCineCartaz()
+request_driver : driver.Driver = driver.Driver(max_attempts_driver=20)
+request_driver.set_callback_accessible(scraper_to_use.callback_accessible)
+scraper_valence.run_scraper(scraper_to_use, request_driver)

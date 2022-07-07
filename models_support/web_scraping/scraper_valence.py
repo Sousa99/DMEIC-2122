@@ -1,17 +1,12 @@
 import os
 import json
-import pickle
 
 import driver
 import scraper
-import scraper_shein
-import scraper_cinecartaz
 
 from typing     import Any, Dict, List, Tuple
 
 # ============================================================ CONSTANTS ============================================================
-
-CURRENT_VERSION : str = 'V0.1'
 
 SCORE_FLOOR : float = - 1.0
 SCORE_CEIL  : float = + 1.0
@@ -19,52 +14,49 @@ SCORE_CEIL  : float = + 1.0
 STEPS_PER_CHECKPOINT    : int = 100
 
 PATH_TO_EXPORTS             : str = '../exports/web_scraping/'
-PATH_TO_EXPORT_INFORMATION  : str = PATH_TO_EXPORTS + f'{CURRENT_VERSION}_valence_information.json'
-PATH_TO_EXPORT_CHECKPOINT   : str = PATH_TO_EXPORTS + f'{CURRENT_VERSION}_checkpoint.pkl'
+SUFFIX_EXPORT_INFORMATION   : str = 'valence_information.json'
+SUFFIX_EXPORT_CHECKPOINT    : str = 'checkpoint.pkl'
 
 # ============================================================ AUXILIARY FUNCTIONS ============================================================
 
-def load_checkpoint() -> Tuple[List[scraper.WebScraper], List[Dict[str, Any]]]:
+def load_checkpoint(scraped_information : List[Dict[str, Any]], scraper: scraper.WebScraper) -> Tuple[List[Dict[str, Any]], scraper.WebScraper]:
 
-    # Save exported information
-    file = open(PATH_TO_EXPORT_INFORMATION, "r")
-    scraped_information = json.load(file)
-    file.close()
-    print(f"✅ Loaded '{PATH_TO_EXPORT_INFORMATION}' from checkpoint!")
+    path_to_exported_information = os.path.join(PATH_TO_EXPORTS, f"{scraper.get_file_save_prefix()}{SUFFIX_EXPORT_INFORMATION}")
+    path_to_exported_checkpoint = os.path.join(PATH_TO_EXPORTS, f"{scraper.get_file_save_prefix()}{SUFFIX_EXPORT_CHECKPOINT}")
 
-    # Save iteration checkpoint
-    file = open(PATH_TO_EXPORT_CHECKPOINT, "rb")
-    scrapers_in_use = pickle.load(file)
-    file.close()
-    print(f"✅ Loaded '{PATH_TO_EXPORT_CHECKPOINT}' from checkpoint!")
+    if os.path.exists(path_to_exported_information) and os.path.exists(path_to_exported_checkpoint):
+        # Load iteration checkpoint
+        file = open(path_to_exported_information, "r")
+        scraped_information = json.load(file)
+        file.close()
+        print(f"✅ Loaded '{path_to_exported_information}' from checkpoint!")
+        # Load scraper checkpoint
+        scraper.load_state(path_to_exported_checkpoint)
+        print(f"✅ Loaded '{path_to_exported_checkpoint}' from checkpoint!")
+    else: print(f"❌ Checkpoint could not be loaded or does not exist!")
 
-    return (scrapers_in_use, scraped_information)
+    return (scraped_information, scraper)
 
-def create_checkpoint(scrapers_in_use: List[scraper.WebScraper], scraped_information : List[Dict[str, Any]]):
+def create_checkpoint(scraped_information : List[Dict[str, Any]], scraper: scraper.WebScraper):
 
-    # Save exported information
-    file = open(PATH_TO_EXPORT_INFORMATION, "w")
+    path_to_export_information = os.path.join(PATH_TO_EXPORTS, f"{scraper.get_file_save_prefix()}{SUFFIX_EXPORT_INFORMATION}")
+    path_to_export_checkpoint = os.path.join(PATH_TO_EXPORTS, f"{scraper.get_file_save_prefix()}{SUFFIX_EXPORT_CHECKPOINT}")
+
+    # Save extracted information
+    file = open(path_to_export_information, "w")
     json.dump(scraped_information, file, indent=4, sort_keys=True, ensure_ascii=False)
     file.close()
-
-    # Save iteration checkpoint
-    file = open(PATH_TO_EXPORT_CHECKPOINT, "wb")
-    pickle.dump(scrapers_in_use, file)
-    file.close()
+    # Save scraper checkpoint
+    scraper.save_state(path_to_export_checkpoint)
 
 # ============================================================ MAIN FUNCTIONALITY ============================================================
 
-request_driver : driver.Driver = driver.Driver(headless=False, rotate_proxies=True, rotate_user_agents=True, max_requests=200, max_attempts_driver=20)
 if not os.path.exists(PATH_TO_EXPORTS): os.makedirs(PATH_TO_EXPORTS, exist_ok=True)
+def run_scraper(scraper: scraper.WebScraper, request_driver: driver.Driver):
 
-scraped_information : List[Dict[str, Any]] = []
-scrapers_to_use : List[scraper.WebScraper] = [ scraper_cinecartaz.WebScraperCineCartaz(), scraper_shein.WebScraperShein() ]
-if os.path.exists(PATH_TO_EXPORT_INFORMATION) and os.path.exists(PATH_TO_EXPORT_CHECKPOINT):
-    scrapers_to_use, scraped_information = load_checkpoint()
-
-for scraper_to_use in scrapers_to_use:
-    request_driver.set_callback_accessible(scraper_to_use.callback_accessible)
-    for scraped_info in scraper_to_use.get_scraped_info(request_driver):
+    scraped_information : List[Dict[str, Any]] = []
+    scraped_information, scraper = load_checkpoint(scraped_information, scraper)
+    for scraped_info in scraper.get_scraped_info(request_driver):
 
         scraped_information.append({
             'text': scraped_info.get_text(),
@@ -73,7 +65,7 @@ for scraper_to_use in scrapers_to_use:
         })
 
         if len(scraped_information) % STEPS_PER_CHECKPOINT == 0:
-            create_checkpoint(scrapers_to_use, scraped_information)
+            create_checkpoint(scraped_information, scraper)
 
-create_checkpoint(scrapers_to_use, scraped_info)
-request_driver.driver_quit()
+    create_checkpoint(scraped_info, scraper)
+    request_driver.driver_quit()

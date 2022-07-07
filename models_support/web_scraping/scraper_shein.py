@@ -2,10 +2,10 @@ import json
 
 from typing     import Any, Dict, Generator, List, Optional
 from bs4        import BeautifulSoup
-from tqdm       import tqdm
 
 import driver
 import scraper
+import scraper_valence
 
 # ============================================================== AUXILIARY FUNCTIONS ==============================================================
 
@@ -66,7 +66,7 @@ class WebScraperShein(scraper.WebScraper[ScrapedInfoShein]):
     REVIEWS_LINK : str = 'https://pt.shein.com/promotion/pt-dress-sc-02578099.html?ici=pt_tab01navbar03menu01dir01&scici=navbar_WomenHomePage~~tab01navbar03menu01dir01~~3_1_1~~itemPicking_02578099~~~~0&src_module=topcat&src_tab_page_id=page_select_class1654454021946&src_identifier=fc%3DWomen%60sc%3DMAIS%20VOTADO%60tc%3DCOMPRE%20POR%20CATEGORIA%60oc%3DVestidos%60ps%3Dtab01navbar03menu01dir01%60jc%3DitemPicking_02578099&srctype=category&userpath=category-MAIS-VOTADO-Vestidos'
 
     def __init__(self) -> None:
-        super().__init__('Shein', { 'current_page': 0 })
+        super().__init__('Shein', '0.1', { 'current_page': 0 })
 
     def get_pages_to_scrape(self, driver : driver.Driver) -> Generator[str, None, None]:
 
@@ -119,3 +119,10 @@ class WebScraperShein(scraper.WebScraper[ScrapedInfoShein]):
         elif "Your connection is not private" in page_source: return False
         elif "No internet" in page_source: return False
         return True
+
+# ============================================================ MAIN FUNCTIONALITY ============================================================
+
+scraper_to_use : WebScraperShein = WebScraperShein()
+request_driver : driver.Driver = driver.Driver(rotate_proxies=True, rotate_proxies_rand=False, rotate_user_agents=True, max_requests=200, max_attempts_driver=20)
+request_driver.set_callback_accessible(scraper_to_use.callback_accessible)
+scraper_valence.run_scraper(scraper_to_use, request_driver)

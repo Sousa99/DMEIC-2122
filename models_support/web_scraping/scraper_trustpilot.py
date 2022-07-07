@@ -1,8 +1,9 @@
-from typing import Any, Dict, Generator, Optional
+from typing import Any, Dict, Generator
 from bs4    import BeautifulSoup
 
 import driver
 import scraper
+import scraper_valence
 
 # =================================================================== CONSTANTS ===================================================================
 
@@ -48,7 +49,7 @@ class WebScraperTrustPilot(scraper.WebScraper[ScrapedInfoTrustPilot]):
     REVIEWS_LINK : str = 'https://pt.trustpilot.com/categories/money_insurance'
 
     def __init__(self) -> None:
-        super().__init__('TrustPilot', { 'current_page': 0, 'reviews_page': 0 })
+        super().__init__('TrustPilot', '0.1', { 'current_page': 0, 'reviews_page': 0 })
 
     def get_pages_to_scrape(self, driver: driver.Driver) -> Generator[str, None, None]:
 
@@ -117,3 +118,10 @@ class WebScraperTrustPilot(scraper.WebScraper[ScrapedInfoTrustPilot]):
         elif "Your connection is not private" in page_source: return False
         elif "No internet" in page_source: return False
         return True
+
+# ============================================================ MAIN FUNCTIONALITY ============================================================
+
+scraper_to_use : WebScraperTrustPilot = WebScraperTrustPilot()
+request_driver : driver.Driver = driver.Driver(rotate_proxies=True, rotate_proxies_rand=True, rotate_user_agents=True, max_requests=200, max_attempts_driver=20)
+request_driver.set_callback_accessible(scraper_to_use.callback_accessible)
+scraper_valence.run_scraper(scraper_to_use, request_driver)
