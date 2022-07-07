@@ -100,11 +100,11 @@ class WebScraperCineCartaz(scraper.WebScraper[ScrapedInfoCineCartaz]):
             # Reader's Reviews: Iterate and Get Link
             for _ in range(self.state['number_reviews_parsed']): reviews_from_readers.pop(0)
             for review_item in reviews_from_readers:
-                review_item_header = review_item.find('h3')
-                review_item_link = review_item_header.find('a')
-
                 # Update State
                 self.state['number_reviews_parsed'] = self.state['number_reviews_parsed'] + 1
+
+                review_item_header = review_item.find('h3')
+                review_item_link = review_item_header.find('a')
                 yield f"{self.BASE_LINK}{review_item_link['href']}"
 
             # Update State
