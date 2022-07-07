@@ -75,7 +75,6 @@ class WebScraperTrustPilot(scraper.WebScraper[ScrapedInfoTrustPilot]):
 
     def scrape_page(self, link: str, driver: driver.Driver) -> Generator[ScrapedInfoTrustPilot, None, None]:
         
-        self.state['reviews_page'] = 0
         while True:
             self.state['reviews_page'] = self.state['reviews_page'] + 1
 
@@ -86,7 +85,11 @@ class WebScraperTrustPilot(scraper.WebScraper[ScrapedInfoTrustPilot]):
 
             company_name = link_soup.find('span', class_="title_displayName__TtDDM").get_text().strip()
 
-            if self.state['reviews_page'] != 1 and link_to_check != driver.driver_get_current_url(): return
+            # Finished Parsing Reviews
+            if self.state['reviews_page'] != 1 and link_to_check != driver.driver_get_current_url():
+                self.state['reviews_page'] = 0
+                return
+            
             review_cards = link_soup.find_all('article', attrs={"data-service-review-card-paper": "true"})
             for review_card in review_cards:
 
