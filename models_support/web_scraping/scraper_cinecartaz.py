@@ -78,11 +78,11 @@ class WebScraperCineCartaz(scraper.WebScraper[ScrapedInfoCineCartaz]):
     REVIEWS_LINK : str = 'https://cinecartaz.publico.pt/Criticas'
 
     def __init__(self) -> None:
-        super().__init__('CineCartaz', '0.2', { 'finished': False, 'current_page': 1, 'number_reviews_parsed': 0 })
+        super().__init__('CineCartaz', '0.2', { 'current_page': 1, 'number_reviews_parsed': 0 })
 
     def get_pages_to_scrape(self, driver: driver.Driver) -> Generator[str, None, None]:
 
-        while not self.state['finished']:
+        while True:
 
             # ============================ In fact get page with important information ============================
             driver.driver_get(f"{self.REVIEWS_LINK}?pagina={self.state['current_page']}")
@@ -110,8 +110,6 @@ class WebScraperCineCartaz(scraper.WebScraper[ScrapedInfoCineCartaz]):
             # Update State
             self.state['current_page'] = self.state['current_page'] + 1
             self.state['number_reviews_parsed'] = 0
-        # Update State
-        self.state['finished'] = True
 
     def scrape_page(self, link: str, driver: driver.Driver) -> Generator[ScrapedInfoCineCartaz, None, None]:
         
