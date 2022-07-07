@@ -31,7 +31,7 @@ class WebScraper(abc.ABC, Generic[ScrapedInfo]):
     def get_scraped_info(self, driver: driver.Driver) -> Generator[ScrapedInfo, None, None]:
 
         for page_to_scrape in tqdm.tqdm(self.get_pages_to_scrape(driver), desc=f"🌐 Scrapping '{self.name}' for its information", leave=True):
-            for scrapped_info in self.scrape_page(page_to_scrape, driver):
+            for scrapped_info in tqdm.tqdm(self.scrape_page(page_to_scrape, driver), desc=f"🌐 Gathering information of '{self.name}'", leave=False):
                 yield scrapped_info
 
     def get_file_save_prefix(self) -> str:
