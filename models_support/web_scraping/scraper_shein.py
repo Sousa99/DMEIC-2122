@@ -66,11 +66,11 @@ class WebScraperShein(scraper.WebScraper[ScrapedInfoShein]):
     REVIEWS_LINK : str = 'https://pt.shein.com/promotion/pt-dress-sc-02578099.html?ici=pt_tab01navbar03menu01dir01&scici=navbar_WomenHomePage~~tab01navbar03menu01dir01~~3_1_1~~itemPicking_02578099~~~~0&src_module=topcat&src_tab_page_id=page_select_class1654454021946&src_identifier=fc%3DWomen%60sc%3DMAIS%20VOTADO%60tc%3DCOMPRE%20POR%20CATEGORIA%60oc%3DVestidos%60ps%3Dtab01navbar03menu01dir01%60jc%3DitemPicking_02578099&srctype=category&userpath=category-MAIS-VOTADO-Vestidos'
 
     def __init__(self) -> None:
-        super().__init__('Shein', '0.1', { 'finished': False, 'current_page': 1, 'number_goods_parsed': 0 })
+        super().__init__('Shein', '0.2', { 'current_page': 1, 'number_goods_parsed': 0 })
 
     def get_pages_to_scrape(self, driver : driver.Driver) -> Generator[str, None, None]:
 
-        while not self.state['finished']:
+        while True:
 
             # ============================ In fact get page with important information ============================
             driver.driver_get(f"{self.REVIEWS_LINK}&page={self.state['current_page']}")
@@ -90,8 +90,6 @@ class WebScraperShein(scraper.WebScraper[ScrapedInfoShein]):
             # Update State
             self.state['current_page'] = self.state['current_page'] + 1
             self.state['number_goods_parsed'] = 0
-        # Update State
-        self.state['finished'] = True
         
     def scrape_page(self, link: str, driver : driver.Driver) -> Generator[ScrapedInfoShein, None, None]:
 
