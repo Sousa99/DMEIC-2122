@@ -46,7 +46,7 @@ class ScrapedInfoTrustPilot(scraper.ScrapedInfoValence):
 class WebScraperTrustPilot(scraper.WebScraper[ScrapedInfoTrustPilot]):
 
     BASE_LINK : str = 'https://pt.trustpilot.com'
-    REVIEWS_LINK : str = 'https://pt.trustpilot.com/categories/money_insurance'
+    REVIEWS_LINK : str = 'https://pt.trustpilot.com/categories/money_insurance?status=all&timeperiod=0&'
 
     def __init__(self) -> None:
         state = { 'current_page': 1, 'number_companies_parsed': 0 ,
