@@ -18,9 +18,11 @@ def get_moview_info(link: str, driver: driver.Driver) -> Optional[Dict[str, Any]
     if len(movie_box_inner) < 2: return None
 
     movie_name = movie_box_inner[0].contents[0]
-    movie_from_children = movie_box_inner[1].findChildren()
-    if movie_from_children is None: return None
-    movie_from = movie_from_children[0].contents[0]
+    if len(movie_box_inner) < 2: movie_from = 'Unknown'
+    else:
+        movie_from_children = movie_box_inner[1].findChildren()
+        if movie_from_children is None or len(movie_from) == 0: movie_from = 'Unknown'
+        else: movie_from = movie_from_children[0].contents[0]
 
     movie_readers_reviews = link_soup.find('section', class_='votosdosleitores')
     if movie_readers_reviews is None: return None
