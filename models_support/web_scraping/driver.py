@@ -7,6 +7,7 @@ from selenium                                   import webdriver
 from fake_useragent                             import UserAgent
 from selenium.common.exceptions                 import SessionNotCreatedException
 from selenium.webdriver.common.by               import By
+from selenium.webdriver.support.ui              import WebDriverWait
 from selenium.webdriver.common.action_chains    import ActionChains
 from selenium.webdriver.chrome.options          import Options
 
@@ -123,7 +124,13 @@ class Driver():
             self.selenium_webdriver.implicitly_wait(wait)
         except Exception as e:
             if throw_exception: raise(e)
-        
+
+    def driver_wait_until(self, wait_function: Callable[[webdriver.Chrome], bool], wait: int = 10, throw_exception: bool = True) -> None:
+        try:
+            WebDriverWait(self.selenium_webdriver, wait).until(lambda wd: wait_function(wd))
+        except Exception as e:
+            if throw_exception: raise(e)
+
     def driver_get_current_url(self) -> str:
         return self.selenium_webdriver.current_url;
 
