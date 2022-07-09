@@ -7,6 +7,11 @@ import driver
 import scraper
 import scraper_valence
 
+# =================================================================== CONSTANTS ===================================================================
+
+SHEIN_SCORE_FLOOR : float = 1
+SHEIN_SCORE_CEIL : float = 5
+
 # ============================================================== AUXILIARY FUNCTIONS ==============================================================
 
 def get_data_variable(soup: BeautifulSoup) -> Optional[Any]:
@@ -111,7 +116,7 @@ class WebScraperShein(scraper.WebScraper[ScrapedInfoShein]):
                 review_text     : str   = item.find('div', class_="rate-des").text.replace('\n', ' ').strip()
                 review_date     : str   = item.find('div', class_="date").text.strip()
                 
-                yield ScrapedInfoShein(clothe_title, 1, 5, review_author, review_text, review_score, review_date)
+                yield ScrapedInfoShein(clothe_title, SHEIN_SCORE_FLOOR, SHEIN_SCORE_CEIL, review_author, review_text, review_score, review_date)
 
             # Click next Page
             driver.driver_click_css('body > div.c-outermost-ctn.j-outermost-ctn > div.c-vue-coupon > div.S-dialog > div > i', throw_exception=False)
@@ -121,7 +126,7 @@ class WebScraperShein(scraper.WebScraper[ScrapedInfoShein]):
 
     def callback_accessible(self, page_source: str) -> bool:
         if "Access Denied" in page_source: return False
-        elif "This site can't be reached" in page_source: return False
+        elif "This site can’t be reached" in page_source: return False
         elif "Your connection is not private" in page_source: return False
         elif "No internet" in page_source: return False
         return True

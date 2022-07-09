@@ -149,7 +149,7 @@ class WebScraperCineCartaz(scraper.WebScraper[ScrapedInfoCineCartaz]):
 
     def callback_accessible(self, page_source: str) -> bool:
         if "Access Denied" in page_source: return False
-        elif "This site can't be reached" in page_source: return False
+        elif "This site can’t be reached" in page_source: return False
         elif "Your connection is not private" in page_source: return False
         elif "No internet" in page_source: return False
         return True
