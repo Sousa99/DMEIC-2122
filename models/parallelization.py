@@ -112,8 +112,17 @@ class ParallelizationManager():
             out_path = os.path.join(log_path, f'parallelization.out.{process_id}.log')
             err_path = os.path.join(log_path, f'parallelization.err.{process_id}.log')
 
-            out_file = open(out_path, 'w')
-            err_file = open(err_path, 'w')
+            out_exists = os.path.exists(out_path) and os.path.isfile(out_path)
+            err_exists = os.path.exists(err_path) and os.path.isfile(err_path)
+
+            out_file = open(out_path, 'a')
+            err_file = open(err_path, 'a')
+
+            if out_exists: out_file.write("\n")
+            if err_exists: err_file.write("\n")
+
+            out_file.write("=================================================== NEW EXECUTION ===================================================")
+            err_file.write("=================================================== NEW EXECUTION ===================================================")
 
             return (out_file, err_file)
 
