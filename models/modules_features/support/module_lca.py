@@ -123,7 +123,7 @@ def lca_analysis_dynamic(train_X: pd.DataFrame, train_Y: pd.Series, test_X: Opti
 
         # LCA features applied to train
         for index, cluster_center in enumerate(cluster_centers):
-            column_name : str   = f'LCA - Max Cossine w/ Cluster {index}'
+            column_name : str   = f"LCA - Max Cossine w/ Cluster {index} for {cluster_to_study['full_code']}"
             train_X[column_name] = train_X['LCA - Embedding Groups'].progress_apply(lambda sentence_embeddings: get_max_cossine_similarity_with_word(sentence_embeddings, cluster_center)).astype(float)
             train_X[column_name].fillna(DEFAULT_VALUE, inplace=True)
         
