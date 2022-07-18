@@ -110,17 +110,21 @@ class WebScraperBooking(scraper.WebScraper[ScrapedInfoBooking]):
             slide_window = link_soup.find('div', attrs={"data-id": "hp-reviews-sliding"})
             return slide_window['aria-hidden'] == "false"
 
-        for _ in range(0, 5):
-            retry = False
-            driver.driver_click_css('#guest-featured_reviews__horizontal-block > div > div.hp-featured_reviews-bottom > button', throw_exception=False)
-            try: driver.driver_wait_until(wait_until_open_overlay)
-            except ElementNotInteractableException: retry = True
-            if not retry: return
+        driver.driver_click_css('#guest-featured_reviews__horizontal-block > div > div.hp-featured_reviews-bottom > button', throw_exception=True)
+        driver.driver_wait_until(wait_until_open_overlay)
 
         def wait_until_reviews_loaded(driver: webdriver.Chrome) -> bool:
             link_soup = BeautifulSoup(driver.page_source, 'html.parser')
             reviews = link_soup.find_all('li', class_="review_list_new_item_block")
             return len(reviews) != 0
+
+        # Wait until reviews load
+        driver.driver_wait_until(wait_until_reviews_loaded, throw_exception=False)
+        # Parse current Click
+        link_soup = BeautifulSoup(driver.driver_page_source(), 'html.parser')
+        # Choose correct language
+        driver.driver_click_css('#review_lang_filter > button', throw_exception=False)
+        driver.driver_click_css('#review_lang_filter > div > div > ul > li:nth-child(2) > button', throw_exception=False)
 
         running = True
         while running:
@@ -146,15 +150,13 @@ class WebScraperBooking(scraper.WebScraper[ScrapedInfoBooking]):
                 yield ScrapedInfoBooking(hotel_name, BOOKING_SCORE_FLOOR, BOOKING_SCORE_CEIL, review_author, review_text, review_score, review_date)
 
             # Click next Page
-            for _ in range(0, 5):
-                retry = False
-                next_review_page_div = link_soup.find('div', class_="bui-pagination__next-arrow")
-                if 'bui-pagination__item--disabled' in next_review_page_div['class']: break
-
+            link_soup = BeautifulSoup(driver.driver_page_source(), 'html.parser')
+            next_review_page_div = link_soup.find('div', class_="bui-pagination__next-arrow")
+            if 'bui-pagination__item--disabled' in next_review_page_div['class']: running = False
+            else:
                 try: driver.driver_click_css('#review_list_page_container > div.c-pagination > div > div.bui-pagination__nav > div > div.bui-pagination__item.bui-pagination__next-arrow > a')
                 except NoSuchElementException: running = False
-                except ElementNotInteractableException: retry = True
-                if not retry: break
+                except ElementNotInteractableException: running = False
 
     def callback_accessible(self, page_source: str) -> bool:
         if "Access Denied" in page_source: return False
