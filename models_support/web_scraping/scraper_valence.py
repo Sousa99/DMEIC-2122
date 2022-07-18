@@ -67,5 +67,5 @@ def run_scraper(scraper: scraper.WebScraper, request_driver: driver.Driver):
         if len(scraped_information) % STEPS_PER_CHECKPOINT == 0:
             create_checkpoint(scraped_information, scraper)
 
-    create_checkpoint(scraped_info, scraper)
+    create_checkpoint(scraped_information, scraper)
     request_driver.driver_quit()
