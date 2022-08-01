@@ -26,12 +26,13 @@ if print_variations or parallelization is None or parallelization == module_mode
     # =========================================== Get Features for FeatureSet ===========================================
 
     structure_feature_set = module_structure_features.StructureFeatureSet()
-    content_feature_set = module_content_features.ContentFeatureSet()
-    entirety_feature_set = module_entirety_features.EntiretyFeatureSet()
-    all_feature_set = module_featureset.MergedFeatureSetAbstraction([structure_feature_set, content_feature_set, entirety_feature_set])
+    #content_feature_set = module_content_features.ContentFeatureSet()
+    #entirety_feature_set = module_entirety_features.EntiretyFeatureSet()
+    #all_feature_set = module_featureset.MergedFeatureSetAbstraction([structure_feature_set, content_feature_set, entirety_feature_set])
 
     # Feature Sets
-    feature_sets : List[module_featureset.FeatureSetAbstraction] = [structure_feature_set, content_feature_set, entirety_feature_set, all_feature_set]
+    #feature_sets : List[module_featureset.FeatureSetAbstraction] = [structure_feature_set, content_feature_set, entirety_feature_set, all_feature_set]
+    feature_sets : List[module_featureset.FeatureSetAbstraction] = [structure_feature_set]
 
     # =========================================== Init Execution of Feature Sets ===========================================
 
@@ -44,18 +45,18 @@ if print_variations or parallelization is None or parallelization == module_mode
         structure_feature_set.develop_static_df()
         print(" -------------------- ")
 
-        content_feature_set.init_execution(model.subjects_paths, model.PREFERENCE_AUDIO_TRACKS,
-            model.PREFERENCE_TRANS, model.EXTENSION_TRANS, model.subjects_infos, model.GENERAL_DROP_COLUMNS)
-        content_feature_set.develop_static_df()
-        print(" -------------------- ")
+        #content_feature_set.init_execution(model.subjects_paths, model.PREFERENCE_AUDIO_TRACKS,
+        #    model.PREFERENCE_TRANS, model.EXTENSION_TRANS, model.subjects_infos, model.GENERAL_DROP_COLUMNS)
+        #content_feature_set.develop_static_df()
+        #print(" -------------------- ")
 
-        entirety_feature_set.init_execution(model.subjects_paths, model.PREFERENCE_AUDIO_TRACKS,
-            model.PREFERENCE_TRANS, model.EXTENSION_TRANS, model.subjects_infos, model.GENERAL_DROP_COLUMNS)
-        entirety_feature_set.develop_static_df()
-        print(" -------------------- ")
+        #entirety_feature_set.init_execution(model.subjects_paths, model.PREFERENCE_AUDIO_TRACKS,
+        #    model.PREFERENCE_TRANS, model.EXTENSION_TRANS, model.subjects_infos, model.GENERAL_DROP_COLUMNS)
+        #entirety_feature_set.develop_static_df()
+        #print(" -------------------- ")
 
-        all_feature_set.init_execution(model.subjects_paths, model.PREFERENCE_AUDIO_TRACKS,
-            model.PREFERENCE_TRANS, model.EXTENSION_TRANS, model.subjects_infos, model.GENERAL_DROP_COLUMNS)
+        #all_feature_set.init_execution(model.subjects_paths, model.PREFERENCE_AUDIO_TRACKS,
+        #    model.PREFERENCE_TRANS, model.EXTENSION_TRANS, model.subjects_infos, model.GENERAL_DROP_COLUMNS)
 
         for feature_set in feature_sets: feature_set.develop_static_df()
 
