@@ -1,7 +1,6 @@
 #!/bin/bash
 CURRENT_DIR=`pwd`
 NOW=$(date +"%Y.%m.%d %H.%M.%S")
-NOW="2022.06.23 12.57.46"
 
 typeset -i WAIT_SECONDS=20
 typeset -i MAX_JOBS_PER_MACHINE=3
@@ -26,13 +25,13 @@ mkdir -p "${PARALLELIZATION_DIRECTORY}"
 
 VARIATION_KEY="simple"
 
-#python3 model_second.py                                                                                                                     \
-#    -info_controls=${CONTROL_INFO}              -info_psychosis=${PSYCHOSIS_INFO}               -info_bipolars=${BIPOLAR_INFO}              \
-#    -audio_controls=${CONTROL_AUDIOS}           -audio_psychosis=${PSYCHOSIS_AUDIOS}            -audio_bipolars=${BIPOLAR_AUDIOS}           \
-#    -trans_controls=${CONTROL_TRANSCRIPTIONS}   -trans_psychosis=${PSYCHOSIS_TRANSCRIPTIONS}    -trans_bipolars=${BIPOLAR_TRANSCRIPTIONS}   \
-#    -parallelization_key="FEATURE_EXTRACTION"                                                                                               \
-#    -timestamp="${NOW}"                                                                                                                     \
-#    -variations_key=${VARIATION_KEY}
+python3 model_second.py                                                                                                                     \
+    -info_controls=${CONTROL_INFO}              -info_psychosis=${PSYCHOSIS_INFO}               -info_bipolars=${BIPOLAR_INFO}              \
+    -audio_controls=${CONTROL_AUDIOS}           -audio_psychosis=${PSYCHOSIS_AUDIOS}            -audio_bipolars=${BIPOLAR_AUDIOS}           \
+    -trans_controls=${CONTROL_TRANSCRIPTIONS}   -trans_psychosis=${PSYCHOSIS_TRANSCRIPTIONS}    -trans_bipolars=${BIPOLAR_TRANSCRIPTIONS}   \
+    -parallelization_key="FEATURE_EXTRACTION"                                                                                               \
+    -timestamp="${NOW}"                                                                                                                     \
+    -variations_key=${VARIATION_KEY}
 
 python3 ./parallelization.py -timestamp="${NOW}" -execution="init" -wait_seconds=${WAIT_SECONDS} -max_jobs_per_machine=${MAX_JOBS_PER_MACHINE}
 ret=$?
