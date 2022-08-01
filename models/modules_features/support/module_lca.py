@@ -118,7 +118,8 @@ def lca_analysis_dynamic(train_X: pd.DataFrame, train_Y: pd.Series, test_X: Opti
 
         # Plot and Save achieved Clusters
         module_exporter.export_scatter_clusters(f"content - lca - {cluster_to_study['code']} - train - achieved clusters", reduced_dimensionality, 'Feature 1', 'Feature 2',
-            hue_key='Cluster', style_key='Type', hide_labels=('Type', 'center'), figsize=(10, 6),
+            True, hue_key='Cluster', style_key='Type', hide_labels=('Type', 'center'), figsize=(8, 5), text_fontsize='medium',
+            hide_x_ticks=True, hide_y_ticks=True,
             legend_placement='upper left', margins={ 'bottom': None, 'left': 0.1, 'top': None, 'right': 0.85 })
 
         # LCA features applied to train
