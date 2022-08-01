@@ -91,6 +91,8 @@ for metric in arguments.metrics:
 # Create Path for Exports
 if not os.path.exists(EXPORT_PATH) or not os.path.isdir(EXPORT_PATH):
     os.makedirs(EXPORT_PATH)
+# Save final dataframe for analysis
+final_overview_dataframe.to_csv(os.path.join(EXPORT_PATH, 'final_results.csv'))
 
 # Iterate Metric for which to export graphs
 for plan in EXECUTION_PLANS:
