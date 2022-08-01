@@ -105,7 +105,7 @@ class VariationGenerator():
 
     def generate_variation_by_key(self, variation_config: Dict[str, List[str]]) -> List[Variation]:
 
-        if 'classifier' in variation_config: classifiers_keys               : List[str] = variation_config['classifier']
+        if 'classifier' in variation_config: classifier_keys                : List[str] = variation_config['classifier']
         else: classifier_keys                                               : List[str] = self.classifier_keys
         if 'features' in variation_config: feature_keys                     : List[str] = variation_config['features']
         else: feature_keys                                                  : List[str] = self.feature_keys

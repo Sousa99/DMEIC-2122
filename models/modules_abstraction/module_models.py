@@ -73,7 +73,14 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
             'tasks': [ 'Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7' ],
             'genders': [ 'All Genders' ],
             'data': [ 'V1 Simple', 'V2 Simple', 'V2 Complex' ],
-        }
+        },
+
+        'iberspeech-detail': {
+            'classifier': [ 'Naive Bayes' ],
+            'tasks': [ 'Task 6' ],
+            'genders': [ 'All Genders' ],
+            'data': [ 'V2 Complex' ],
+        },
     }
 
     TARGET_METRIC = 'F1-Measure'
