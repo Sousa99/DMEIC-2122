@@ -330,17 +330,21 @@ class ParallelModel(ModelAbstraction):
     def run_variation_by_index(self, index: int):
 
         variation = self.variations_to_test[index]
+        # Check whether variation has already been executed and saved, if so exit out
+        directory_path = module_exporter.get_tmp_directory()
+        full_path = os.path.join(directory_path, variation.generate_code() + PICKLE_EXTENSION)
+        if os.path.exists(full_path) and os.path.isfile(full_path):
+            print(f"✅ Variation has already been executed since file '{full_path}' already exists!")
+            return
+        
+        # Run Variation
         best_scorer_key, best_scorer = self.run_variation(variation)
-
         # Update General Scores
         variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 'Classifier Variation': best_scorer_key,
             'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code, 'Data': variation.data_code }
         for score in best_scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
 
         # Save Temporarily Variation Summary
-        directory_path = module_exporter.get_tmp_directory()
-        full_path = os.path.join(directory_path, variation.generate_code() + PICKLE_EXTENSION)
-
         file = open(full_path, 'wb')
         pickle.dump(variation_summary, file)
         file.close()

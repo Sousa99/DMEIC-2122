@@ -28,7 +28,7 @@ if print_variations or parallelization is None or parallelization == module_mode
     structure_feature_set = module_structure_features.StructureFeatureSet()
     content_feature_set = module_content_features.ContentFeatureSet()
     entirety_feature_set = module_entirety_features.EntiretyFeatureSet()
-    all_feature_set = module_featureset.MergedFeatureSetAbstraction([structure_feature_set, content_feature_set])
+    all_feature_set = module_featureset.MergedFeatureSetAbstraction([structure_feature_set, content_feature_set, entirety_feature_set])
 
     # Feature Sets
     feature_sets : List[module_featureset.FeatureSetAbstraction] = [structure_feature_set, content_feature_set, entirety_feature_set, all_feature_set]
