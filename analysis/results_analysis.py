@@ -25,8 +25,14 @@ EXECUTION_TIMESTAMP : datetime  = datetime.now()
 EXPORT_PATH         : str       = os.path.join(EXPORT_DIRECTORY, EXECUTION_TIMESTAMP.strftime("%Y.%m.%d %H.%M.%S"))
 
 # Execution Constants
-EXECUTION_PLANS = [ { 'id': 'Feature Study - V1 Simple', 'key_to_study': 'Features', 'filter': [ { 'key': 'Data', 'values': ['V1 Simple'] } ] },
-    { 'id': 'Feature Study - V2 Simple', 'key_to_study': 'Features', 'filter': [ { 'key': 'Data', 'values': ['V1 Simple', 'V2 Simple'] } ] },
+EXECUTION_PLANS = [
+    { 'id': 'Feature Study - V1 Simple', 'key_to_study': 'Features', 'filter': [
+        { 'key': 'Data', 'values': ['V1 Simple'] } ] },
+    { 'id': 'Feature Study - V2 Simple', 'key_to_study': 'Features', 'filter': [
+        { 'key': 'Data', 'values': ['V1 Simple', 'V2 Simple'] } ] },
+    { 'id': 'Feature Study - V2 Complex Exclusive Simplified', 'key_to_study': 'Features', 'filter': [
+        { 'key': 'Data', 'values': ['V2 Complex'] },
+        { 'key': 'Features', 'values': ['sound + speech', 'structure + content'] } ] },
     { 'id': 'Feature Study', 'key_to_study': 'Features', 'filter': [] },
     { 'id': 'Data Expansion Study', 'key_to_study': 'Data', 'filter': [] } ]
 
