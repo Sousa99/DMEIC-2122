@@ -103,6 +103,7 @@ class WebScraperBooking(scraper.WebScraper[ScrapedInfoBooking]):
         link_soup = BeautifulSoup(driver.driver_page_source(), 'html.parser')
 
         hotel_name_elem = link_soup.find('h2', class_='hp__hotel-name')
+        if hotel_name_elem is None: hotel_name_elem = link_soup.find('h2', class_='pp-header__title')
         hotel_name = hotel_name_elem.get_text().strip().replace('\n', ' ')
 
         def wait_until_open_overlay(driver: webdriver.Chrome) -> bool:
@@ -152,7 +153,8 @@ class WebScraperBooking(scraper.WebScraper[ScrapedInfoBooking]):
             # Click next Page
             link_soup = BeautifulSoup(driver.driver_page_source(), 'html.parser')
             next_review_page_div = link_soup.find('div', class_="bui-pagination__next-arrow")
-            if 'bui-pagination__item--disabled' in next_review_page_div['class']: running = False
+            if next_review_page_div is None or 'bui-pagination__item--disabled' in next_review_page_div['class']:
+                running = False
             else:
                 try: driver.driver_click_css('#review_list_page_container > div.c-pagination > div > div.bui-pagination__nav > div > div.bui-pagination__item.bui-pagination__next-arrow > a')
                 except NoSuchElementException: running = False
@@ -169,6 +171,6 @@ class WebScraperBooking(scraper.WebScraper[ScrapedInfoBooking]):
 # ============================================================ MAIN FUNCTIONALITY ============================================================
 
 scraper_to_use : WebScraperBooking = WebScraperBooking()
-request_driver : driver.Driver = driver.Driver(rotate_proxies=True, rotate_proxies_rand=False, rotate_user_agents=True, max_requests=200, max_attempts_driver=20)
+request_driver : driver.Driver = driver.Driver(rotate_proxies=False, rotate_proxies_rand=False, rotate_user_agents=True, max_requests=200, max_attempts_driver=20)
 request_driver.set_callback_accessible(scraper_to_use.callback_accessible)
 scraper_valence.run_scraper(scraper_to_use, request_driver)

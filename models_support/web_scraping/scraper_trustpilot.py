@@ -125,7 +125,7 @@ class WebScraperTrustPilot(scraper.WebScraper[ScrapedInfoTrustPilot]):
                 return
             
             review_cards = link_soup.find_all('article', attrs={"data-service-review-card-paper": "true"})
-            for _ in range(self.state['number_reviews_parsed']): review_cards.pop(0)
+            for _ in range(min(self.state['number_reviews_parsed'], len(review_cards))): review_cards.pop(0)
             for review_card in review_cards:
                 # Update State
                 self.state['number_reviews_parsed'] = self.state['number_reviews_parsed'] + 1
@@ -164,6 +164,6 @@ class WebScraperTrustPilot(scraper.WebScraper[ScrapedInfoTrustPilot]):
 # ============================================================ MAIN FUNCTIONALITY ============================================================
 
 scraper_to_use : WebScraperTrustPilot = WebScraperTrustPilot()
-request_driver : driver.Driver = driver.Driver(rotate_proxies=True, rotate_proxies_rand=True, rotate_user_agents=True, max_requests=200, max_attempts_driver=20)
+request_driver : driver.Driver = driver.Driver(rotate_proxies=True, rotate_proxies_rand=False, rotate_user_agents=True, max_requests=200, max_attempts_driver=20)
 request_driver.set_callback_accessible(scraper_to_use.callback_accessible)
 scraper_valence.run_scraper(scraper_to_use, request_driver)
