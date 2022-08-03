@@ -1,5 +1,6 @@
 import json
 
+from langdetect import detect
 from typing     import Any, Dict, Generator, List, Optional
 from bs4        import BeautifulSoup
 
@@ -13,27 +14,6 @@ SHEIN_SCORE_FLOOR : float = 1
 SHEIN_SCORE_CEIL : float = 5
 
 # ============================================================== AUXILIARY FUNCTIONS ==============================================================
-
-def get_data_variable(soup: BeautifulSoup) -> Optional[Any]:
-
-    for script_item in soup.find_all('script'):
-        if 'var gbProductListSsrData = ' not in script_item.text: continue
-        for line in script_item.text.splitlines():
-            if 'var gbProductListSsrData = ' not in line: continue
-
-            data_variable_json = line.replace('var gbProductListSsrData = ', '')
-            data = json.loads(data_variable_json)
-            return data
-
-    return None
-
-def get_list_of_goods(data: Any) -> List[str]:
-
-    goods_urls : List[str] = []
-    for good in data['results']['goods']:
-        goods_urls.append(good['pretreatInfo']['goodsDetailUrl'])
-    
-    return goods_urls
 
 # =========================================================== SCRAPED INFORMATION CLASS ===========================================================
 
@@ -81,12 +61,13 @@ class WebScraperShein(scraper.WebScraper[ScrapedInfoShein]):
             driver.driver_get(f"{self.REVIEWS_LINK}&page={self.state['current_page']}")
             link_soup = BeautifulSoup(driver.driver_page_source(), 'html.parser')
 
-            # Get Variable with Information
-            data = get_data_variable(link_soup)
-            goods_urls = get_list_of_goods(data)
-            if len(goods_urls) == 0: break
+            goods_urls = []
+            item_wrappers = link_soup.find_all('div', class_='S-product-item__wrapper')
+            for item_wrapper in item_wrappers:
+                link_elem = item_wrapper.find('a')
+                if link_elem is not None: goods_urls.append(link_elem['href'])
 
-            for _ in range(self.state['number_goods_parsed']): goods_urls.pop(0)
+            for _ in range(min(self.state['number_goods_parsed'], len(goods_urls))): goods_urls.pop(0)
             for good_url in goods_urls:
                 # Update State
                 self.state['number_goods_parsed'] = self.state['number_goods_parsed'] + 1
@@ -101,6 +82,7 @@ class WebScraperShein(scraper.WebScraper[ScrapedInfoShein]):
         # Get Current Page
         driver.driver_get(link)
         link_soup = BeautifulSoup(driver.driver_page_source(), 'html.parser')
+        blocks_passed_without_valid : int = 0
 
         while True:
 
@@ -110,19 +92,32 @@ class WebScraperShein(scraper.WebScraper[ScrapedInfoShein]):
             clothe_title = link_soup.find('meta', { 'property': "og:title" })['content']
 
             # Iterate Reviews
-            for item in link_soup.find_all('div', class_="j-expose__common-reviews__list-item"):
+            review_items = link_soup.find_all('div', class_="j-expose__common-reviews__list-item")
+            if len(review_items) == 0: break
+            for item in review_items:
                 review_author   : str   = item.find('div', class_="nikename").text.strip()
                 review_score    : float = float(item.find('div', class_="rate-star")['aria-label'].replace('Classificação', ''))
                 review_text     : str   = item.find('div', class_="rate-des").text.replace('\n', ' ').strip()
                 review_date     : str   = item.find('div', class_="date").text.strip()
-                
-                yield ScrapedInfoShein(clothe_title, SHEIN_SCORE_FLOOR, SHEIN_SCORE_CEIL, review_author, review_text, review_score, review_date)
+
+                try:
+                    if detect(review_text) == 'pt':
+                        blocks_passed_without_valid = 0
+                        yield ScrapedInfoShein(clothe_title, SHEIN_SCORE_FLOOR, SHEIN_SCORE_CEIL, review_author, review_text, review_score, review_date)
+                    else: blocks_passed_without_valid = blocks_passed_without_valid + 1
+                except: blocks_passed_without_valid = blocks_passed_without_valid + 1
+
+            if blocks_passed_without_valid >= 50: break
 
             # Click next Page
             driver.driver_click_css('body > div.c-outermost-ctn.j-outermost-ctn > div.c-vue-coupon > div.S-dialog > div > i', throw_exception=False)
             element = link_soup.find(attrs={"aria-label": "Page Next"})
             if element is None or (element.has_attr('aria-disabled') and element['aria-disabled'] == "true"): break
-            else: driver.driver_click_css('[aria-label="Page Next"]')
+            else:
+                clicked = True
+                try: driver.driver_click_css('[aria-label="Page Next"]')
+                except: clicked = False
+                if not clicked: break
 
     def callback_accessible(self, page_source: str) -> bool:
         if "Access Denied" in page_source: return False
@@ -134,6 +129,6 @@ class WebScraperShein(scraper.WebScraper[ScrapedInfoShein]):
 # ============================================================ MAIN FUNCTIONALITY ============================================================
 
 scraper_to_use : WebScraperShein = WebScraperShein()
-request_driver : driver.Driver = driver.Driver(rotate_proxies=True, rotate_proxies_rand=True, rotate_user_agents=True, max_requests=200, max_attempts_driver=20)
+request_driver : driver.Driver = driver.Driver(rotate_proxies=True, rotate_proxies_rand=False, rotate_user_agents=True, max_requests=200, max_attempts_driver=20)
 request_driver.set_callback_accessible(scraper_to_use.callback_accessible)
 scraper_valence.run_scraper(scraper_to_use, request_driver)
