@@ -114,6 +114,7 @@ for plan in EXECUTION_PLANS:
         plt.figure(figsize=(10, 4))
         g = sns.boxplot(y=metric, x=plan['key_to_study'], data=filtered_dataframe, saturation=0.65)
         adjust_box_widths(g, 0.9)
+        plt.tight_layout()
         plt.savefig(os.path.join(EXPORT_PATH, f"{plan['id']} - {metric} - results.png"))
 
         plt.clf()
@@ -121,6 +122,7 @@ for plan in EXECUTION_PLANS:
         plt.figure(figsize=(15, 4))
         g = sns.boxplot(x='Tasks', y=metric, hue=plan['key_to_study'], data=filtered_dataframe, saturation=0.65)
         adjust_box_widths(g, 0.9)
+        plt.tight_layout()
         plt.savefig(os.path.join(EXPORT_PATH, f"{plan['id']} - {metric} - results by task.png"))
 
         plt.clf()
@@ -128,6 +130,7 @@ for plan in EXECUTION_PLANS:
         plt.figure(figsize=(15, 4))
         g = sns.boxplot(x='Classifier', y=metric, hue=plan['key_to_study'], data=filtered_dataframe, saturation=0.55)
         adjust_box_widths(g, 0.9)
+        plt.tight_layout()
         plt.savefig(os.path.join(EXPORT_PATH, f"{plan['id']} - {metric} - results by classifier.png"))
 
         #plt.clf()
