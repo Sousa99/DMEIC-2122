@@ -22,8 +22,9 @@ CHECKPOINT_DIRECTORY    : Optional[str] = None
 
 EXECUTION_TIMESTAMP     : datetime      = datetime.now()
 
-EXPORT_CSV_EXTENSION    : str           = '.csv'
-EXPORT_IMAGE_EXTENSION  : str           = '.png'
+EXPORT_CSV_EXTENSION            : str           = '.csv'
+EXPORT_IMAGE_EXTENSION          : str           = '.png'
+EXPORT_VECTOR_IMAGE_EXTENSION   : str           = '.eps'
 
 CURRENT_DIRECTORIES     : List[str]     = []
 
@@ -326,18 +327,23 @@ def export_word_graph(filename: str, graph: nx.DiGraph, weight_edges: Optional[b
     plt.savefig(complete_path)
     plt.close('all')
 
-def export_scatter_clusters(filename: str, dataframe: pd.DataFrame, x_key: str, y_key: str, figsize: Tuple[int] = (10, 4),
-    hue_key: Optional[str] = None, style_key: Optional[str] = None, x_label: Optional[str] = None, y_label: Optional[str] = None,
-    hide_labels: Optional[Tuple[str, Any]] = None, palette: str = "deep",
+def export_scatter_clusters(filename: str, dataframe: pd.DataFrame, x_key: str, y_key: str, vector_graphic: bool = False, figsize: Tuple[int] = (10, 4),
+    hue_key: Optional[str] = None, style_key: Optional[str] = None,
+    x_label: Optional[str] = None, y_label: Optional[str] = None, hide_x_ticks: bool = False, hide_y_ticks: bool = False,
+    hide_labels: Optional[Tuple[str, Any]] = None, text_fontsize: str = 'small', palette: str = "deep",
     legend_placement: Optional[str] = None, margins: Optional[Dict[str, Optional[float]]] = None) -> None:
 
-    complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
+    if not vector_graphic: complete_path = compute_path(filename, EXPORT_IMAGE_EXTENSION)
+    else: complete_path = compute_path(filename, EXPORT_VECTOR_IMAGE_EXTENSION)
 
     plt.figure(figsize=figsize)
     plot = sns.scatterplot(data=dataframe, x=x_key, y=y_key, hue=hue_key, style=style_key, palette=palette)
 
     if x_label: plt.xlabel(x_label)
     if y_label: plt.ylabel(y_label)
+
+    if hide_x_ticks: plt.xticks([])
+    if hide_y_ticks: plt.yticks([])
 
     if margins: plt.subplots_adjust(bottom=margins['bottom'], left=margins['left'],
         top=margins['top'], right=margins['right'])
@@ -346,7 +352,7 @@ def export_scatter_clusters(filename: str, dataframe: pd.DataFrame, x_key: str, 
         a = pd.DataFrame.from_dict({'x': x, 'y': y, 'val': val, 'filter': display})
         for _, point in a.iterrows():
             if not point['filter']:
-                ax.text(point['x']+ .15, point['y'] + 3.0, str(point['val']), fontsize='small')
+                ax.text(point['x']+ .15, point['y'] + 3.0, str(point['val']), fontsize=text_fontsize)
 
     filter_labeling = pd.Series(False, index = dataframe.index)
     if hide_labels is not None: filter_labeling = dataframe[hide_labels[0]] == hide_labels[1]

@@ -53,16 +53,16 @@ class ContentFeatureSet(module_featureset.FeatureSetAbstraction):
 
         print(f"🚀 Developing '{self.id}' analysis ...")
         lca_df      = module_lca.lca_analysis(static_dataframe.copy())
-        sentilex_df = module_sentilex.sentilex_analysis(static_dataframe.copy())
+        #sentilex_df = module_sentilex.sentilex_analysis(static_dataframe.copy())
 
         print(f"ℹ️ Finished processing '{self.id}' sub analyses!")
 
         # Final Dataframe
-        all_content_dataframes : List[pd.DataFrame] = [lca_df, sentilex_df]
-        static_dataframe = reduce(lambda dataset_left, dataset_right: module_aux.join_dataframes(dataset_left, dataset_right), all_content_dataframes)
-        
+        #all_content_dataframes : List[pd.DataFrame] = [lca_df, sentilex_df]
+        #static_dataframe = reduce(lambda dataset_left, dataset_right: module_aux.join_dataframes(dataset_left, dataset_right), all_content_dataframes)
+
         # Save back 'static dataframe'
-        self.static_dataframe = static_dataframe
+        self.static_dataframe = lca_df
         print(f"✅ Finished processing '{self.id}' analysis!")
     
     def _develop_dynamic_df(self, train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
