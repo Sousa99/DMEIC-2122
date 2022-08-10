@@ -13,7 +13,7 @@ SCORE_CEIL  : float = + 1.0
 
 STEPS_PER_CHECKPOINT    : int = 100
 
-PATH_TO_EXPORTS             : str = '../exports/web_scraping/'
+PATH_TO_EXPORTS             : str = '../exports/web_scraping/extracted/'
 SUFFIX_EXPORT_INFORMATION   : str = 'valence_information.json'
 SUFFIX_EXPORT_CHECKPOINT    : str = 'checkpoint.pkl'
 
