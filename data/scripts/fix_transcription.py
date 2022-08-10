@@ -5,7 +5,7 @@ import warnings
 
 from copy                   import deepcopy
 from pydub                  import AudioSegment
-from typing                 import List
+from typing                 import Any, Callable, List, Optional
 from consolemenu            import SelectionMenu, MenuFormatBuilder
 from pydub.playback         import play
 
@@ -70,6 +70,17 @@ def format_menu(menu):
     menu.formatter = menu_format
 
     return menu
+
+def parse_input(query: str, function_parser: Optional[Callable] = None, message_prefix: str = ' ') -> Any:
+    result = None
+    while result is None:
+        input_result = input(query)
+        if function_parser is not None:
+            try: result = function_parser(input_result)
+            except: print(f"🚨{message_prefix}Result could not be correctly parsed! Please check your input")
+        else: result = input_result
+
+    return result
 
 # =================================== MAIN EXECUTION ===================================
 
@@ -189,7 +200,7 @@ while current_start_time != end_time:
         current_input_line_index = next_line_index
 
     elif selected_action_index == CHANGE_ID:
-        heard = [ str(input("✏️  What is the correct value to be inserted? ")) ]
+        heard = [ parse_input("✏️  What is the correct value to be inserted? ", str, '  ') ]
         output_lines.append({'start': current_start_time, 'duration': stop_time - current_start_time, 'word': '+'.join(heard) })
         heard = []
 
@@ -203,11 +214,11 @@ while current_start_time != end_time:
 
     elif selected_action_index == SPLIT_ID:
         print("✂️  You are about to split time ({0:.2f} → {1:.2f}) with word '{2}'".format(from_ts, to_ts, heard_display))
-        number_splits = int(input("✂️\t How many words do you wish to insert? "))
+        number_splits : int = parse_input("✂️\t How many words do you wish to insert? ", int, '\t ')
         for index in range(number_splits):
-            sub_start = convert_time_to_milliseconds(float(input("✂️\t {0}: What is the start time? ".format(str(index + 1).rjust(2)))))
-            sub_end = convert_time_to_milliseconds(float(input("✂️\t {0}: What is the end time? ".format(str(index + 1).rjust(2)))))
-            sub_word = str(input("✂️\t {0}: What is the word? ".format(str(index + 1).rjust(2))))
+            sub_start : float = convert_time_to_milliseconds(parse_input("✂️\t {0}: What is the start time? ".format(str(index + 1).rjust(2)), float, '\t '))
+            sub_end : float = convert_time_to_milliseconds(parse_input("✂️\t {0}: What is the end time? ".format(str(index + 1).rjust(2)), float, '\t '))
+            sub_word : str = parse_input("✂️\t {0}: What is the word? ".format(str(index + 1).rjust(2)), str, '\t ')
 
             output_lines.append({ 'start': sub_start, 'duration': sub_end - sub_start, 'word': sub_word })
 
