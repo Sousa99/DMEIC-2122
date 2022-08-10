@@ -54,7 +54,11 @@ class WebScraperTrustPilot(scraper.WebScraper[ScrapedInfoTrustPilot]):
         'https://pt.trustpilot.com/categories/jewelry_store',
         'https://pt.trustpilot.com/categories/clothing_store',
         'https://pt.trustpilot.com/categories/electronics_technology',
-        'https://pt.trustpilot.com/categories/fitness_and_nutrition_service'
+        'https://pt.trustpilot.com/categories/fitness_and_nutrition_service',
+        'https://pt.trustpilot.com/categories/furniture_store',
+        'https://pt.trustpilot.com/categories/energy_supplier',
+        'https://pt.trustpilot.com/categories/real_estate_agents',
+        'https://pt.trustpilot.com/categories/health_medical'
     ]
 
     def __init__(self) -> None:
@@ -164,6 +168,6 @@ class WebScraperTrustPilot(scraper.WebScraper[ScrapedInfoTrustPilot]):
 # ============================================================ MAIN FUNCTIONALITY ============================================================
 
 scraper_to_use : WebScraperTrustPilot = WebScraperTrustPilot()
-request_driver : driver.Driver = driver.Driver(rotate_proxies=True, rotate_proxies_rand=False, rotate_user_agents=True, max_requests=200, max_attempts_driver=20)
+request_driver : driver.Driver = driver.Driver(rotate_proxies=True, rotate_proxies_rand=True, rotate_user_agents=True, max_requests=350, max_attempts_driver=50)
 request_driver.set_callback_accessible(scraper_to_use.callback_accessible)
 scraper_valence.run_scraper(scraper_to_use, request_driver)
