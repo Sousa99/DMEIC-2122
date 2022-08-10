@@ -2,39 +2,65 @@ import os
 import sys
 import json
 import torch
+import pandas
+import stanza
 import argparse
+import warnings
 import transformers
 
-import pandas   as pd
+import numpy                as np
+import pandas               as pd
+import seaborn              as sns
+import matplotlib           as mpl
+import matplotlib.pyplot    as plt
 
 from tqdm       import tqdm
-from typing     import Dict, List, Optional, Tuple
+from typing     import Any, Dict, List, Optional, Tuple
+from langdetect import detect
 
-# =============================??????????????????????????????????====== PACKAGES PARAMETERS ============??????????????????????????????????=======================
+# ============================================================== PACKAGES PARAMETERS AND VARIABLES ==============================================================
 
 tqdm.pandas(desc='🐼 Pandas DataFrame apply', mininterval=0.1, maxinterval=10.0, leave=False)
+stanza_pipeline = stanza.Pipeline('pt', processors='tokenize,mwt,pos', verbose=False)
+
+# ======================================================================= NLTK DOWNLOADS  =======================================================================
+
+'''
+stanza.download('pt')
+print()
+'''
 
 # ===================================================================== OMMIT SOME WARNINGS =====================================================================
 
+mpl.set_loglevel("error")
+warnings.filterwarnings('ignore', module = 'stanza')
+
 # ======================================================== CONSTANTS DEFINITION AND ASSOCIATED FUNCTIONS ========================================================
 
-COLUMN_METADATA         : str       = 'metadata'
-COLUMN_TEXT             : str       = 'text'
-COLUMN_VALENCE          : str       = 'valence'
+COLUMN_METADATA                 : str                       = 'metadata'
+COLUMN_TEXT                     : str                       = 'text'
+COLUMN_VALENCE                  : str                       = 'valence'
 
-LOAD_METADATA_EXTRACT   : List[str] = ['scraper']
-LOAD_DROP_COLUMNS       : List[str] = ['metadata']
+LOAD_METADATA_EXTRACT           : Dict[str, List[str]]      = { 'scraper': ['scraper'], 'review_date': ['review_date'], 'reviewer': ['reviewer'],
+                                                                'title': ['hotel_name', 'movie_title', 'clothe_title', 'company_name']}
+LOAD_DROP_COLUMNS               : List[str]                 = ['metadata']
+DROP_COLUMNS                    : List[str]                 = ['review_date', 'reviewer', 'title']
 
-PREPROCESS_TEXT         : bool      = True
+PREPROCESS_TEXT                 : bool                      = True
 
-SEQUENCE_MAX_LENGTH     : int       = 512
-SEQUENCE_TRUNCATION     : bool      = True
-SEQUENCE_PADDING        : str       = 'max_length'
+SEQUENCE_MAX_LENGTH             : int                       = 512
+SEQUENCE_TRUNCATION             : bool                      = True
+SEQUENCE_PADDING                : str                       = 'max_length'
 
-EXPORTS_DIRECTORY       : str       = '../exports/web_scraping'
-FINAL_MODEL_SAVE        : str       = f'{EXPORTS_DIRECTORY}/valence_roberta'
-ROBERTA_OUTPUT_DIR      : str       = f'{EXPORTS_DIRECTORY}/valence_roberta_outputs/'
-ROBERTA_LOGGING_DIR     : str       = f'{EXPORTS_DIRECTORY}/valence_roberta_logging/'
+EXPORTS_DIRECTORY               : str                       = '../exports/web_scraping/results'
+GRAPHS_DIRECTORY                : str                       = f'{EXPORTS_DIRECTORY}/graphs'
+
+FINAL_DATAFRAME_SAVE            : str                       = f'{EXPORTS_DIRECTORY}/extracted_full.csv'
+FINAL_FILTERED_DATAFRAME_SAVE   : str                       = f'{EXPORTS_DIRECTORY}/extracted_full_filtered.csv'
+
+FINAL_MODEL_SAVE                : str                       = f'{EXPORTS_DIRECTORY}/valence_roberta'
+ROBERTA_OUTPUT_DIR              : str                       = f'{EXPORTS_DIRECTORY}/valence_roberta_outputs/'
+ROBERTA_LOGGING_DIR             : str                       = f'{EXPORTS_DIRECTORY}/valence_roberta_logging/'
 
 # ======================================================================== GET ARGUMENTS ========================================================================
 
@@ -47,16 +73,89 @@ arguments = parser.parse_args()
 
 # ========================================================================= AUX FUNCTIONS =========================================================================
 
-def preprocess_datafram(dataframe: pd.DataFrame) -> pd.DataFrame:
-    for metadata_key in LOAD_METADATA_EXTRACT:
-        dataframe[metadata_key] = dataframe[COLUMN_METADATA].progress_apply(lambda metadata: metadata[metadata_key])
+def preprocess_dataframe(dataframe: pd.DataFrame) -> pd.DataFrame:
+
+    def get_if_any(metadata: Dict[str, Any], check_attributes: List[str]) -> str:
+        current_value : str = ''
+        for attribute in check_attributes:
+            if attribute in metadata:
+                current_value = metadata[attribute]
+        return current_value
+
+    for metadata_save in LOAD_METADATA_EXTRACT:
+        metadata_columns = LOAD_METADATA_EXTRACT[metadata_save]
+        dataframe[metadata_save] = dataframe[COLUMN_METADATA].progress_apply(lambda metadata: get_if_any(metadata, metadata_columns))
+    
     dataframe.drop(LOAD_DROP_COLUMNS, axis=1, errors='ignore', inplace=True)
     return dataframe
 
+def is_portuguese(text: str) -> str:
+    try:
+        if detect(text) == 'pt': return 'Yes'
+        else: return 'No'
+    except: return 'Inconclusive'
+
 def preprocess_text(text: str) -> str:
-    if PREPROCESS_TEXT: text = text.lower()
-    # TODO: Remove non alphanumeric characthers
-    return text
+
+    preprocessed_text = stanza_pipeline(text)
+    text_without_ponctuation = []
+    for sentence in preprocessed_text.sentences:
+        for token in sentence.words:
+            if token.upos != 'PUNCT':
+                text_without_ponctuation.append(token.text)
+
+    text_lowered = ' '.join(text_without_ponctuation).lower()
+    return text_lowered
+
+def export_count_plot(path: str, dataframe: pd.DataFrame, x_key: str, hue_key: Optional[str] = None,
+    x_label: Optional[str] = None, y_label: Optional[str] = None, font_scale: float = 1.0):
+
+    sns.set(style='whitegrid', rc={"grid.linewidth": 0.1})
+    sns.set_context("paper", font_scale=font_scale)
+
+    plt.figure()
+    plot = sns.countplot(data=dataframe, x=x_key, hue=hue_key)
+    for container in plot.containers: plot.bar_label(container)
+    
+    if x_label is not None: plt.xlabel(x_label)
+    if y_label is not None: plt.ylabel(y_label)
+    
+    plt.tight_layout()
+    plt.savefig(path)
+    plt.close('all')
+
+def export_kde_plot(path: str, dataframe: pd.DataFrame, x_key: str, hue_key: Optional[str] = None,
+    x_label: Optional[str] = None, y_label: Optional[str] = None, font_scale: float = 1.0):
+
+    sns.set(style='whitegrid', rc={"grid.linewidth": 0.1})
+    sns.set_context("paper", font_scale=font_scale)
+
+    plt.figure()
+    sns.kdeplot(data=dataframe, x=x_key, hue=hue_key)
+    
+    if x_label is not None: plt.xlabel(x_label)
+    if y_label is not None: plt.ylabel(y_label)
+    
+    plt.tight_layout()
+    plt.savefig(path)
+    plt.close('all')
+
+def export_violin_scatter_plot(path: str, dataframe: pd.DataFrame, x_key: str, y_key: str, hue_key: Optional[str] = None,
+    x_label: Optional[str] = None, y_label: Optional[str] = None, font_scale: float = 1.0):
+
+    sns.set(style='whitegrid', rc={"grid.linewidth": 0.1})
+    sns.set_context("paper", font_scale=font_scale)
+
+    plt.figure()
+    violin_plot = sns.violinplot(data=dataframe, x=x_key, y=y_key, hue=hue_key, inner=None, color=".8")
+    strip_plot = sns.stripplot(data=dataframe, x=x_key, y=y_key, hue=hue_key, jitter=True)
+    
+    if x_label is not None: plt.xlabel(x_label)
+    if y_label is not None: plt.ylabel(y_label)
+    
+    plt.tight_layout()
+    plt.savefig(path)
+    plt.close('all')
 
 def get_training_args(output_dir: str, logging_dir: str) -> transformers.TrainingArguments:
     training_args = transformers.TrainingArguments(
@@ -124,28 +223,50 @@ class TransformerModel():
 
 # ======================================================================== MAIN EXECUTION ========================================================================
 
+# Create directory if it does not exist
+if not os.path.exists(EXPORTS_DIRECTORY) or not os.path.isdir(EXPORTS_DIRECTORY): os.makedirs(EXPORTS_DIRECTORY)
+if not os.path.exists(GRAPHS_DIRECTORY) or not os.path.isdir(GRAPHS_DIRECTORY): os.makedirs(GRAPHS_DIRECTORY)
+
 # Load various extracted information into dataframes
 dataframes : List[pd.DataFrame] = []
 for path_to_extracted in arguments.files:
     if not os.path.exists(path_to_extracted) or not os.path.isfile(path_to_extracted):
         exit(f"🚨 File '{path_to_extracted}' does not exist, and should exist")
 
-    file = open(path_to_extracted, 'r')
+    file = open(path_to_extracted, 'r', encoding='utf-8')
     information_extracted = json.load(file)
     file.close()
 
     # Deal with dataframe and quick preprocessing
     dataframe : pd.DataFrame = pd.DataFrame(information_extracted)
-    dataframe = preprocess_datafram(dataframe)
+    dataframe = preprocess_dataframe(dataframe)
     dataframes.append(dataframe)
 
 # Get final dataframe with all the information concatenated
 final_dataframe : pd.DataFrame = pd.concat(dataframes)
-# Preprocess text
-final_dataframe[COLUMN_TEXT] = final_dataframe[COLUMN_TEXT].progress_apply(lambda text: preprocess_text(text))
+final_dataframe = final_dataframe.reset_index(drop=True)
+# Process Dataframe
+final_dataframe['repeated information'] = final_dataframe.duplicated().map({True: 'Yes', False: 'No'})
+final_dataframe['is portuguese'] = final_dataframe[COLUMN_TEXT].progress_apply(lambda text: is_portuguese(text))
+if PREPROCESS_TEXT: final_dataframe[COLUMN_TEXT] = final_dataframe[COLUMN_TEXT].progress_apply(lambda text: preprocess_text(text))
+final_dataframe.drop(DROP_COLUMNS, axis=1, errors='ignore', inplace=True)
+# Save dataframe
+final_dataframe.to_csv(FINAL_DATAFRAME_SAVE, index=False, encoding='utf-8-sig')
+
+# Filter dataframe
+filtered_dataframe = final_dataframe[(final_dataframe['repeated information'] == 'No') & (final_dataframe['is portuguese'] == 'Yes')]
+filtered_dataframe.to_csv(FINAL_FILTERED_DATAFRAME_SAVE, index=False, encoding='utf-8-sig')
+
+# Graphs to be Exported
+export_count_plot(f'{GRAPHS_DIRECTORY}/counts per scraper - unfiltered.eps', final_dataframe, 'scraper', x_label='Scraper', y_label='# Reviews', font_scale=1.15)
+export_count_plot(f'{GRAPHS_DIRECTORY}/counts per scraper - unfiltered - repeated information.eps', final_dataframe, 'scraper', hue_key='repeated information', x_label='Scraper', y_label='# Reviews', font_scale=1.15)
+export_count_plot(f'{GRAPHS_DIRECTORY}/counts per scraper - unfiltered - is portuguese.eps', final_dataframe, 'scraper', hue_key='is portuguese', x_label='Scraper', y_label='# Reviews', font_scale=1.15)
+export_count_plot(f'{GRAPHS_DIRECTORY}/counts per scraper - filtered.eps', filtered_dataframe, 'scraper', x_label='Scraper', y_label='# Reviews', font_scale=1.15)
+export_kde_plot(f'{GRAPHS_DIRECTORY}/kde per scraper - filtered - scores.eps', filtered_dataframe, 'valence', hue_key='scraper', x_label='Valence Score', y_label='% Reviews', font_scale=1.15)
+export_violin_scatter_plot(f'{GRAPHS_DIRECTORY}/violin scattered per scraper - filtered - scores.eps', filtered_dataframe, 'scraper', 'valence', x_label='Scraper', y_label='# Reviews', font_scale=1.15)
 
 # Get basic structures for model development
-training_args           = get_training_args(output_dir, logging_dir)
+training_args           = get_training_args(ROBERTA_OUTPUT_DIR, ROBERTA_LOGGING_DIR)
 tokenizer, model_base   = get_xlm_roberta_large()
 # Get model
 model : TransformerModel = TransformerModel(tokenizer, model_base)
