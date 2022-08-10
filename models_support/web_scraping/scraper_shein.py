@@ -129,6 +129,6 @@ class WebScraperShein(scraper.WebScraper[ScrapedInfoShein]):
 # ============================================================ MAIN FUNCTIONALITY ============================================================
 
 scraper_to_use : WebScraperShein = WebScraperShein()
-request_driver : driver.Driver = driver.Driver(rotate_proxies=True, rotate_proxies_rand=False, rotate_user_agents=True, max_requests=200, max_attempts_driver=20)
+request_driver : driver.Driver = driver.Driver(rotate_proxies=True, rotate_proxies_rand=True, rotate_user_agents=True, max_requests=200, max_attempts_driver=20)
 request_driver.set_callback_accessible(scraper_to_use.callback_accessible)
 scraper_valence.run_scraper(scraper_to_use, request_driver)
