@@ -135,4 +135,5 @@ class Driver():
         return self.selenium_webdriver.current_url;
 
     def driver_quit(self) -> None:
-        self.selenium_webdriver.quit()
+        if self.selenium_webdriver is not None:
+            self.selenium_webdriver.quit()
