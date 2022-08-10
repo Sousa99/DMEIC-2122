@@ -247,6 +247,10 @@ for out_line in output_lines:
     infos.append(str(convert_milliseconds_to_time(out_line['duration'])))
     infos.append(out_line['word'])
 
-    file.write(' '.join(infos) + '\n')
+    try: file.write(' '.join(infos) + '\n')
+    except:
+        print("🚨 Possible problem detected at '{0}' please check it out!".format(str(convert_milliseconds_to_time(out_line['start']))))
+        file.write("🚨 PROBLEM IDENTIFIED AT THIS POINT\n")
+
 file.close()
 
