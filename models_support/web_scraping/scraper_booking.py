@@ -110,7 +110,7 @@ class WebScraperBooking(scraper.WebScraper[ScrapedInfoBooking]):
             link_soup = BeautifulSoup(driver.page_source, 'html.parser')
             slide_window = link_soup.find('div', attrs={"data-id": "hp-reviews-sliding"})
             return slide_window['aria-hidden'] == "false"
-
+    
         driver.driver_click_css('#guest-featured_reviews__horizontal-block > div > div.hp-featured_reviews-bottom > button', throw_exception=True)
         driver.driver_wait_until(wait_until_open_overlay)
 
@@ -142,7 +142,9 @@ class WebScraperBooking(scraper.WebScraper[ScrapedInfoBooking]):
                 review_texts : List[str] = []
                 for review_sub_text_elem in item.find_all('span', class_='c-review__body'):
                     review_sub_text = review_sub_text_elem.text.replace('\n', '').strip()
-                    if review_sub_text == 'Não existem comentários disponíveis para esta avaliação.': continue
+                    if review_sub_text == 'Não existem comentários disponíveis para esta avaliação.':
+                        running = False
+                        continue
                     if (not review_sub_text_elem.has_attr('lang')) or (review_sub_text_elem['lang'] != 'pt'): continue
                     review_texts.append(review_sub_text)
                 if len(review_texts) == 0: continue
