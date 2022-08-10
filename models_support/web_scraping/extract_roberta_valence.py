@@ -148,7 +148,7 @@ def export_violin_scatter_plot(path: str, dataframe: pd.DataFrame, x_key: str, y
 
     plt.figure()
     violin_plot = sns.violinplot(data=dataframe, x=x_key, y=y_key, hue=hue_key, inner=None, color=".8")
-    strip_plot = sns.stripplot(data=dataframe, x=x_key, y=y_key, hue=hue_key, jitter=True)
+    strip_plot = sns.stripplot(data=dataframe, x=x_key, y=y_key, hue=hue_key, jitter=False, alpha=0.15)
     
     if x_label is not None: plt.xlabel(x_label)
     if y_label is not None: plt.ylabel(y_label)
@@ -227,44 +227,56 @@ class TransformerModel():
 if not os.path.exists(EXPORTS_DIRECTORY) or not os.path.isdir(EXPORTS_DIRECTORY): os.makedirs(EXPORTS_DIRECTORY)
 if not os.path.exists(GRAPHS_DIRECTORY) or not os.path.isdir(GRAPHS_DIRECTORY): os.makedirs(GRAPHS_DIRECTORY)
 
-# Load various extracted information into dataframes
-dataframes : List[pd.DataFrame] = []
-for path_to_extracted in arguments.files:
-    if not os.path.exists(path_to_extracted) or not os.path.isfile(path_to_extracted):
-        exit(f"🚨 File '{path_to_extracted}' does not exist, and should exist")
+# Check if dataframe already exists (if you wanna recompute it then you must delete it first or change its name)
+already_developed_final_dataframe = os.path.exists(FINAL_DATAFRAME_SAVE) and os.path.isfile(FINAL_DATAFRAME_SAVE)
+already_developed_final_filtered_dataframe = os.path.exists(FINAL_FILTERED_DATAFRAME_SAVE) and os.path.isfile(FINAL_FILTERED_DATAFRAME_SAVE)
 
-    file = open(path_to_extracted, 'r', encoding='utf-8')
-    information_extracted = json.load(file)
-    file.close()
+if already_developed_final_dataframe and already_developed_final_filtered_dataframe:
+    print("✅  Dataframe loaded fomr folder")
+    final_dataframe = pd.read_csv(FINAL_DATAFRAME_SAVE)
+    filtered_dataframe = pd.read_csv(FINAL_FILTERED_DATAFRAME_SAVE)
+else:
+    print("❌  Dataframe not loaded and in development")
+    # Load various extracted information into dataframes
+    dataframes : List[pd.DataFrame] = []
+    for path_to_extracted in arguments.files:
+        if not os.path.exists(path_to_extracted) or not os.path.isfile(path_to_extracted):
+            exit(f"🚨 File '{path_to_extracted}' does not exist, and should exist")
 
-    # Deal with dataframe and quick preprocessing
-    dataframe : pd.DataFrame = pd.DataFrame(information_extracted)
-    dataframe = preprocess_dataframe(dataframe)
-    dataframes.append(dataframe)
+        file = open(path_to_extracted, 'r', encoding='utf-8')
+        information_extracted = json.load(file)
+        file.close()
 
-# Get final dataframe with all the information concatenated
-final_dataframe : pd.DataFrame = pd.concat(dataframes)
-final_dataframe = final_dataframe.reset_index(drop=True)
-# Process Dataframe
-final_dataframe['repeated information'] = final_dataframe.duplicated().map({True: 'Yes', False: 'No'})
-final_dataframe['is portuguese'] = final_dataframe[COLUMN_TEXT].progress_apply(lambda text: is_portuguese(text))
-if PREPROCESS_TEXT: final_dataframe[COLUMN_TEXT] = final_dataframe[COLUMN_TEXT].progress_apply(lambda text: preprocess_text(text))
-final_dataframe.drop(DROP_COLUMNS, axis=1, errors='ignore', inplace=True)
-# Save dataframe
-final_dataframe.to_csv(FINAL_DATAFRAME_SAVE, index=False, encoding='utf-8-sig')
+        # Deal with dataframe and quick preprocessing
+        dataframe : pd.DataFrame = pd.DataFrame(information_extracted)
+        dataframe = preprocess_dataframe(dataframe)
+        dataframes.append(dataframe)
 
-# Filter dataframe
-filtered_dataframe = final_dataframe[(final_dataframe['repeated information'] == 'No') & (final_dataframe['is portuguese'] == 'Yes')]
-filtered_dataframe.to_csv(FINAL_FILTERED_DATAFRAME_SAVE, index=False, encoding='utf-8-sig')
+    # Get final dataframe with all the information concatenated
+    final_dataframe : pd.DataFrame = pd.concat(dataframes)
+    final_dataframe = final_dataframe.reset_index(drop=True)
+    # Process Dataframe
+    final_dataframe['repeated information'] = final_dataframe.duplicated().map({True: 'Yes', False: 'No'})
+    final_dataframe['is portuguese'] = final_dataframe[COLUMN_TEXT].progress_apply(lambda text: is_portuguese(text))
+    if PREPROCESS_TEXT: final_dataframe[COLUMN_TEXT] = final_dataframe[COLUMN_TEXT].progress_apply(lambda text: preprocess_text(text))
+    final_dataframe.drop(DROP_COLUMNS, axis=1, errors='ignore', inplace=True)
+    # Save dataframe
+    final_dataframe.to_csv(FINAL_DATAFRAME_SAVE, index=False, encoding='utf-8-sig')
+
+    # Filter dataframe
+    filtered_dataframe = final_dataframe[(final_dataframe['repeated information'] == 'No') & (final_dataframe['is portuguese'] == 'Yes')]
+    filtered_dataframe.to_csv(FINAL_FILTERED_DATAFRAME_SAVE, index=False, encoding='utf-8-sig')
+    print("✅  Dataframe developed and saved")
 
 # Graphs to be Exported
-export_count_plot(f'{GRAPHS_DIRECTORY}/counts per scraper - unfiltered.eps', final_dataframe, 'scraper', x_label='Scraper', y_label='# Reviews', font_scale=1.15)
-export_count_plot(f'{GRAPHS_DIRECTORY}/counts per scraper - unfiltered - repeated information.eps', final_dataframe, 'scraper', hue_key='repeated information', x_label='Scraper', y_label='# Reviews', font_scale=1.15)
-export_count_plot(f'{GRAPHS_DIRECTORY}/counts per scraper - unfiltered - is portuguese.eps', final_dataframe, 'scraper', hue_key='is portuguese', x_label='Scraper', y_label='# Reviews', font_scale=1.15)
-export_count_plot(f'{GRAPHS_DIRECTORY}/counts per scraper - filtered.eps', filtered_dataframe, 'scraper', x_label='Scraper', y_label='# Reviews', font_scale=1.15)
-export_kde_plot(f'{GRAPHS_DIRECTORY}/kde per scraper - filtered - scores.eps', filtered_dataframe, 'valence', hue_key='scraper', x_label='Valence Score', y_label='% Reviews', font_scale=1.15)
-export_violin_scatter_plot(f'{GRAPHS_DIRECTORY}/violin scattered per scraper - filtered - scores.eps', filtered_dataframe, 'scraper', 'valence', x_label='Scraper', y_label='# Reviews', font_scale=1.15)
+export_count_plot(f'{GRAPHS_DIRECTORY}/counts per scraper - unfiltered.svg', final_dataframe, 'scraper', x_label='Scraper', y_label='# Reviews', font_scale=1.15)
+export_count_plot(f'{GRAPHS_DIRECTORY}/counts per scraper - unfiltered - repeated information.svg', final_dataframe, 'scraper', hue_key='repeated information', x_label='Scraper', y_label='# Reviews', font_scale=1.15)
+export_count_plot(f'{GRAPHS_DIRECTORY}/counts per scraper - unfiltered - is portuguese.svg', final_dataframe, 'scraper', hue_key='is portuguese', x_label='Scraper', y_label='# Reviews', font_scale=1.15)
+export_count_plot(f'{GRAPHS_DIRECTORY}/counts per scraper - filtered.svg', filtered_dataframe, 'scraper', x_label='Scraper', y_label='# Reviews', font_scale=1.15)
+export_kde_plot(f'{GRAPHS_DIRECTORY}/kde per scraper - filtered - scores.svg', filtered_dataframe, 'valence', hue_key='scraper', x_label='Valence Score', y_label='% Reviews', font_scale=1.15)
+export_violin_scatter_plot(f'{GRAPHS_DIRECTORY}/violin scattered per scraper - filtered - scores.svg', filtered_dataframe, 'scraper', 'valence', x_label='Scraper', y_label='# Reviews', font_scale=1.15)
 
+'''
 # Get basic structures for model development
 training_args           = get_training_args(ROBERTA_OUTPUT_DIR, ROBERTA_LOGGING_DIR)
 tokenizer, model_base   = get_xlm_roberta_large()
@@ -275,3 +287,4 @@ old_stdout = sys.stdout
 sys.stdout = open(os.devnull, "w")
 model.train(final_dataframe[COLUMN_TEXT], final_dataframe[COLUMN_VALENCE], training_args)
 sys.stdout = old_stdout
+'''
