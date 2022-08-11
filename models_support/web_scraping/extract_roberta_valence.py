@@ -162,9 +162,9 @@ def export_violin_scatter_plot(path: str, dataframe: pd.DataFrame, x_key: str, y
 def get_training_args(output_dir: str, logging_dir: str) -> transformers.TrainingArguments:
     training_args = transformers.TrainingArguments(
         output_dir=output_dir,
-        num_train_epochs=3,
-        per_device_train_batch_size=8,
-        per_device_eval_batch_size=8,
+        num_train_epochs=1000,
+        per_device_train_batch_size=16,
+        per_device_eval_batch_size=16,
         warmup_steps=500,
         weight_decay=0.01,
         logging_strategy='no',
@@ -178,7 +178,7 @@ def get_training_args(output_dir: str, logging_dir: str) -> transformers.Trainin
 
 def get_xlm_roberta_base() -> Tuple[transformers.AutoTokenizer, transformers.AutoModelForSequenceClassification]:
     tokenizer   : transformers.AutoTokenizer                        = transformers.AutoTokenizer.from_pretrained('xlm-roberta-base')
-    model       : transformers.AutoModelForSequenceClassification   = transformers.AutoModelForSequenceClassification.from_pretrained("xlm-roberta-base", num_labels=2)
+    model       : transformers.AutoModelForSequenceClassification   = transformers.AutoModelForSequenceClassification.from_pretrained("xlm-roberta-base", num_labels=1)
 
     return (tokenizer, model)
 
