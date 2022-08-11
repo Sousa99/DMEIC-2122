@@ -14,9 +14,10 @@ import seaborn              as sns
 import matplotlib           as mpl
 import matplotlib.pyplot    as plt
 
-from tqdm       import tqdm
-from typing     import Any, Dict, List, Optional, Tuple
-from langdetect import detect
+from tqdm           import tqdm
+from typing         import Any, Dict, List, Optional, Tuple
+from langdetect     import detect
+from transformers   import logging
 
 # ============================================================== PACKAGES PARAMETERS AND VARIABLES ==============================================================
 
@@ -34,6 +35,7 @@ print()
 
 mpl.set_loglevel("error")
 warnings.filterwarnings('ignore', module = 'stanza')
+logging.set_verbosity_warning()
 
 # ======================================================== CONSTANTS DEFINITION AND ASSOCIATED FUNCTIONS ========================================================
 
@@ -176,7 +178,7 @@ def get_training_args(output_dir: str, logging_dir: str) -> transformers.Trainin
 
 def get_xlm_roberta_large() -> Tuple[transformers.AutoTokenizer, transformers.AutoModelForSequenceClassification]:
     tokenizer   : transformers.AutoTokenizer                        = transformers.AutoTokenizer.from_pretrained('xlm-roberta-large')
-    model       : transformers.AutoModelForSequenceClassification   = transformers.AutoModelForSequenceClassification.from_pretrained("xlm-roberta-large", num_labels=2)
+    model       : transformers.AutoModelForSequenceClassification   = transformers.AutoModelForSequenceClassification.from_pretrained("xlm-roberta-large", num_labels=1)
 
     return (tokenizer, model)
 
@@ -189,7 +191,7 @@ class Dataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         item = {key: val[idx].clone().detach() for key, val in self.encodings.items()}
-        item['labels'] = torch.tensor(self.labels[idx])
+        item['labels'] = float(torch.tensor(self.labels[idx]))
         return item
 
     def __len__(self):
@@ -205,7 +207,7 @@ class TransformerModel():
     def train(self, train_texts: pd.Series, train_labels: pd.Series, training_args: transformers.TrainingArguments) -> transformers.Trainer:
 
         train_texts_lst     : List[str] = train_texts.to_list()
-        train_labels_lst    : List[int] = train_labels.replace({ False: 0, True: 1 }, inplace=False).to_list()
+        train_labels_lst    : List[int] = train_labels.to_list()
 
         train_encodings : transformers.BatchEncoding    = self.tokenizer(text=train_texts_lst, max_length=SEQUENCE_MAX_LENGTH,
             truncation=SEQUENCE_TRUNCATION, padding=SEQUENCE_PADDING, return_tensors='pt')
@@ -268,6 +270,7 @@ else:
     filtered_dataframe.to_csv(FINAL_FILTERED_DATAFRAME_SAVE, index=False, encoding='utf-8-sig')
     print("✅  Dataframe developed and saved")
 
+print("⚙️   Exporting graphs from dataframes")
 # Graphs to be Exported
 export_count_plot(f'{GRAPHS_DIRECTORY}/counts per scraper - unfiltered.svg', final_dataframe, 'scraper', x_label='Scraper', y_label='# Reviews', font_scale=1.15)
 export_count_plot(f'{GRAPHS_DIRECTORY}/counts per scraper - unfiltered - repeated information.svg', final_dataframe, 'scraper', hue_key='repeated information', x_label='Scraper', y_label='# Reviews', font_scale=1.15)
@@ -276,7 +279,7 @@ export_count_plot(f'{GRAPHS_DIRECTORY}/counts per scraper - filtered.svg', filte
 export_kde_plot(f'{GRAPHS_DIRECTORY}/kde per scraper - filtered - scores.svg', filtered_dataframe, 'valence', hue_key='scraper', x_label='Valence Score', y_label='% Reviews', font_scale=1.15)
 export_violin_scatter_plot(f'{GRAPHS_DIRECTORY}/violin scattered per scraper - filtered - scores.svg', filtered_dataframe, 'scraper', 'valence', x_label='Scraper', y_label='# Reviews', font_scale=1.15)
 
-'''
+print("⚙️   Developing xlm roberta model for valence score")
 # Get basic structures for model development
 training_args           = get_training_args(ROBERTA_OUTPUT_DIR, ROBERTA_LOGGING_DIR)
 tokenizer, model_base   = get_xlm_roberta_large()
@@ -285,6 +288,5 @@ model : TransformerModel = TransformerModel(tokenizer, model_base)
 # Develop model
 old_stdout = sys.stdout
 sys.stdout = open(os.devnull, "w")
-model.train(final_dataframe[COLUMN_TEXT], final_dataframe[COLUMN_VALENCE], training_args)
+model.train(filtered_dataframe[COLUMN_TEXT], filtered_dataframe[COLUMN_VALENCE], training_args)
 sys.stdout = old_stdout
-'''
