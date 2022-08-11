@@ -69,7 +69,7 @@ ROBERTA_LOGGING_DIR             : str                       = f'{EXPORTS_DIRECTO
 # Define Parser
 parser = argparse.ArgumentParser()
 # Define Arguments
-parser.add_argument("-files", nargs='+', required=True, help="paths to extracted valence sets")
+parser.add_argument("-files", nargs='*', required=True, help="paths to extracted valence sets")
 # Get Arguments and Map to Requirements
 arguments = parser.parse_args()
 
@@ -175,6 +175,12 @@ def get_training_args(output_dir: str, logging_dir: str) -> transformers.Trainin
     )
 
     return training_args
+
+def get_xlm_roberta_base() -> Tuple[transformers.AutoTokenizer, transformers.AutoModelForSequenceClassification]:
+    tokenizer   : transformers.AutoTokenizer                        = transformers.AutoTokenizer.from_pretrained('xlm-roberta-base')
+    model       : transformers.AutoModelForSequenceClassification   = transformers.AutoModelForSequenceClassification.from_pretrained("xlm-roberta-base", num_labels=2)
+
+    return (tokenizer, model)
 
 def get_xlm_roberta_large() -> Tuple[transformers.AutoTokenizer, transformers.AutoModelForSequenceClassification]:
     tokenizer   : transformers.AutoTokenizer                        = transformers.AutoTokenizer.from_pretrained('xlm-roberta-large')
@@ -282,7 +288,7 @@ export_violin_scatter_plot(f'{GRAPHS_DIRECTORY}/violin scattered per scraper - f
 print("⚙️   Developing xlm roberta model for valence score")
 # Get basic structures for model development
 training_args           = get_training_args(ROBERTA_OUTPUT_DIR, ROBERTA_LOGGING_DIR)
-tokenizer, model_base   = get_xlm_roberta_large()
+tokenizer, model_base   = get_xlm_roberta_base()
 # Get model
 model : TransformerModel = TransformerModel(tokenizer, model_base)
 # Develop model
