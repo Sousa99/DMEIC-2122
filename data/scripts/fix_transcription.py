@@ -247,6 +247,16 @@ while current_start_time != end_time:
 
     elif selected_action_index == REPEAT_ID:
         if len(heard) > 0: heard.pop()
+
+        if len(memory) < 2: continue
+        # Update to last correct
+        memory_item = memory.pop()
+
+        current_start_time = memory_item['current_start_time']
+        current_time = memory_item['current_time']
+        current_input_line_index = memory_item['current_input_line_index']
+        heard = memory_item['heard']
+        output_lines = memory_item['output_lines']
         
 # Write to Fix File
 file = open(PATH_TO_OUT_TRANS, 'w')
