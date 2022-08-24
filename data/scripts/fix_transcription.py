@@ -108,7 +108,8 @@ selected_file = file_possibilities[selected_file_index]
 FILENAME, _ = os.path.splitext(selected_file)
 PATH_TO_AUDIO = os.path.join(args.audio, FILENAME + AUDIO_EXTENSION)
 PATH_TO_TRANS = os.path.join(args.trans, FILENAME + TRANSCRIPTION_EXTENSION)
-PATH_TO_OUT_TRANS = os.path.join(args.trans, SPLIT_SYMBOL.join(FILENAME.split(SPLIT_SYMBOL)[:-1]) + SPLIT_SYMBOL + OUTPUT_SUFFIX + TRANSCRIPTION_EXTENSION)
+if len(FILENAME.split(SPLIT_SYMBOL)) < 4: PATH_TO_OUT_TRANS = os.path.join(args.trans, SPLIT_SYMBOL.join(FILENAME.split(SPLIT_SYMBOL)) + SPLIT_SYMBOL + OUTPUT_SUFFIX + TRANSCRIPTION_EXTENSION)
+else: PATH_TO_OUT_TRANS = os.path.join(args.trans, SPLIT_SYMBOL.join(FILENAME.split(SPLIT_SYMBOL)[:-1]) + SPLIT_SYMBOL + OUTPUT_SUFFIX + TRANSCRIPTION_EXTENSION)
 
 # ======================================================================================
 
