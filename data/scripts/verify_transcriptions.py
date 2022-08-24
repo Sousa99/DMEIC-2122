@@ -175,10 +175,10 @@ class TranscriptionTestValidTimestamps(TranscriptionsTest):
             next_info_line = transcription_info_lines[info_line_number + 1]
 
             current_info_line_final_time = info_line.get_start() + info_line.get_duration()
-            if current_info_line_final_time > next_info_line.get_start(): self.raise_error(transcription, info_line_number + 1, f'{info_line.get_start()} + {info_line.get_duration()} = {current_info_line_final_time} , {next_info_line.get_start()}')
+            if current_info_line_final_time > next_info_line.get_start(): self.raise_error(transcription, info_line_number + 1)
 
-    def raise_error(self, transcription: Transcription, line_number: int, extra: str) -> None:
-        super().raise_error(transcription, [f'Line = {line_number} : {extra}'])
+    def raise_error(self, transcription: Transcription, line_number: int) -> None:
+        super().raise_error(transcription, [f'Line = {line_number}'])
 
 tests_to_be_carried_out : List[TranscriptionsTest] = [ TranscriptionTestWellFormatted(), TranscriptionTestValidDuration(),
     TranscriptionTestValidTimestamps() ]
