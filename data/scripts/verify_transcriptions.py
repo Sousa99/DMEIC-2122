@@ -3,10 +3,12 @@ import re
 import math
 import argparse
 
-from abc        import ABC, abstractmethod
-from enum       import Enum
-from tqdm       import tqdm
-from typing     import Dict, List, Optional
+from abc                import ABC, abstractmethod
+from enum               import Enum
+from tqdm               import tqdm
+from typing             import Dict, List, Optional
+from consolemenu        import MultiSelectMenu, MenuFormatBuilder
+from consolemenu.items  import FunctionItem
 
 # =================================== IGNORE CERTAIN ERRORS ===================================
 
@@ -153,6 +155,8 @@ if not os.path.exists(args.transcriptions) or not os.path.isdir(args.transcripti
     raise Exception(f'🚨 Path for transcriptions \'{args.transcriptions}\' not recognized as a valid path')
 
 transcriptions : List[Transcription] = []
+transcription_tracks : List[str] = []
+
 for group_folder in tqdm(os.listdir(path_transcriptions), leave=False, desc=f'🚀 Gathering groups'):
     path_transcriptions_group : str = os.path.join(path_transcriptions, group_folder)
 
@@ -164,11 +168,30 @@ for group_folder in tqdm(os.listdir(path_transcriptions), leave=False, desc=f'�
 
             for track_filename in tqdm(os.listdir(path_transcriptions_tasks), leave=False, desc=f'🚀 Gathering tracks in task \'{task_folder}\''):
                 path_transcription_file : str = os.path.join(path_transcriptions_tasks, track_filename)
-                transcriptions.append(Transcription(path_transcription_file))
+                new_transcription = Transcription(path_transcription_file)
+                new_transcription_info = new_transcription.get_transcription_info()
+                new_transcription_track = new_transcription_info.get_track()
+
+                transcriptions.append(new_transcription)
+                if new_transcription_track not in transcription_tracks: transcription_tracks.append(new_transcription_track)
+
+selected_groups : List[str] = []
+def select_group(track: str) -> None:
+    global selected_groups
+    selected_groups.append(track)
+
+track_selection_menu = MultiSelectMenu("📄  Select the tracks you wish to verify: ",
+    epilogue_text=("Please select one or more entries separated by commas, and/or a range of numbers. For example: 1,2,3 or 1-4 or 1,3-4"))
+track_selection_menu.formatter = MenuFormatBuilder()
+for transcription_track in transcription_tracks:
+    track_selection_menu.append_item(FunctionItem(f'Track {transcription_track}', select_group, args=[transcription_track]))
+track_selection_menu.show()
 
 for transcription_test in tests_to_be_carried_out:
     print(f'🚀 Carrying out \'{transcription_test.get_name()}\' transcription test')
     for transcription in transcriptions:
+        if transcription.get_transcription_info().get_track() not in selected_groups:
+            continue
         try: transcription_test.process_transcription(transcription)
         except Exception as e: print(e)
     print(f'🟢 Carried out \'{transcription_test.get_name()}\' transcription test')
