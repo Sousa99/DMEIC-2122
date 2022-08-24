@@ -122,7 +122,7 @@ class TranscriptionsTest(ABC):
     def process_transcription(self, transcription: Transcription) -> None:
         pass
 
-    def raise_exception(self, transcription: Transcription, remaining_ats: List[str]) -> None:
+    def raise_error(self, transcription: Transcription, remaining_ats: List[str]) -> None:
 
         transcription_info : TranscriptionInfo = transcription.get_transcription_info()
         error_ats_message : List[str] = [ f'Group = \'{transcription_info.get_group()}\'', f'Subject = \'{transcription_info.get_subject()}\'',
@@ -130,8 +130,8 @@ class TranscriptionsTest(ABC):
         error_ats_message.extend(remaining_ats)
         error_ats_joined = ' : '.join(error_ats_message)
 
-        if self.level == TranscriptionsTestLevel.WARNING: raise Exception(f'🟡 \'{self.name}\' Test Failed @ {error_ats_joined}')
-        elif self.level == TranscriptionsTestLevel.ERROR: raise Exception(f'🔴 \'{self.name}\' Test Failed @ {error_ats_joined}')
+        if self.level == TranscriptionsTestLevel.WARNING: tqdm.write(f'🟡 \'{self.name}\' Test Failed @ {error_ats_joined}')
+        elif self.level == TranscriptionsTestLevel.ERROR: tqdm.write(f'🔴 \'{self.name}\' Test Failed @ {error_ats_joined}')
 
 # ==================================== AUXILIARY FUNCTIONS ====================================
 
@@ -143,14 +143,14 @@ class TranscriptionTestWellFormatted(TranscriptionsTest):
 
     def process_transcription(self, transcription: Transcription) -> None:
         for info_line_number, info_line in enumerate(transcription.get_info_lines()):
-            if info_line.get_file() is None: self.raise_exception(transcription, info_line_number + 1)
-            if info_line.get_subject() is None: self.raise_exception(transcription, info_line_number + 1)
-            if info_line.get_start_timestamp() is None: self.raise_exception(transcription, info_line_number + 1)
-            if info_line.get_duration_timestamp() is None: self.raise_exception(transcription, info_line_number + 1)
-            if info_line.get_words() is None: self.raise_exception(transcription, info_line_number + 1)
+            if info_line.get_file() is None: self.raise_error(transcription, info_line_number + 1)
+            if info_line.get_subject() is None: self.raise_error(transcription, info_line_number + 1)
+            if info_line.get_start_timestamp() is None: self.raise_error(transcription, info_line_number + 1)
+            if info_line.get_duration_timestamp() is None: self.raise_error(transcription, info_line_number + 1)
+            if info_line.get_words() is None: self.raise_error(transcription, info_line_number + 1)
 
-    def raise_exception(self, transcription: Transcription, line_number: int) -> None:
-        raise super().raise_exception(transcription, [f'Line = {line_number}'])
+    def raise_error(self, transcription: Transcription, line_number: int) -> None:
+        super().raise_error(transcription, [f'Line = {line_number}'])
 
 class TranscriptionTestValidDuration(TranscriptionsTest):
     def __init__(self) -> None:
@@ -158,10 +158,11 @@ class TranscriptionTestValidDuration(TranscriptionsTest):
 
     def process_transcription(self, transcription: Transcription) -> None:
         for info_line_number, info_line in enumerate(transcription.get_info_lines()):
-            if info_line.get_duration() <= 0: self.raise_exception(transcription, info_line_number + 1)
+            duration = info_line.get_duration()
+            if duration is not None and duration <= 0: self.raise_error(transcription, info_line_number + 1)
 
-    def raise_exception(self, transcription: Transcription, line_number: int) -> None:
-        raise super().raise_exception(transcription, [f'Line = {line_number}'])
+    def raise_error(self, transcription: Transcription, line_number: int) -> None:
+        super().raise_error(transcription, [f'Line = {line_number}'])
 
 tests_to_be_carried_out : List[TranscriptionsTest] = [ TranscriptionTestWellFormatted(), TranscriptionTestValidDuration() ]
 
@@ -209,7 +210,6 @@ for transcription_test in tests_to_be_carried_out:
     for transcription in tqdm(transcriptions, leave=False, desc='🚀 Processing transcriptions'):
         if transcription.get_transcription_info().get_track() not in selected_groups:
             continue
-        try: transcription_test.process_transcription(transcription)
-        except Exception as e: tqdm.write(str(e))
+        transcription_test.process_transcription(transcription)
     print(f'🟢 Carried out \'{transcription_test.get_name()}\' transcription test')
     print()
