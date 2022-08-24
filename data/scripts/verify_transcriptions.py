@@ -144,10 +144,10 @@ class TranscriptionTestWellFormatted(TranscriptionsTest):
     def process_transcription(self, transcription: Transcription) -> None:
         for info_line_number, info_line in enumerate(transcription.get_info_lines()):
             if info_line.get_file() is None: self.raise_error(transcription, info_line_number + 1)
-            if info_line.get_subject() is None: self.raise_error(transcription, info_line_number + 1)
-            if info_line.get_start_timestamp() is None: self.raise_error(transcription, info_line_number + 1)
-            if info_line.get_duration_timestamp() is None: self.raise_error(transcription, info_line_number + 1)
-            if info_line.get_words() is None: self.raise_error(transcription, info_line_number + 1)
+            elif info_line.get_subject() is None: self.raise_error(transcription, info_line_number + 1)
+            elif info_line.get_start_timestamp() is None: self.raise_error(transcription, info_line_number + 1)
+            elif info_line.get_duration_timestamp() is None: self.raise_error(transcription, info_line_number + 1)
+            elif info_line.get_words() is None: self.raise_error(transcription, info_line_number + 1)
 
     def raise_error(self, transcription: Transcription, line_number: int) -> None:
         super().raise_error(transcription, [f'Line = {line_number}'])
