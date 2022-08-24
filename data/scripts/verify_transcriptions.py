@@ -6,7 +6,7 @@ import argparse
 from abc                import ABC, abstractmethod
 from enum               import Enum
 from tqdm               import tqdm
-from typing             import Dict, List, Optional
+from typing             import Dict, List, Optional, Tuple
 from consolemenu        import MultiSelectMenu, MenuFormatBuilder
 from consolemenu.items  import FunctionItem
 
@@ -52,7 +52,7 @@ class InfoLine():
         self.subject    : Optional[str]         = None if len(info_parts) <= 1 else info_parts[1]
         self.start      : Optional[Timestamp]   = None
         self.duration   : Optional[Timestamp]   = None
-        self.words      : Optional[List[str]]   = None if len(info_parts) <= 4 or info_parts[4] == '' else info_parts[4].split()
+        self.word       : Optional[str]         = None if len(info_parts) <= 4 else info_parts[4]
     
         if len(info_parts) >= 2:
             try: self.start = Timestamp(info_parts[2])
@@ -65,7 +65,7 @@ class InfoLine():
     def get_subject(self) -> Optional[str]: return self.subject
     def get_start_timestamp(self) -> Optional[str]: return self.start.format_timestamp() if self.start is not None else None
     def get_duration_timestamp(self) -> Optional[str]: return self.duration.format_timestamp() if self.duration is not None else None
-    def get_words(self) -> Optional[str]: return ' '.join(self.words) if self.words is not None else None
+    def get_word(self) -> Optional[str]: return self.word
 
     def get_start(self) -> Optional[Timestamp]: return self.start.get_milliseconds() if self.start is not None else None
     def get_duration(self) -> Optional[Timestamp]: return self.duration.get_milliseconds() if self.duration is not None else None
@@ -100,7 +100,7 @@ class Transcription():
         _, filename = os.path.split(filepath)
 
         self.transcription_info : TranscriptionInfo = TranscriptionInfo(filename)
-        self.info_lines : List[InfoLine] = list(map(lambda line: InfoLine(line), lines))
+        self.info_lines : List[InfoLine] = list(map(lambda line: InfoLine(line.strip()), lines))
 
     def get_transcription_info(self) -> TranscriptionInfo: return self.transcription_info
     def get_info_lines(self) -> List[InfoLine]: return self.info_lines
@@ -147,7 +147,7 @@ class TranscriptionTestWellFormatted(TranscriptionsTest):
             elif info_line.get_subject() is None: self.raise_error(transcription, info_line_number + 1)
             elif info_line.get_start_timestamp() is None: self.raise_error(transcription, info_line_number + 1)
             elif info_line.get_duration_timestamp() is None: self.raise_error(transcription, info_line_number + 1)
-            elif info_line.get_words() is None: self.raise_error(transcription, info_line_number + 1)
+            elif info_line.get_word() is None: self.raise_error(transcription, info_line_number + 1)
 
     def raise_error(self, transcription: Transcription, line_number: int) -> None:
         super().raise_error(transcription, [f'Line = {line_number}'])
@@ -180,8 +180,41 @@ class TranscriptionTestValidTimestamps(TranscriptionsTest):
     def raise_error(self, transcription: Transcription, line_number: int) -> None:
         super().raise_error(transcription, [f'Line = {line_number}'])
 
+class TranscriptionTestWordSequences(TranscriptionsTest):
+    def __init__(self, word_sequences: List[Tuple[List[str], int]]) -> None:
+        super().__init__('Word Sequences', TranscriptionsTestLevel.WARNING)
+        self.word_sequences = word_sequences
+
+    def process_transcription(self, transcription: Transcription) -> None:
+        for word_sequence, word_limit in self.word_sequences:
+            current_matches : List[List[int]] = [[]]
+            for word_of_sequence in word_sequence:
+                new_matches : List[List[int]] = []
+
+                for info_line_number, info_line in enumerate(transcription.get_info_lines()):
+                    if info_line.get_word() is not None and info_line.get_word() == word_of_sequence:
+                        for current_match in current_matches:
+                            if len(current_match) > 0 and (info_line_number + 1 <= current_match[-1] or info_line_number + 1 - current_match[-1] > word_limit):
+                                continue
+
+                            copy_current_match = current_match.copy()
+                            copy_current_match.append(info_line_number + 1)
+                            new_matches.append(copy_current_match)
+
+                current_matches = new_matches
+            
+            for current_match in current_matches:
+                self.raise_error(transcription, word_sequence, current_match)
+
+    def raise_error(self, transcription: Transcription, word_sequence: List[str], line_numbers: List[int]) -> None:
+        word_sequence_joined = ', '.join(word_sequence)
+        line_numbers_str = list(map(lambda number: str(number), line_numbers))
+        line_numbers_joined = ', '.join(line_numbers_str)
+        super().raise_error(transcription, [f'Line = ({line_numbers_joined})', f'Word Sequence = ({word_sequence_joined})'])
+
+WORDS_TO_CHECK_FOR : List[Tuple[List[str], int]] = []
 tests_to_be_carried_out : List[TranscriptionsTest] = [ TranscriptionTestWellFormatted(), TranscriptionTestValidDuration(),
-    TranscriptionTestValidTimestamps() ]
+    TranscriptionTestValidTimestamps(), TranscriptionTestWordSequences(WORDS_TO_CHECK_FOR) ]
 
 # ===================================== MAIN FUNCTIONALITY =====================================
 
