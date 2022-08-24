@@ -33,6 +33,9 @@ class Timestamp():
 
         self.milliseconds = milliseconds + seconds * 1000
 
+    def get_milliseconds(self) -> int:
+        return self.milliseconds
+
     def format_timestamp(self) -> str:
         seconds = math.floor(self.milliseconds / 1000)
         milliseconds = self.milliseconds - seconds * 1000
@@ -48,21 +51,24 @@ class InfoLine():
         self.file       : Optional[str]         = None if len(info_parts) <= 0 else info_parts[0]
         self.subject    : Optional[str]         = None if len(info_parts) <= 1 else info_parts[1]
         self.start      : Optional[Timestamp]   = None
-        self.end        : Optional[Timestamp]   = None
+        self.duration   : Optional[Timestamp]   = None
         self.words      : Optional[List[str]]   = None if len(info_parts) <= 4 or info_parts[4] == '' else info_parts[4].split()
     
         if len(info_parts) >= 2:
             try: self.start = Timestamp(info_parts[2])
             except: pass
         if len(info_parts) >= 3:
-            try: self.end = Timestamp(info_parts[3])
+            try: self.duration = Timestamp(info_parts[3])
             except: pass
 
     def get_file(self) -> Optional[str]: return self.file
     def get_subject(self) -> Optional[str]: return self.subject
     def get_start_timestamp(self) -> Optional[str]: return self.start.format_timestamp() if self.start is not None else None
-    def get_end_timestamp(self) -> Optional[str]: return self.end.format_timestamp() if self.end is not None else None
+    def get_duration_timestamp(self) -> Optional[str]: return self.duration.format_timestamp() if self.duration is not None else None
     def get_words(self) -> Optional[str]: return ' '.join(self.words) if self.words is not None else None
+
+    def get_start(self) -> Optional[Timestamp]: return self.start.get_milliseconds() if self.start is not None else None
+    def get_duration(self) -> Optional[Timestamp]: return self.duration.get_milliseconds() if self.duration is not None else None
 
 class TranscriptionInfo():
 
@@ -140,13 +146,24 @@ class TranscriptionTestWellFormatted(TranscriptionsTest):
             if info_line.get_file() is None: self.raise_exception(transcription, info_line_number + 1)
             if info_line.get_subject() is None: self.raise_exception(transcription, info_line_number + 1)
             if info_line.get_start_timestamp() is None: self.raise_exception(transcription, info_line_number + 1)
-            if info_line.get_end_timestamp() is None: self.raise_exception(transcription, info_line_number + 1)
+            if info_line.get_duration_timestamp() is None: self.raise_exception(transcription, info_line_number + 1)
             if info_line.get_words() is None: self.raise_exception(transcription, info_line_number + 1)
 
     def raise_exception(self, transcription: Transcription, line_number: int) -> None:
         raise super().raise_exception(transcription, [f'Line = {line_number}'])
 
-tests_to_be_carried_out : List[TranscriptionsTest] = [ TranscriptionTestWellFormatted() ]
+class TranscriptionTestValidDuration(TranscriptionsTest):
+    def __init__(self) -> None:
+        super().__init__('Valid Duration', TranscriptionsTestLevel.ERROR)
+
+    def process_transcription(self, transcription: Transcription) -> None:
+        for info_line_number, info_line in enumerate(transcription.get_info_lines()):
+            if info_line.get_duration() <= 0: self.raise_exception(transcription, info_line_number + 1)
+
+    def raise_exception(self, transcription: Transcription, line_number: int) -> None:
+        raise super().raise_exception(transcription, [f'Line = {line_number}'])
+
+tests_to_be_carried_out : List[TranscriptionsTest] = [ TranscriptionTestWellFormatted(), TranscriptionTestValidDuration() ]
 
 # ===================================== MAIN FUNCTIONALITY =====================================
 
@@ -189,10 +206,10 @@ track_selection_menu.show()
 
 for transcription_test in tests_to_be_carried_out:
     print(f'🚀 Carrying out \'{transcription_test.get_name()}\' transcription test')
-    for transcription in transcriptions:
+    for transcription in tqdm(transcriptions, leave=False, desc='🚀 Processing transcriptions'):
         if transcription.get_transcription_info().get_track() not in selected_groups:
             continue
         try: transcription_test.process_transcription(transcription)
-        except Exception as e: print(e)
+        except Exception as e: tqdm.write(str(e))
     print(f'🟢 Carried out \'{transcription_test.get_name()}\' transcription test')
     print()
