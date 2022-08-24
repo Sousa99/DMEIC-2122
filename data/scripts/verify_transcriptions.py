@@ -29,7 +29,7 @@ class Timestamp():
     TIMESTAMP_REGEX : str = '(\d+).(\d+)'
     def __init__(self, timestamp_str: str) -> None:
         matches = re.findall(self.TIMESTAMP_REGEX, timestamp_str)
-        seconds, milliseconds = int(matches[0][0]), int(matches[0][1].rjust(3, '0'))
+        seconds, milliseconds = int(matches[0][0]), int(matches[0][1].ljust(3, '0'))
 
         self.milliseconds = milliseconds + seconds * 1000
 
@@ -164,7 +164,24 @@ class TranscriptionTestValidDuration(TranscriptionsTest):
     def raise_error(self, transcription: Transcription, line_number: int) -> None:
         super().raise_error(transcription, [f'Line = {line_number}'])
 
-tests_to_be_carried_out : List[TranscriptionsTest] = [ TranscriptionTestWellFormatted(), TranscriptionTestValidDuration() ]
+class TranscriptionTestValidTimestamps(TranscriptionsTest):
+    def __init__(self) -> None:
+        super().__init__('Valid Timestamps', TranscriptionsTestLevel.ERROR)
+
+    def process_transcription(self, transcription: Transcription) -> None:
+        transcription_info_lines : List[InfoLine] = transcription.get_info_lines()
+        for info_line_number, info_line in enumerate(transcription_info_lines):
+            if info_line_number + 1 >= len(transcription_info_lines): continue
+            next_info_line = transcription_info_lines[info_line_number + 1]
+
+            current_info_line_final_time = info_line.get_start() + info_line.get_duration()
+            if current_info_line_final_time > next_info_line.get_start(): self.raise_error(transcription, info_line_number + 1, f'{info_line.get_start()} + {info_line.get_duration()} = {current_info_line_final_time} , {next_info_line.get_start()}')
+
+    def raise_error(self, transcription: Transcription, line_number: int, extra: str) -> None:
+        super().raise_error(transcription, [f'Line = {line_number} : {extra}'])
+
+tests_to_be_carried_out : List[TranscriptionsTest] = [ TranscriptionTestWellFormatted(), TranscriptionTestValidDuration(),
+    TranscriptionTestValidTimestamps() ]
 
 # ===================================== MAIN FUNCTIONALITY =====================================
 
