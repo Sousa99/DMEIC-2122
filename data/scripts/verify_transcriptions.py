@@ -52,7 +52,7 @@ class InfoLine():
         self.subject    : Optional[str]         = None if len(info_parts) <= 1 else info_parts[1]
         self.start      : Optional[Timestamp]   = None
         self.duration   : Optional[Timestamp]   = None
-        self.word       : Optional[str]         = None if len(info_parts) <= 4 else info_parts[4]
+        self.word       : Optional[str]         = None if len(info_parts) <= 4 else ' '.join(info_parts[4:])
     
         if len(info_parts) >= 2:
             try: self.start = Timestamp(info_parts[2])
@@ -180,6 +180,18 @@ class TranscriptionTestValidTimestamps(TranscriptionsTest):
     def raise_error(self, transcription: Transcription, line_number: int) -> None:
         super().raise_error(transcription, [f'Line = {line_number}'])
 
+class TranscriptionTestValidWords(TranscriptionsTest):
+    def __init__(self) -> None:
+        super().__init__('Valid Words', TranscriptionsTestLevel.ERROR)
+
+    def process_transcription(self, transcription: Transcription) -> None:
+        for info_line_number, info_line in enumerate(transcription.get_info_lines()):
+            word = info_line.get_word()
+            if word is not None and ' ' in word: self.raise_error(transcription, info_line_number + 1)
+
+    def raise_error(self, transcription: Transcription, line_number: int) -> None:
+        super().raise_error(transcription, [f'Line = {line_number}'])
+
 class TranscriptionTestWordSequences(TranscriptionsTest):
     def __init__(self, word_sequences: List[Tuple[List[str], int]]) -> None:
         super().__init__('Word Sequences', TranscriptionsTestLevel.WARNING)
@@ -221,7 +233,7 @@ WORDS_TO_CHECK_FOR : List[Tuple[List[str], int]] = [
     ([ 'para', 'sol' ], 2), ([ 'para', 'brisas' ], 2)
 ]
 tests_to_be_carried_out : List[TranscriptionsTest] = [ TranscriptionTestWellFormatted(), TranscriptionTestValidDuration(),
-    TranscriptionTestValidTimestamps(), TranscriptionTestWordSequences(WORDS_TO_CHECK_FOR) ]
+    TranscriptionTestValidTimestamps(), TranscriptionTestValidWords(), TranscriptionTestWordSequences(WORDS_TO_CHECK_FOR) ]
 
 # ===================================== MAIN FUNCTIONALITY =====================================
 
