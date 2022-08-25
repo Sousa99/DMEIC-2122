@@ -187,7 +187,10 @@ class TranscriptionTestValidWords(TranscriptionsTest):
     def process_transcription(self, transcription: Transcription) -> None:
         for info_line_number, info_line in enumerate(transcription.get_info_lines()):
             word = info_line.get_word()
-            if word is not None and ' ' in word: self.raise_error(transcription, info_line_number + 1)
+            if word is None: continue
+
+            if ' ' in word or any(ele.isupper() for ele in word):
+                self.raise_error(transcription, info_line_number + 1)
 
     def raise_error(self, transcription: Transcription, line_number: int) -> None:
         super().raise_error(transcription, [f'Line = {line_number}'])
@@ -227,7 +230,7 @@ class TranscriptionTestWordSequences(TranscriptionsTest):
 WORDS_TO_CHECK_FOR : List[Tuple[List[str], int]] = [
     ([ 'piriquito' ], 1), ([ 'riu' ], 1), ([ 'coyote' ], 1), ([ 'insetos' ], 1), ([ 'kanguru' ], 1),
     ([ 'hipópotamo' ], 1), ([ 'hóquei' ], 1), ([ 'ok' ], 1), ([ 'koala' ], 1), ([ 'pintacilgo' ], 1),
-    ([ 'lynce' ], 1), ([ 'lagarticha' ], 1),
+    ([ 'lynce' ], 1), ([ 'perguiçoso' ], 1), ([ 'lagarticha' ], 1),
     ([ 'para-sol' ], 1), ([ 'para-brisas' ], 1),
 
     ([ 'para', 'sol' ], 2), ([ 'para', 'brisas' ], 2)
