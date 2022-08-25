@@ -212,7 +212,14 @@ class TranscriptionTestWordSequences(TranscriptionsTest):
         line_numbers_joined = ', '.join(line_numbers_str)
         super().raise_error(transcription, [f'Line = ({line_numbers_joined})', f'Word Sequence = ({word_sequence_joined})'])
 
-WORDS_TO_CHECK_FOR : List[Tuple[List[str], int]] = []
+WORDS_TO_CHECK_FOR : List[Tuple[List[str], int]] = [
+    ([ 'piriquito' ], 1), ([ 'riu' ], 1), ([ 'coyote' ], 1), ([ 'insetos' ], 1), ([ 'kanguru' ], 1),
+    ([ 'hipópotamo' ], 1), ([ 'hóquei' ], 1), ([ 'ok' ], 1), ([ 'koala' ], 1), ([ 'pintacilgo' ], 1),
+    ([ 'lynce' ], 1), ([ 'lagarticha' ], 1),
+    ([ 'para-sol' ], 1), ([ 'para-brisas' ], 1),
+
+    ([ 'para', 'sol' ], 2), ([ 'para', 'brisas' ], 2)
+]
 tests_to_be_carried_out : List[TranscriptionsTest] = [ TranscriptionTestWellFormatted(), TranscriptionTestValidDuration(),
     TranscriptionTestValidTimestamps(), TranscriptionTestWordSequences(WORDS_TO_CHECK_FOR) ]
 
