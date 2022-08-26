@@ -1,36 +1,51 @@
 import re
 import os
-import json
 import math
+import json
+import time
 import argparse
 
 import pandas   as pd
 
-from typing     import Any, Dict, List, Tuple, Union
+from pydub              import AudioSegment
+from typing             import Any, Dict, List, Optional, Tuple, Union
+from consolemenu        import SelectionMenu, MenuFormatBuilder
+from pydub.playback     import play
 
 # =================================== IGNORE CERTAIN ERRORS ===================================
 
 # ======================================= FLAGS PARSING =======================================
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-times", required=True, nargs='+', help="path to various curring times")
-parser.add_argument("-old_format", action='store_true', default=False, help="path to various curring times")
+parser.add_argument("-times_path", required=True, help="path to cut times")
+parser.add_argument("-group_id", required=True, help="group characther id")
+parser.add_argument("-recordings_path", required=False, help="path to recordings")
+parser.add_argument("-alteration_path", required=False, help="path to file where processed tracks are stored")
+parser.add_argument("-old_format", required=False, action='store_true', default=False, help="path to various curring times")
 args = parser.parse_args()
-
-if (not args.times):
-    print("🙏 Please provide at least one 'times' filepath")
-    exit(1)
 
 # =================================== CONSTANTS DEFINITIONS ===================================
 
-GROUP_MAPPING : Dict[str, str] = {
-    'b': {  'title': 'Bipolar',     'folder': 'bipolars'    },
-    'c': {  'title': 'Control',     'folder': 'controls'    },
-    'p': {  'title': 'Psychosis',   'folder': 'psychosis'   }
-}
-
 BLACKLISTED_ROWS : List[str] = ['template']
-AUTO_INDENT_WORDS : List[Tuple[str, int]] = [ (' {', 1), ('"Task1"', 0), ('"Task2"', 0), ('"Task3"', 0), ('"Task4"', 0), ('"Task5"', 0), ('"Task6"', 0), ('"Task7"', 0), (' }', 1)]
+AUTO_INDENT_WORDS : List[Tuple[str, int]] = [ (' {', 1), ('"Task1"', 0), ('"Task2"', 0), ('"Task3"', 0),
+    ('"Task4"', 0), ('"Task5"', 0), ('"Task6"', 0), ('"Task7"', 0), (' }', 1)]
+TASKS : List[str] = ["Task1", "Task2", "Task3", "Task4", "Task5", "Task6", "Task7"]
+
+CONSTANT_MILLISECONDS_INTERVAL : int = 2000
+CONSTANT_SECONDS_BETWEEN_WAIT : int = 1
+
+CONSTANT_ANSWER_ACCEPT : str = '🟢 Yes'
+CONSTANT_ANSWER_REJECT : str = '🔴 No'
+
+def constant_question_verify_subject(subject: str) -> str:
+    return f'📄 Do you wish to verify subject \'{subject}\':'
+def constant_question_audio_file() -> str:
+    return f'📄 What audio file do you wish to listen to:'
+def constant_question_change_fulcrum(current_time: str) -> str:
+    return f'📄 Do you wish to change the current fulcrum point (milliseconds) currently \'{current_time}\'? '
+
+def constant_statement_processing_subject_task(subject: str, task: str, stage: str) -> str:
+    return f'📄 Processing subject \'{subject}\' on \'{task}\' and stage \'{stage}\'...'
 
 # ===================================== CLASS DEFINITIONS =====================================
 
@@ -117,20 +132,105 @@ def write_new_format(cut_times_df: pd.DataFrame, save_path: str, texts_to_ident:
     save_file.write('\n'.join(json_dumped_lines))
     save_file.close()
 
+def convert_time_milliseconds(time: str) -> int:
+    time_split : List[str] = time.split('.')
+
+    minutes = int(time_split[0])
+    seconds = int(time_split[1])
+    milliseconds = int(time_split[2])
+
+    return ((minutes * 60) + seconds) * 1000 + milliseconds
+
+def convert_time_str(time_milliseconds: int) -> str:
+    time_seconds : int = math.floor(time_milliseconds / 1000)
+    time_minutes : int = math.floor(time_seconds / 60)
+
+    milliseconds : int = time_milliseconds - time_seconds * 1000
+    seconds : int = time_seconds - time_minutes * 60
+
+    return f'{time_minutes}.{seconds:02}.{milliseconds:03}'
+
+def selection_menu(valid_selections: List[str], menu_title: str) -> None:
+
+    selection_menu = SelectionMenu(valid_selections, menu_title)
+    selection_menu.formatter = MenuFormatBuilder()
+    selection_menu.show()
+    selection_index = selection_menu.selected_option
+    if selection_index >= len(valid_selections): exit(1)
+
+    return valid_selections[selection_index]
+
+def verify_cut_time(audio_file_path: str, fulcrum_milliseconds: int) -> int:
+    audio = AudioSegment.from_file(audio_file_path)
+
+    changes : bool = True
+    time_change : int = 0
+    while changes:
+
+        # Play before, wait, play after
+        play(audio[fulcrum_milliseconds + time_change - CONSTANT_MILLISECONDS_INTERVAL : fulcrum_milliseconds + time_change])
+        time.sleep(CONSTANT_SECONDS_BETWEEN_WAIT)
+        play(audio[fulcrum_milliseconds + time_change : fulcrum_milliseconds + time_change + CONSTANT_MILLISECONDS_INTERVAL])
+        
+        print()
+        current_time_str = convert_time_str(fulcrum_milliseconds + time_change)
+        answer = input(constant_question_change_fulcrum(current_time_str))
+        if answer == '': changes = False
+        else:
+            try: time_change = time_change + int(answer)
+            except Exception as e: pass
+
+        print()
+
+    return time_change
+
+def clear_screen() -> None:
+    os.system('cls' if os.name == 'nt' else 'clear')
+
 # ====================================== TESTS DEFINITION ======================================
 
 # ===================================== MAIN FUNCTIONALITY =====================================
 
-parsed_times : List[Any] = []
-for cut_times_path in args.times:
+# Load cut times
+if not os.path.exists(args.times_path) or not os.path.isfile(args.times_path):
+    raise Exception(f"🚨 Cut time path '{args.times_path}' does not correspond to a valid file")
+print(f"🚀 Processing cut times file '{args.times_path}' into dataframe")
+cut_times_pandas = read_cut_times(args.times_path, [])
 
-    if not os.path.exists(cut_times_path) or not os.path.isfile(cut_times_path):
-        raise Exception(f"🚨 Cut time path '{cut_times_path}' does not correspond to a valid file")
-    print(f"🚀 Processing cut times file '{cut_times_path}' into dataframe")
-    cut_times_pandas = read_cut_times(cut_times_path, [])
+# Convert from old format into new format
+if args.old_format:
+    print(f"🚀 Converting cut times file '{args.times_path}' into new format")
+    cut_times_pandas = convert_df_old_format(cut_times_pandas)
+    print(f"🚀 Saving cut times file '{args.times_path}' in new format")
+    write_new_format(cut_times_pandas, args.times_path, AUTO_INDENT_WORDS)
 
-    if args.old_format:
-        print(f"🚀 Converting cut times file '{cut_times_path}' into new format")
-        cut_times_pandas = convert_df_old_format(cut_times_pandas)
-        print(f"🚀 Saving cut times file '{cut_times_path}' in new format")
-        write_new_format(cut_times_pandas, cut_times_path, AUTO_INDENT_WORDS)
+# Listen to and verify recordings cut times
+if args.recordings_path:
+    for row_index, row in cut_times_pandas.iterrows():
+        choice = selection_menu([CONSTANT_ANSWER_ACCEPT, CONSTANT_ANSWER_REJECT], constant_question_verify_subject(row_index))
+        if choice == CONSTANT_ANSWER_REJECT: continue
+
+        subject_audio_path : str = os.path.join(args.recordings_path, row_index)
+        audio_filenames : List[str] = os.listdir(subject_audio_path)
+        audio_filename = selection_menu(audio_filenames, constant_question_verify_subject(row_index))
+        audio_file_path = os.path.join(subject_audio_path, audio_filename)
+
+        for column_index, interval in row.iteritems():
+
+
+            start_milliseconds : int = convert_time_milliseconds(interval[0][0])
+            duration_milliseconds : int = convert_time_milliseconds(interval[-1][-1])
+            end_milliseconds : int = start_milliseconds + duration_milliseconds
+
+            print(constant_statement_processing_subject_task(row_index, column_index, 'beginning'))
+            start_change_milliseconds : int = verify_cut_time(audio_file_path, start_milliseconds)
+            clear_screen()
+            print(constant_statement_processing_subject_task(row_index, column_index, 'ending'))
+            end_change_milliseconds : int = verify_cut_time(audio_file_path, end_milliseconds)
+            clear_screen()
+
+            new_interval = interval
+            new_interval[0][0] = convert_time_str(start_milliseconds + start_change_milliseconds)
+            new_interval[-1][-1] = convert_time_str(end_milliseconds - end_change_milliseconds)
+            cut_times_pandas.loc[row_index].at[column_index] = new_interval
+            write_new_format(cut_times_pandas, args.times_path, AUTO_INDENT_WORDS)
