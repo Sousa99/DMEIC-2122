@@ -265,8 +265,8 @@ for out_line in output_lines:
     if out_line['word'] == '': continue
 
     infos = [ transcription_info['file'], transcription_info['source'] ]
-    infos.append(str(convert_milliseconds_to_time(out_line['start'])))
-    infos.append(str(convert_milliseconds_to_time(out_line['duration'])))
+    infos.append("{:.2f}".format(convert_milliseconds_to_time(out_line['start'])))
+    infos.append("{:.2f}".format(convert_milliseconds_to_time(out_line['duration'])))
     infos.append(out_line['word'])
 
     try: file.write(' '.join(infos) + '\n')
