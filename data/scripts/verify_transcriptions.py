@@ -70,6 +70,8 @@ class InfoLine():
     def get_start(self) -> Optional[Timestamp]: return self.start.get_milliseconds() if self.start is not None else None
     def get_duration(self) -> Optional[Timestamp]: return self.duration.get_milliseconds() if self.duration is not None else None
 
+    def format_line(self) -> str: return f'{self.file} {self.subject} {self.start.format_timestamp()} {self.duration.format_timestamp()} {self.word}'
+
 class TranscriptionInfo():
 
     def __init__(self, transcription_file: str) -> None:
@@ -99,15 +101,24 @@ class Transcription():
 
         _, filename = os.path.split(filepath)
 
+        self.filepath : str = filepath
+        self.filename : str = filename
         self.transcription_info : TranscriptionInfo = TranscriptionInfo(filename)
         self.info_lines : List[InfoLine] = list(map(lambda line: InfoLine(line.strip()), lines))
 
     def get_transcription_info(self) -> TranscriptionInfo: return self.transcription_info
     def get_info_lines(self) -> List[InfoLine]: return self.info_lines
 
+    def export_new(self) -> None:
+        file = open(self.filepath, 'w')
+        for info_line in self.info_lines:
+            file.write(info_line.format_line() + '\n')
+        file.close()
+
 class TranscriptionsTestLevel(Enum):
-    WARNING = 1
-    ERROR = 2
+    FIXED = 1
+    WARNING = 2
+    ERROR = 3
 
 class TranscriptionsTest(ABC):
 
@@ -130,7 +141,8 @@ class TranscriptionsTest(ABC):
         error_ats_message.extend(remaining_ats)
         error_ats_joined = ' : '.join(error_ats_message)
 
-        if self.level == TranscriptionsTestLevel.WARNING: tqdm.write(f'🟡 \'{self.name}\' Test Failed @ {error_ats_joined}')
+        if self.level == TranscriptionsTestLevel.FIXED: tqdm.write(f'🔵 \'{self.name}\' Test Failed @ {error_ats_joined}')
+        elif self.level == TranscriptionsTestLevel.WARNING: tqdm.write(f'🟡 \'{self.name}\' Test Failed @ {error_ats_joined}')
         elif self.level == TranscriptionsTestLevel.ERROR: tqdm.write(f'🔴 \'{self.name}\' Test Failed @ {error_ats_joined}')
 
 # ==================================== AUXILIARY FUNCTIONS ====================================
@@ -150,7 +162,7 @@ class TranscriptionTestWellFormatted(TranscriptionsTest):
             elif info_line.get_word() is None: self.raise_error(transcription, info_line_number + 1)
 
     def raise_error(self, transcription: Transcription, line_number: int) -> None:
-        super().raise_error(transcription, [f'Line = {line_number}'])
+        super().raise_error(transcription, [f'Line = \'{line_number}\''])
 
 class TranscriptionTestValidDuration(TranscriptionsTest):
     def __init__(self) -> None:
@@ -162,7 +174,7 @@ class TranscriptionTestValidDuration(TranscriptionsTest):
             if duration is not None and duration <= 0: self.raise_error(transcription, info_line_number + 1)
 
     def raise_error(self, transcription: Transcription, line_number: int) -> None:
-        super().raise_error(transcription, [f'Line = {line_number}'])
+        super().raise_error(transcription, [f'Line = \'{line_number}\''])
 
 class TranscriptionTestValidTimestamps(TranscriptionsTest):
     def __init__(self) -> None:
@@ -173,12 +185,14 @@ class TranscriptionTestValidTimestamps(TranscriptionsTest):
         for info_line_number, info_line in enumerate(transcription_info_lines):
             if info_line_number + 1 >= len(transcription_info_lines): continue
             next_info_line = transcription_info_lines[info_line_number + 1]
+            if info_line.get_start() is None or info_line.get_duration() is None: continue
 
             current_info_line_final_time = info_line.get_start() + info_line.get_duration()
-            if current_info_line_final_time > next_info_line.get_start(): self.raise_error(transcription, info_line_number + 1)
+            if next_info_line.get_start() is not None and current_info_line_final_time > next_info_line.get_start():
+                self.raise_error(transcription, info_line_number + 1)
 
     def raise_error(self, transcription: Transcription, line_number: int) -> None:
-        super().raise_error(transcription, [f'Line = {line_number}'])
+        super().raise_error(transcription, [f'Line = \'{line_number}\''])
 
 class TranscriptionTestValidWords(TranscriptionsTest):
     def __init__(self) -> None:
@@ -193,11 +207,11 @@ class TranscriptionTestValidWords(TranscriptionsTest):
                 self.raise_error(transcription, info_line_number + 1)
 
     def raise_error(self, transcription: Transcription, line_number: int) -> None:
-        super().raise_error(transcription, [f'Line = {line_number}'])
+        super().raise_error(transcription, [f'Line = \'{line_number}\''])
 
-class TranscriptionTestWordSequences(TranscriptionsTest):
+class TranscriptionTestCheckWordSequences(TranscriptionsTest):
     def __init__(self, word_sequences: List[Tuple[List[str], int]]) -> None:
-        super().__init__('Word Sequences', TranscriptionsTestLevel.WARNING)
+        super().__init__('Check Word Sequences', TranscriptionsTestLevel.WARNING)
         self.word_sequences = word_sequences
 
     def process_transcription(self, transcription: Transcription) -> None:
@@ -225,18 +239,63 @@ class TranscriptionTestWordSequences(TranscriptionsTest):
         word_sequence_joined = ', '.join(word_sequence)
         line_numbers_str = list(map(lambda number: str(number), line_numbers))
         line_numbers_joined = ', '.join(line_numbers_str)
-        super().raise_error(transcription, [f'Line = ({line_numbers_joined})', f'Word Sequence = ({word_sequence_joined})'])
+        super().raise_error(transcription, [f'Line = \'({line_numbers_joined})\'', f'Word Sequence = \'({word_sequence_joined})\''])
+
+class TranscriptionTestFixWordSequences(TranscriptionsTest):
+    def __init__(self, word_sequences: List[Tuple[List[str], int, List[str]]]) -> None:
+        super().__init__('Fix Word Sequences', TranscriptionsTestLevel.FIXED)
+        self.word_sequences = word_sequences
+
+    def process_transcription(self, transcription: Transcription) -> None:
+        for word_sequence, word_limit, fix_word_sequence in self.word_sequences:
+            current_matches : List[List[int]] = [[]]
+            for word_of_sequence in word_sequence:
+                new_matches : List[List[int]] = []
+
+                for info_line_number, info_line in enumerate(transcription.get_info_lines()):
+                    if info_line.get_word() is not None and info_line.get_word() == word_of_sequence:
+                        for current_match in current_matches:
+                            if len(current_match) > 0 and (info_line_number + 1 <= current_match[-1] or info_line_number + 1 - current_match[-1] > word_limit):
+                                continue
+
+                            copy_current_match = current_match.copy()
+                            copy_current_match.append(info_line_number + 1)
+                            new_matches.append(copy_current_match)
+
+                current_matches = new_matches
+            
+            for current_match in current_matches:
+                current_match = current_matches.pop(0)
+                transcription_info_lines = transcription.get_info_lines()
+                for index_match, fix_word in zip(current_match, fix_word_sequence):
+                    transcription_info_lines[index_match - 1].word = fix_word
+
+                transcription.export_new()
+                self.raise_error(transcription, word_sequence, current_match)
+            
+
+    def raise_error(self, transcription: Transcription, word_sequence: List[str], line_numbers: List[int]) -> None:
+        word_sequence_joined = ', '.join(word_sequence)
+        line_numbers_str = list(map(lambda number: str(number), line_numbers))
+        line_numbers_joined = ', '.join(line_numbers_str)
+
+        remaining_ats : List[str] = [f'Line = \'({line_numbers_joined})\'', f'Word Sequence = \'({word_sequence_joined})\'']
+        super().raise_error(transcription, remaining_ats)
 
 WORDS_TO_CHECK_FOR : List[Tuple[List[str], int]] = [
-    ([ 'piriquito' ], 1), ([ 'riu' ], 1), ([ 'coyote' ], 1), ([ 'insetos' ], 1), ([ 'kanguru' ], 1),
-    ([ 'hipópotamo' ], 1), ([ 'hóquei' ], 1), ([ 'ok' ], 1), ([ 'koala' ], 1), ([ 'pintacilgo' ], 1),
-    ([ 'lynce' ], 1), ([ 'perguiçoso' ], 1), ([ 'lagarticha' ], 1),
-    ([ 'para-sol' ], 1), ([ 'para-brisas' ], 1),
-
-    ([ 'para', 'sol' ], 2), ([ 'para', 'brisas' ], 2)
+    ([ 'riu' ], 1),
+    ([ 'para', 'sol' ], 2), ([ 'para', 'brisas' ], 2), ([ 'bicho', 'da', 'conta' ], 2)
 ]
+
+WORDS_TO_FIX : List[Tuple[List[str], int]] = [
+    ([ 'piriquito' ], 1, [ 'periquito' ]), ([ 'coyote' ], 1, [ 'coiote' ]), ([ 'insetos' ], 1, [ 'insectos' ]), ([ 'kanguru' ], 1, [ 'canguru' ]),
+    ([ 'hipópotamo' ], 1, [ 'hipopótamo' ]), ([ 'hóquei' ], 1, [ 'okay' ]), ([ 'ok' ], 1, [ 'okay' ]), ([ 'koala' ], 1, [ 'coala' ]), ([ 'pintacilgo' ], 1, [ 'pintassilgo' ]),
+    ([ 'lynce' ], 1, [ 'lince' ]), ([ 'perguiçoso' ], 1, [ 'preguiçoso' ]), ([ 'lagarticha' ], 1, [ 'lagartixa' ]),
+    ([ 'para-sol' ], 1, [ 'pára-sol' ]), ([ 'para-brisas' ], 1, [ 'pára-brisas' ]),
+]
+
 tests_to_be_carried_out : List[TranscriptionsTest] = [ TranscriptionTestWellFormatted(), TranscriptionTestValidDuration(),
-    TranscriptionTestValidTimestamps(), TranscriptionTestValidWords(), TranscriptionTestWordSequences(WORDS_TO_CHECK_FOR) ]
+    TranscriptionTestValidTimestamps(), TranscriptionTestValidWords(), TranscriptionTestCheckWordSequences(WORDS_TO_CHECK_FOR), TranscriptionTestFixWordSequences(WORDS_TO_FIX) ]
 
 # ===================================== MAIN FUNCTIONALITY =====================================
 
