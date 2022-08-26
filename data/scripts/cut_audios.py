@@ -31,12 +31,14 @@ def read_times(file_path: str, blacklist_rows: List[str]) -> pd.DataFrame:
 
     return dataframe
 
-def convert_time(time: float) -> int:
+def convert_time_milliseconds(time: str) -> int:
+    time_split : List[str] = time.split('.')
 
-    minutes = math.floor(time)
-    seconds = (time % 1) * 100
+    minutes = int(time_split[0])
+    seconds = int(time_split[1])
+    milliseconds = int(time_split[2])
 
-    return ((minutes * 60) + seconds) * 1000
+    return ((minutes * 60) + seconds) * 1000 + milliseconds
 
 # =================================== MAIN EXECUTION ===================================
 
@@ -75,17 +77,13 @@ for index_value, (index, row) in tqdm(list(enumerate(cut_times_dataframe.iterrow
         current_task_path = os.path.join(current_subject_path, current_sub_folder)
         os.mkdir(current_task_path)
 
-        # Not successful task
-        if value == "": continue
-        
-        if not isinstance(value[0], list): value = [value]
         for audio_file in audio_files:
 
             final_audio = AudioSegment.empty()
             for time_interval in value:
 
-                start = convert_time(time_interval[0])
-                end = convert_time(time_interval[1])
+                start = convert_time_milliseconds(time_interval[0])
+                end = convert_time_milliseconds(time_interval[1])
 
                 if start > end: exit(f"🚨 End of track comes before start for subject '{current_folder}' and task '{index}'")
                 

@@ -51,8 +51,18 @@ class TranscriptionInfoItem():
     def __init__(self, info_line: str):
         line_split = info_line.split()
         info_words = " ".join(line_split[4: ])
-        info_start = float(line_split[2])
-        info_end = float(line_split[3])
+
+        def convert_time_milliseconds(time: str) -> int:
+            time_split : List[str] = time.split('.')
+
+            minutes = int(time_split[0])
+            seconds = int(time_split[1])
+            milliseconds = int(time_split[2])
+
+            return ((minutes * 60) + seconds) * 1000 + milliseconds
+
+        info_start = convert_time_milliseconds(line_split[2])
+        info_end = convert_time_milliseconds(line_split[3])
 
         self.start = info_start
         self.end = info_end
