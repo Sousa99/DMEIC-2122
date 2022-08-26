@@ -14,6 +14,7 @@ from typing     import Any, Dict, List, Tuple, Union
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-times", required=True, nargs='+', help="path to various curring times")
+parser.add_argument("-old_format", action='store_true', default=False, help="path to various curring times")
 args = parser.parse_args()
 
 if (not args.times):
@@ -57,11 +58,7 @@ def convert_df_old_format(old_df: pd.DataFrame) -> pd.DataFrame:
     def map_old_timeinterval(old_time_intervals: List[List[float]]) -> List[List[str]]:
         new_intervals : List[List[str]] = []
         for old_interval in old_time_intervals:
-            try:
-                new_interval = list(map(lambda timestamp: map_old_timestamp(timestamp), old_interval))
-            except Exception as e:
-                print(old_time_intervals)
-                raise e
+            new_interval = list(map(lambda timestamp: map_old_timestamp(timestamp), old_interval))
             new_intervals.append(new_interval)
 
         return new_intervals
@@ -129,7 +126,11 @@ for cut_times_path in args.times:
 
     if not os.path.exists(cut_times_path) or not os.path.isfile(cut_times_path):
         raise Exception(f"🚨 Cut time path '{cut_times_path}' does not correspond to a valid file")
+    print(f"🚀 Processing cut times file '{cut_times_path}' into dataframe")
     cut_times_pandas = read_cut_times(cut_times_path, [])
 
-    cut_times_pandas = convert_df_old_format(cut_times_pandas)
-    write_new_format(cut_times_pandas, cut_times_path, AUTO_INDENT_WORDS)
+    if args.old_format:
+        print(f"🚀 Converting cut times file '{cut_times_path}' into new format")
+        cut_times_pandas = convert_df_old_format(cut_times_pandas)
+        print(f"🚀 Saving cut times file '{cut_times_path}' in new format")
+        write_new_format(cut_times_pandas, cut_times_path, AUTO_INDENT_WORDS)
