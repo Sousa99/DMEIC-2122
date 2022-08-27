@@ -29,7 +29,7 @@ args = parser.parse_args()
 BLACKLISTED_ROWS : List[str] = ['template']
 AUTO_INDENT_WORDS : List[Tuple[str, int]] = [ (' {', 1), ('"Task1"', 0), ('"Task2"', 0), ('"Task3"', 0),
     ('"Task4"', 0), ('"Task5"', 0), ('"Task6"', 0), ('"Task7"', 0), (' }', 1)]
-TASKS : List[str] = ["Task1", "Task2", "Task3", "Task4", "Task5", "Task6", "Task7"]
+TASKS : Dict[str, str] = { "Task1": "1", "Task2": "2", "Task3": "3", "Task4": "4", "Task5": "5", "Task6": "6", "Task7": "7" }
 
 CONSTANT_MILLISECONDS_INTERVAL : int = 2000
 CONSTANT_SECONDS_BETWEEN_WAIT : int = 1
@@ -142,13 +142,17 @@ def convert_time_milliseconds(time: str) -> int:
     return ((minutes * 60) + seconds) * 1000 + milliseconds
 
 def convert_time_str(time_milliseconds: int) -> str:
+    negative_time : bool = time_milliseconds < 0
+    if negative_time: time_milliseconds = - time_milliseconds
+
     time_seconds : int = math.floor(time_milliseconds / 1000)
     time_minutes : int = math.floor(time_seconds / 60)
 
     milliseconds : int = time_milliseconds - time_seconds * 1000
     seconds : int = time_seconds - time_minutes * 60
 
-    return f'{time_minutes}.{seconds:02}.{milliseconds:03}'
+    if not negative_time: return f'{time_minutes}.{seconds:02}.{milliseconds:03}'
+    else: return f'-{time_minutes}.{seconds:02}.{milliseconds:03}'
 
 def selection_menu(valid_selections: List[str], menu_title: str) -> None:
 
@@ -206,6 +210,14 @@ if args.old_format:
 
 # Listen to and verify recordings cut times
 if args.recordings_path:
+
+    # Create or Load alterations dataframe
+    alterations_df : pd.DataFrame = pd.DataFrame(columns=['group', 'subject', 'task', 'old start time', 'change start', 'new start time', 'old end time', 'change end', 'new end time'])
+    alterations_df = alterations_df.set_index(['group', 'subject', 'task'])
+    if args.alteration_path and os.path.exists(args.alteration_path) and os.path.exists(args.alteration_path):
+        alterations_df = pd.read_csv(args.alteration_path, sep='\t', index_col=[0, 1, 2])
+
+    # Iterate rows (subjects)
     for row_index, row in cut_times_pandas.iterrows():
         choice = selection_menu([CONSTANT_ANSWER_ACCEPT, CONSTANT_ANSWER_REJECT], constant_question_verify_subject(row_index))
         if choice == CONSTANT_ANSWER_REJECT: continue
@@ -217,10 +229,8 @@ if args.recordings_path:
 
         for column_index, interval in row.iteritems():
 
-
             start_milliseconds : int = convert_time_milliseconds(interval[0][0])
-            duration_milliseconds : int = convert_time_milliseconds(interval[-1][-1])
-            end_milliseconds : int = start_milliseconds + duration_milliseconds
+            end_milliseconds : int = convert_time_milliseconds(interval[-1][-1])
 
             print(constant_statement_processing_subject_task(row_index, column_index, 'beginning'))
             start_change_milliseconds : int = verify_cut_time(audio_file_path, start_milliseconds)
@@ -229,8 +239,17 @@ if args.recordings_path:
             end_change_milliseconds : int = verify_cut_time(audio_file_path, end_milliseconds)
             clear_screen()
 
+            if start_change_milliseconds == 0 and end_change_milliseconds == 0:
+                continue
+
             new_interval = interval
             new_interval[0][0] = convert_time_str(start_milliseconds + start_change_milliseconds)
-            new_interval[-1][-1] = convert_time_str(end_milliseconds - end_change_milliseconds)
+            new_interval[-1][-1] = convert_time_str(end_milliseconds + end_change_milliseconds)
             cut_times_pandas.loc[row_index].at[column_index] = new_interval
             write_new_format(cut_times_pandas, args.times_path, AUTO_INDENT_WORDS)
+
+            try:
+                alterations_df.loc[(args.group_id, row_index, TASKS[column_index]), :] = [ convert_time_str(start_milliseconds), convert_time_str(start_change_milliseconds), convert_time_str(start_milliseconds + start_change_milliseconds),
+                    convert_time_str(end_milliseconds), convert_time_str(end_change_milliseconds), convert_time_str(end_milliseconds + end_change_milliseconds) ]
+                if args.alteration_path: alterations_df.to_csv(args.alteration_path, sep='\t')
+            except KeyError as e: print(f"🚨 Key \'{(args.group_id, row_index, TASKS[column_index])}\' already exists!")
