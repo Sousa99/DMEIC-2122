@@ -29,10 +29,10 @@ args = parser.parse_args()
 BLACKLISTED_ROWS : List[str] = ['template']
 AUTO_INDENT_WORDS : List[Tuple[str, int]] = [ (' {', 1), ('"Task1"', 0), ('"Task2"', 0), ('"Task3"', 0),
     ('"Task4"', 0), ('"Task5"', 0), ('"Task6"', 0), ('"Task7"', 0), (' }', 1)]
-TASKS : Dict[str, str] = { "Task1": "1", "Task2": "2", "Task3": "3", "Task4": "4", "Task5": "5", "Task6": "6", "Task7": "7" }
+TASKS : Dict[str, int] = { "Task1": 1, "Task2": 2, "Task3": 3, "Task4": 4, "Task5": 5, "Task6": 6, "Task7": 7 }
 
 CONSTANT_MILLISECONDS_INTERVAL : int = 2000
-CONSTANT_SECONDS_BETWEEN_WAIT : int = 1
+CONSTANT_MILLISECONDS_BETWEEN_WAIT : int = 1000
 
 CONSTANT_ANSWER_ACCEPT : str = '🟢 Yes'
 CONSTANT_ANSWER_REJECT : str = '🔴 No'
@@ -59,7 +59,7 @@ def read_cut_times(file_path: str, blacklist_rows: List[str]) -> pd.DataFrame:
 
 def convert_df_old_format(old_df: pd.DataFrame) -> pd.DataFrame:
     def map_optional_list_to_mandatory(old_list: Union[str, List[float], List[List[float]]]) -> List[List[float]]:
-        if isinstance(old_list, str) or (isinstance(old_list, list) and len(old_list) == 0): return [[]]
+        if isinstance(old_list, str) or (isinstance(old_list, list) and len(old_list) == 0): return []
         elif isinstance(old_list[0], float): return [old_list]
         elif isinstance(old_list[0], int): return [ map(lambda elem: float(elem), old_list) ]
         else: return old_list
@@ -171,10 +171,13 @@ def verify_cut_time(audio_file_path: str, fulcrum_milliseconds: int) -> int:
     time_change : int = 0
     while changes:
 
+        before_start : int = fulcrum_milliseconds + time_change - CONSTANT_MILLISECONDS_INTERVAL
+        fulcrum_point : int = fulcrum_milliseconds + time_change
+        after_end : int = fulcrum_milliseconds + time_change + CONSTANT_MILLISECONDS_INTERVAL
         # Play before, wait, play after
-        play(audio[fulcrum_milliseconds + time_change - CONSTANT_MILLISECONDS_INTERVAL : fulcrum_milliseconds + time_change])
-        time.sleep(CONSTANT_SECONDS_BETWEEN_WAIT)
-        play(audio[fulcrum_milliseconds + time_change : fulcrum_milliseconds + time_change + CONSTANT_MILLISECONDS_INTERVAL])
+        play(audio[max(before_start, 0) : min(fulcrum_point, len(audio))])
+        time.sleep(CONSTANT_MILLISECONDS_BETWEEN_WAIT / 1000)
+        play(audio[max(fulcrum_point, 0) : min(after_end, len(audio))])
         
         print()
         current_time_str = convert_time_str(fulcrum_milliseconds + time_change)
@@ -219,6 +222,8 @@ if args.recordings_path:
 
     # Iterate rows (subjects)
     for row_index, row in cut_times_pandas.iterrows():
+        if row_index in BLACKLISTED_ROWS: continue
+
         choice = selection_menu([CONSTANT_ANSWER_ACCEPT, CONSTANT_ANSWER_REJECT], constant_question_verify_subject(row_index))
         if choice == CONSTANT_ANSWER_REJECT: continue
 
@@ -228,6 +233,11 @@ if args.recordings_path:
         audio_file_path = os.path.join(subject_audio_path, audio_filename)
 
         for column_index, interval in row.iteritems():
+            
+            if len(interval) == 0: continue
+            if (args.group_id, row_index, TASKS[column_index]) in alterations_df.index:
+                print(f"ℹ️ Track with key \'{(args.group_id, row_index, TASKS[column_index])}\' was already checked, skipping this check ...")
+                continue
 
             start_milliseconds : int = convert_time_milliseconds(interval[0][0])
             end_milliseconds : int = convert_time_milliseconds(interval[-1][-1])
