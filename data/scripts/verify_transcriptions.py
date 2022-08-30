@@ -67,8 +67,8 @@ class InfoLine():
     def get_duration_timestamp(self) -> Optional[str]: return self.duration.format_timestamp() if self.duration is not None else None
     def get_word(self) -> Optional[str]: return self.word
 
-    def get_start(self) -> Optional[Timestamp]: return self.start.get_milliseconds() if self.start is not None else None
-    def get_duration(self) -> Optional[Timestamp]: return self.duration.get_milliseconds() if self.duration is not None else None
+    def get_start(self) -> Optional[int]: return self.start.get_milliseconds() if self.start is not None else None
+    def get_duration(self) -> Optional[int]: return self.duration.get_milliseconds() if self.duration is not None else None
 
     def format_line(self) -> str: return f'{self.file} {self.subject} {self.start.format_timestamp()} {self.duration.format_timestamp()} {self.word}'
 
@@ -209,6 +209,22 @@ class TranscriptionTestValidWords(TranscriptionsTest):
     def raise_error(self, transcription: Transcription, line_number: int) -> None:
         super().raise_error(transcription, [f'Line = \'{line_number}\''])
 
+class TranscriptionTestUnusualStartEnd(TranscriptionsTest):
+    def __init__(self, threshold_milliseconds: int) -> None:
+        super().__init__('Unusal Start/End', TranscriptionsTestLevel.WARNING)
+        self.threshold_milliseconds : int = threshold_milliseconds
+
+    def process_transcription(self, transcription: Transcription) -> None:
+
+        info_lines : List[InfoLine] = transcription.get_info_lines()
+        if len(info_lines) > 0:
+            start_timestamp : Optional[Timestamp] = info_lines[0].start
+            if start_timestamp is not None and start_timestamp.get_milliseconds() > self.threshold_milliseconds:
+                self.raise_error(transcription, 'Start', start_timestamp.format_timestamp())
+
+    def raise_error(self, transcription: Transcription, type: str, time: str) -> None:
+        super().raise_error(transcription, [f'Type = \'{type}\'', f'Time = \'{time}\''])
+
 class TranscriptionTestCheckWordSequences(TranscriptionsTest):
     def __init__(self, word_sequences: List[Tuple[List[str], int]]) -> None:
         super().__init__('Check Word Sequences', TranscriptionsTestLevel.WARNING)
@@ -295,7 +311,8 @@ WORDS_TO_FIX : List[Tuple[List[str], int]] = [
 ]
 
 tests_to_be_carried_out : List[TranscriptionsTest] = [ TranscriptionTestWellFormatted(), TranscriptionTestValidDuration(),
-    TranscriptionTestValidTimestamps(), TranscriptionTestValidWords(), TranscriptionTestCheckWordSequences(WORDS_TO_CHECK_FOR), TranscriptionTestFixWordSequences(WORDS_TO_FIX) ]
+    TranscriptionTestValidTimestamps(), TranscriptionTestValidWords(), TranscriptionTestUnusualStartEnd(10000),
+    TranscriptionTestCheckWordSequences(WORDS_TO_CHECK_FOR), TranscriptionTestFixWordSequences(WORDS_TO_FIX) ]
 
 # ===================================== MAIN FUNCTIONALITY =====================================
 
