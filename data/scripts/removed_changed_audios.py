@@ -66,7 +66,7 @@ elif args.hierarchy == HIERARCHY_TRANSCRIPTIONS:
 
         valids_existent : List[str] = list(filter(lambda existent: existent.startswith(task_folder), all_existent_folders))
         for valid_existent in valids_existent:
-            target_path : str = os.path.join(args.target_folder, group_entire, 'exp_tribus', valids_existent)
+            target_path : str = os.path.join(args.target_folder, group_entire, 'exp_tribus', valid_existent)
             to_remove_paths.append(target_path)
 
 # Execute removal or log
