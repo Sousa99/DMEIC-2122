@@ -56,10 +56,9 @@ if not os.path.exists(args.output) and os.path.isdir(args.output):
 for index_value, (index, row) in tqdm(list(enumerate(cut_times_dataframe.iterrows())), desc="🚀 Processing subjects", leave=True):
     current_folder = args.tag + '_' + index
     current_subject_path = os.path.join(args.output, current_folder)
-    if os.path.exists(current_subject_path): continue
 
-    tqdm.write("🔊 Processed '{0}'".format(current_folder))
-    os.mkdir(current_subject_path)
+    if not os.path.exists(current_subject_path):
+        os.mkdir(current_subject_path)
 
     # Get Audio Files
     audios_directory = os.path.join(args.data, index)
@@ -75,6 +74,10 @@ for index_value, (index, row) in tqdm(list(enumerate(cut_times_dataframe.iterrow
     for index, value in row.items():
         current_sub_folder = current_folder + '_' + str(TASKS.index(index) + 1)
         current_task_path = os.path.join(current_subject_path, current_sub_folder)
+
+        if os.path.exists(current_task_path): continue
+
+        tqdm.write(f"🔊 Processing '{current_folder}' on '{index}'")
         os.mkdir(current_task_path)
 
         for audio_file in audio_files:
@@ -93,3 +96,5 @@ for index_value, (index, row) in tqdm(list(enumerate(cut_times_dataframe.iterrow
 
             final_audio_export_path = os.path.join(current_task_path, current_sub_folder + audio_file['export_suf'] + audio_file['ext'])
             final_audio.export(final_audio_export_path, format=audio_file['ext'].replace('.', ''))
+
+    tqdm.write('')
