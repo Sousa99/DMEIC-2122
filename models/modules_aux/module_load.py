@@ -79,7 +79,7 @@ class TranscriptionInfo():
 
         file = open(file_path, 'r')
         for line in file.readlines():
-            self.transcription_info.append(TranscriptionInfoItem(line))
+            self.transcription_info.append(TranscriptionInfoItem(line.strip()))
         file.close()
 
     def get_info_items(self) -> List[TranscriptionInfoItem]:
