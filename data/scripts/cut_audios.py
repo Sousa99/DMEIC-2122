@@ -96,5 +96,3 @@ for index_value, (index, row) in tqdm(list(enumerate(cut_times_dataframe.iterrow
 
             final_audio_export_path = os.path.join(current_task_path, current_sub_folder + audio_file['export_suf'] + audio_file['ext'])
             final_audio.export(final_audio_export_path, format=audio_file['ext'].replace('.', ''))
-
-    tqdm.write('')
