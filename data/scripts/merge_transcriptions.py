@@ -222,7 +222,7 @@ with tqdm(alterations_df.iterrows(), desc='🚀 Processing changes', leave=True)
         start_adjustment : int = convert_time_change_milliseconds(row['change start'])
         for info_line in transcription.get_info_lines():
             start_timestamp = info_line.get_start()
-            start_timestamp.add_milliseconds(start_adjustment)
+            start_timestamp.add_milliseconds(-start_adjustment)
         # Remove target file lines start before 0
         end_time : int = convert_time_change_milliseconds(row['new end time'])
         old_info_lines : List[InfoLine] = transcription.get_info_lines()
@@ -246,4 +246,4 @@ with tqdm(alterations_df.iterrows(), desc='🚀 Processing changes', leave=True)
 
         # Remove current row from alterations df
         alterations_df.drop(alterations_df.head(1).index, inplace=True)
-        alterations_df.drop(['merge path', 'new path', 'merge file', 'new file', 'audio file']).to_csv(args.alteration_path, sep='\t')
+        alterations_df.drop(columns=['merge path', 'new path', 'merge file', 'new file', 'audio file']).to_csv(args.alteration_path, sep='\t')
