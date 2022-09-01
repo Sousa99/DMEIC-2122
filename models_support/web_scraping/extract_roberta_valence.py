@@ -225,7 +225,7 @@ class TransformerModel():
         trainer         : transformers.Trainer  = transformers.Trainer(model=self.model, args=training_args, train_dataset=train_dataset)
 
         trainer.train()
-        self.model_saved_path = os.path.join(training_args.output_dir, FINAL_MODEL_SAVE)
+        self.model_saved_path = FINAL_MODEL_SAVE
         trainer.save_model(self.model_saved_path)
 
     def __del__(self):
