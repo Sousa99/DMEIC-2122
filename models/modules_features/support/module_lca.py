@@ -118,12 +118,13 @@ def lca_analysis_dynamic(train_X: pd.DataFrame, train_Y: pd.Series, test_X: Opti
 
         # Plot and Save achieved Clusters
         module_exporter.export_scatter_clusters(f"content - lca - {cluster_to_study['code']} - train - achieved clusters", reduced_dimensionality, 'Feature 1', 'Feature 2',
-            hue_key='Cluster', style_key='Type', hide_labels=('Type', 'center'), figsize=(10, 6),
+            True, hue_key='Cluster', style_key='Type', hide_labels=('Type', 'center'), figsize=(8, 5), text_fontsize='medium',
+            hide_x_ticks=True, hide_y_ticks=True,
             legend_placement='upper left', margins={ 'bottom': None, 'left': 0.1, 'top': None, 'right': 0.85 })
 
         # LCA features applied to train
         for index, cluster_center in enumerate(cluster_centers):
-            column_name : str   = f'LCA - Max Cossine w/ Cluster {index}'
+            column_name : str   = f"LCA - Max Cossine w/ Cluster {index} for {cluster_to_study['full_code']}"
             train_X[column_name] = train_X['LCA - Embedding Groups'].progress_apply(lambda sentence_embeddings: get_max_cossine_similarity_with_word(sentence_embeddings, cluster_center)).astype(float)
             train_X[column_name].fillna(DEFAULT_VALUE, inplace=True)
         
