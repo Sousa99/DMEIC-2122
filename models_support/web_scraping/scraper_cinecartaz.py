@@ -3,6 +3,7 @@ from bs4    import BeautifulSoup
 
 import driver
 import scraper
+import scraper_valence
 
 # ============================================================== AUXILIARY FUNCTIONS ==============================================================
 
@@ -16,10 +17,12 @@ def get_moview_info(link: str, driver: driver.Driver) -> Optional[Dict[str, Any]
     movie_box_inner = movie_box.findChildren('dd')
     if len(movie_box_inner) < 2: return None
 
-    movie_name = movie_box_inner[0].contents[0]
-    movie_from_children = movie_box_inner[1].findChildren()
-    if movie_from_children is None: return None
-    movie_from = movie_from_children[0].contents[0]
+    movie_name = movie_box_inner[0].get_text()
+    if len(movie_box_inner) < 2: movie_from = 'Unknown'
+    else:
+        movie_from_children = movie_box_inner[1].findChildren()
+        if movie_from_children is None or len(movie_from_children) == 0: movie_from = 'Unknown'
+        else: movie_from = movie_from_children[0].get_text()
 
     movie_readers_reviews = link_soup.find('section', class_='votosdosleitores')
     if movie_readers_reviews is None: return None
@@ -77,33 +80,38 @@ class WebScraperCineCartaz(scraper.WebScraper[ScrapedInfoCineCartaz]):
     REVIEWS_LINK : str = 'https://cinecartaz.publico.pt/Criticas'
 
     def __init__(self) -> None:
-        super().__init__('CineCartaz')
+        super().__init__('CineCartaz', '0.2', { 'current_page': 1, 'number_reviews_parsed': 0 })
 
     def get_pages_to_scrape(self, driver: driver.Driver) -> Generator[str, None, None]:
 
-        current_page : int   = 0
         while True:
-            current_page = current_page + 1
 
             # ============================ In fact get page with important information ============================
-            driver.driver_get(f"{self.REVIEWS_LINK}?pagina={current_page}")
+            driver.driver_get(f"{self.REVIEWS_LINK}?pagina={self.state['current_page']}")
             link_soup = BeautifulSoup(driver.driver_page_source(), 'html.parser')
 
             # Reader's Reviews: Get and Check if section is present
             reviews_from_readers_section = link_soup.find('section', id='criticas-leitores')
-            if reviews_from_readers_section is None: return
+            if reviews_from_readers_section is None: break
             # Reader's Reviews: Get and Check if list element
             reviews_from_readers_list = reviews_from_readers_section.find('ul', recursive=False)
-            if reviews_from_readers_list is None: return
+            if reviews_from_readers_list is None: break
             # Reader's Reviews: Get and Check if list items
             reviews_from_readers = reviews_from_readers_list.findChildren(recursive=False)
-            if len(reviews_from_readers) == 0: return
+            if len(reviews_from_readers) == 0: break
             # Reader's Reviews: Iterate and Get Link
+            for _ in range(self.state['number_reviews_parsed']): reviews_from_readers.pop(0)
             for review_item in reviews_from_readers:
+                # Update State
+                self.state['number_reviews_parsed'] = self.state['number_reviews_parsed'] + 1
+
                 review_item_header = review_item.find('h3')
                 review_item_link = review_item_header.find('a')
-
                 yield f"{self.BASE_LINK}{review_item_link['href']}"
+
+            # Update State
+            self.state['current_page'] = self.state['current_page'] + 1
+            self.state['number_reviews_parsed'] = 0
 
     def scrape_page(self, link: str, driver: driver.Driver) -> Generator[ScrapedInfoCineCartaz, None, None]:
         
@@ -122,8 +130,8 @@ class WebScraperCineCartaz(scraper.WebScraper[ScrapedInfoCineCartaz]):
         if review_footer is None: return
         review_footer_infos = review_footer.find_all('strong')
         if len(review_footer_infos) != 2: return
-        review_author = review_footer_infos[0].contents[0]
-        review_date = review_footer_infos[1].contents[0]
+        review_date = review_footer_infos[0].get_text()
+        review_author = review_footer_infos[1].get_text()
 
         movie_file_item = link_soup.find('ul', class_='fichatec')
         if movie_file_item is None: return
@@ -140,4 +148,15 @@ class WebScraperCineCartaz(scraper.WebScraper[ScrapedInfoCineCartaz]):
             review_author, review_text, review_date)
 
     def callback_accessible(self, page_source: str) -> bool:
-        super().callback_accessible(page_source)
+        if "Access Denied" in page_source: return False
+        elif "This site can’t be reached" in page_source: return False
+        elif "Your connection is not private" in page_source: return False
+        elif "No internet" in page_source: return False
+        return True
+
+# ============================================================ MAIN FUNCTIONALITY ============================================================
+
+scraper_to_use : WebScraperCineCartaz = WebScraperCineCartaz()
+request_driver : driver.Driver = driver.Driver(max_attempts_driver=20)
+request_driver.set_callback_accessible(scraper_to_use.callback_accessible)
+scraper_valence.run_scraper(scraper_to_use, request_driver)

@@ -28,10 +28,14 @@ prog 0
 for subject_folder in "${CONTROLS[@]}"; do
 	
         if [ ! -d "${CONVERSION_CONTROLS_PATH}${subject_folder}" ]
-        then
-                mkdir "${CONVERSION_CONTROLS_PATH}${subject_folder}/"
-                for task_folder in `ls ${RECORDINGS_CONTROLS_PATH}${subject_folder}`; do
-                        
+        then mkdir "${CONVERSION_CONTROLS_PATH}${subject_folder}/"
+        fi
+
+        for task_folder in `ls ${RECORDINGS_CONTROLS_PATH}${subject_folder}`; do
+
+                if [ ! -d "${CONVERSION_CONTROLS_PATH}${subject_folder}/${task_folder}/" ]
+                then
+                
                         mkdir "${CONVERSION_CONTROLS_PATH}${subject_folder}/${task_folder}/"
 
                         for file in `ls ${RECORDINGS_CONTROLS_PATH}${subject_folder}/${task_folder}`; do
@@ -42,8 +46,9 @@ for subject_folder in "${CONTROLS[@]}"; do
                                 ffmpeg -hide_banner -loglevel error -i $INPUT_FILE $OUTPUT_FILE
 
                         done
-                done
-        fi
+
+                fi
+        done
 
 	(( count++ ))
         current_prog=$(( $count * 100 / $NUMBER_CONTROLS ))
@@ -61,9 +66,13 @@ prog 0
 for subject_folder in "${PSYCHOSIS[@]}"; do
 
         if [ ! -d "${CONVERSION_PSYCHOSIS_PATH}${subject_folder}" ]
-        then
-                mkdir "${CONVERSION_PSYCHOSIS_PATH}${subject_folder}/"
-                for task_folder in `ls ${RECORDINGS_PSYCHOSIS_PATH}${subject_folder}`; do
+        then mkdir "${CONVERSION_PSYCHOSIS_PATH}${subject_folder}/"
+        fi
+        
+        for task_folder in `ls ${RECORDINGS_PSYCHOSIS_PATH}${subject_folder}`; do
+
+                if [ ! -d "${CONVERSION_PSYCHOSIS_PATH}${subject_folder}/${task_folder}/" ]
+                then
 
                         mkdir "${CONVERSION_PSYCHOSIS_PATH}${subject_folder}/${task_folder}/"
 
@@ -75,8 +84,9 @@ for subject_folder in "${PSYCHOSIS[@]}"; do
                                 ffmpeg -hide_banner -loglevel error -i $INPUT_FILE $OUTPUT_FILE
 
                         done
-                done
-        fi
+
+                fi
+        done
 
         (( count++ ))
         current_prog=$(( $count * 100 / $NUMBER_PSYCHOSIS ))
@@ -94,10 +104,14 @@ prog 0
 for subject_folder in "${BIPOLARS[@]}"; do
 
         if [ ! -d "${CONVERSION_BIPOLARS_PATH}${subject_folder}" ]
-        then
-                mkdir "${CONVERSION_BIPOLARS_PATH}${subject_folder}/"
-                for task_folder in `ls ${RECORDINGS_BIPOLARS_PATH}${subject_folder}`; do
+        then mkdir "${CONVERSION_BIPOLARS_PATH}${subject_folder}/"
+        fi
 
+        for task_folder in `ls ${RECORDINGS_BIPOLARS_PATH}${subject_folder}`; do
+
+                if [ ! -d "${CONVERSION_BIPOLARS_PATH}${subject_folder}/${task_folder}/" ]
+                then
+                        
                         mkdir "${CONVERSION_BIPOLARS_PATH}${subject_folder}/${task_folder}/"
 
                         for file in `ls ${RECORDINGS_BIPOLARS_PATH}${subject_folder}/${task_folder}`; do
@@ -108,8 +122,9 @@ for subject_folder in "${BIPOLARS[@]}"; do
                                 ffmpeg -hide_banner -loglevel error -i $INPUT_FILE $OUTPUT_FILE
 
                         done
-                done
-        fi
+                
+                fi
+        done
 
         (( count++ ))
         current_prog=$(( $count * 100 / $NUMBER_BIPOLARS ))

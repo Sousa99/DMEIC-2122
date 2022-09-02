@@ -8,6 +8,7 @@ import seaborn              as sns
 import matplotlib.pyplot    as plt
 
 from tqdm                   import tqdm
+from typing                 import List
 from nltk.metrics.distance  import edit_distance
 
 # =================================== IGNORE CERTAIN ERRORS ===================================
@@ -71,12 +72,21 @@ def get_file_info(file: str):
 
 def parse_ctm_file(file_path: str):
 
+    def convert_time_milliseconds(time: str) -> int:
+        time_split : List[str] = time.split('.')
+
+        minutes = int(time_split[0])
+        seconds = int(time_split[1])
+        milliseconds = int(time_split[2])
+
+        return ((minutes * 60) + seconds) * 1000 + milliseconds
+
     def convert_line_to_info(line: str):
         line_splitted = line.split()
         return {
             'word':             line_splitted[4],
-            'start_timestamp':  float(line_splitted[2]),
-            'duration':         float(line_splitted[3]),
+            'start_timestamp':  convert_time_milliseconds(line_splitted[2]),
+            'duration':         convert_time_milliseconds(line_splitted[3]),
         }
     
     # Read transcription lines

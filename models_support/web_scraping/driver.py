@@ -7,6 +7,7 @@ from selenium                                   import webdriver
 from fake_useragent                             import UserAgent
 from selenium.common.exceptions                 import SessionNotCreatedException
 from selenium.webdriver.common.by               import By
+from selenium.webdriver.support.ui              import WebDriverWait
 from selenium.webdriver.common.action_chains    import ActionChains
 from selenium.webdriver.chrome.options          import Options
 
@@ -16,7 +17,7 @@ from selenium.webdriver.chrome.options          import Options
 
 class Driver():
 
-    def __init__(self, headless : bool = False, rotate_proxies : bool = False,
+    def __init__(self, headless : bool = False, rotate_proxies : bool = False, rotate_proxies_rand : bool = False,
         rotate_user_agents : bool = False, max_requests : Optional[int] = None, max_attempts_driver: int = 5) -> None:
 
         self.headless               : bool                              = headless
@@ -30,7 +31,7 @@ class Driver():
 
         self.callback_accessible    : Optional[Callable[[str], bool]]   = None
 
-        if rotate_proxies: self.proxies_gen = FreeProxy(rand=True)
+        if rotate_proxies: self.proxies_gen = FreeProxy(rand=rotate_proxies_rand)
         if rotate_user_agents: self.user_agent_gen = UserAgent()
 
     def set_callback_accessible(self, callback: Callable[[str], bool]) -> None:
@@ -42,12 +43,12 @@ class Driver():
         # Definition of Selenium WebDriver Options
         options : Options = Options()
         options.headless = self.headless
-        options.add_argument("--window-size=1920,1200")
+        options.add_argument("--window-size=1344,840")
 
         # Spoof Selenium
         options.add_argument('--no-sandbox')
         options.add_argument('--start-maximized')
-        options.add_argument('--start-fullscreen')
+        #options.add_argument('--start-fullscreen')
         options.add_argument('--single-process')
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument("--incognito")
@@ -95,15 +96,17 @@ class Driver():
                 if self.callback_accessible is not None and not self.callback_accessible(page_source):
                     raise Exception("🚨 Page not accessible!")
                 
-                if attempts != 0: tqdm.write("✅ Eventually webdriver was initialized successfully!")
+                if attempts > 1: tqdm.write("✅ Eventually webdriver was initialized successfully!")
                 return
             
             except SessionNotCreatedException as e:
-                tqdm.write("⚠️ Webdriver session could not be created!")
+                tqdm.write("⚠️  Webdriver session could not be created!")
                 self.selenium_webdriver = None
                 attempts = attempts + 1
             except Exception as e:
-                tqdm.write(f"⚠️ Exception while initializing webdriver: '{e}'")
+                error_message = str(e)
+                error_message = error_message[:error_message.find('\n')]
+                tqdm.write(f"⚠️  Exception while initializing webdriver: '{error_message}'")
                 self.selenium_webdriver.quit()
                 self.selenium_webdriver = None
                 attempts = attempts + 1
@@ -121,6 +124,16 @@ class Driver():
             self.selenium_webdriver.implicitly_wait(wait)
         except Exception as e:
             if throw_exception: raise(e)
-        
+
+    def driver_wait_until(self, wait_function: Callable[[webdriver.Chrome], bool], wait: int = 10, throw_exception: bool = True) -> None:
+        try:
+            WebDriverWait(self.selenium_webdriver, wait).until(lambda wd: wait_function(wd))
+        except Exception as e:
+            if throw_exception: raise(e)
+
+    def driver_get_current_url(self) -> str:
+        return self.selenium_webdriver.current_url;
+
     def driver_quit(self) -> None:
-        self.selenium_webdriver.quit()
+        if self.selenium_webdriver is not None:
+            self.selenium_webdriver.quit()

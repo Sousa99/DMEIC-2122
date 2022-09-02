@@ -5,7 +5,7 @@ import warnings
 
 from copy                   import deepcopy
 from pydub                  import AudioSegment
-from typing                 import List
+from typing                 import Any, Callable, List, Optional
 from consolemenu            import SelectionMenu, MenuFormatBuilder
 from pydub.playback         import play
 
@@ -71,6 +71,17 @@ def format_menu(menu):
 
     return menu
 
+def parse_input(query: str, function_parser: Optional[Callable] = None, message_prefix: str = ' ') -> Any:
+    result = None
+    while result is None:
+        input_result = input(query)
+        if function_parser is not None:
+            try: result = function_parser(input_result)
+            except: print(f"🚨{message_prefix}Result could not be correctly parsed! Please check your input")
+        else: result = input_result
+
+    return result
+
 # =================================== MAIN EXECUTION ===================================
 
 SPLIT_SYMBOL = '_'
@@ -97,7 +108,8 @@ selected_file = file_possibilities[selected_file_index]
 FILENAME, _ = os.path.splitext(selected_file)
 PATH_TO_AUDIO = os.path.join(args.audio, FILENAME + AUDIO_EXTENSION)
 PATH_TO_TRANS = os.path.join(args.trans, FILENAME + TRANSCRIPTION_EXTENSION)
-PATH_TO_OUT_TRANS = os.path.join(args.trans, SPLIT_SYMBOL.join(FILENAME.split(SPLIT_SYMBOL)[:-1]) + SPLIT_SYMBOL + OUTPUT_SUFFIX + TRANSCRIPTION_EXTENSION)
+if len(FILENAME.split(SPLIT_SYMBOL)) < 4: PATH_TO_OUT_TRANS = os.path.join(args.trans, SPLIT_SYMBOL.join(FILENAME.split(SPLIT_SYMBOL)) + SPLIT_SYMBOL + OUTPUT_SUFFIX + TRANSCRIPTION_EXTENSION)
+else: PATH_TO_OUT_TRANS = os.path.join(args.trans, SPLIT_SYMBOL.join(FILENAME.split(SPLIT_SYMBOL)[:-1]) + SPLIT_SYMBOL + OUTPUT_SUFFIX + TRANSCRIPTION_EXTENSION)
 
 # ======================================================================================
 
@@ -189,7 +201,7 @@ while current_start_time != end_time:
         current_input_line_index = next_line_index
 
     elif selected_action_index == CHANGE_ID:
-        heard = [ str(input("✏️  What is the correct value to be inserted? ")) ]
+        heard = [ parse_input("✏️  What is the correct value to be inserted? ", str, '  ') ]
         output_lines.append({'start': current_start_time, 'duration': stop_time - current_start_time, 'word': '+'.join(heard) })
         heard = []
 
@@ -203,11 +215,11 @@ while current_start_time != end_time:
 
     elif selected_action_index == SPLIT_ID:
         print("✂️  You are about to split time ({0:.2f} → {1:.2f}) with word '{2}'".format(from_ts, to_ts, heard_display))
-        number_splits = int(input("✂️\t How many words do you wish to insert? "))
+        number_splits : int = parse_input("✂️\t How many words do you wish to insert? ", int, '\t ')
         for index in range(number_splits):
-            sub_start = convert_time_to_milliseconds(float(input("✂️\t {0}: What is the start time? ".format(str(index + 1).rjust(2)))))
-            sub_end = convert_time_to_milliseconds(float(input("✂️\t {0}: What is the end time? ".format(str(index + 1).rjust(2)))))
-            sub_word = str(input("✂️\t {0}: What is the word? ".format(str(index + 1).rjust(2))))
+            sub_start : float = convert_time_to_milliseconds(parse_input("✂️\t {0}: What is the start time? ".format(str(index + 1).rjust(2)), float, '\t '))
+            sub_end : float = convert_time_to_milliseconds(parse_input("✂️\t {0}: What is the end time? ".format(str(index + 1).rjust(2)), float, '\t '))
+            sub_word : str = parse_input("✂️\t {0}: What is the word? ".format(str(index + 1).rjust(2)), str, '\t ')
 
             output_lines.append({ 'start': sub_start, 'duration': sub_end - sub_start, 'word': sub_word })
 
@@ -236,6 +248,16 @@ while current_start_time != end_time:
 
     elif selected_action_index == REPEAT_ID:
         if len(heard) > 0: heard.pop()
+
+        if len(memory) < 2: continue
+        # Update to last correct
+        memory_item = memory.pop()
+
+        current_start_time = memory_item['current_start_time']
+        current_time = memory_item['current_time']
+        current_input_line_index = memory_item['current_input_line_index']
+        heard = memory_item['heard']
+        output_lines = memory_item['output_lines']
         
 # Write to Fix File
 file = open(PATH_TO_OUT_TRANS, 'w')
@@ -243,10 +265,14 @@ for out_line in output_lines:
     if out_line['word'] == '': continue
 
     infos = [ transcription_info['file'], transcription_info['source'] ]
-    infos.append(str(convert_milliseconds_to_time(out_line['start'])))
-    infos.append(str(convert_milliseconds_to_time(out_line['duration'])))
+    infos.append("{:.2f}".format(convert_milliseconds_to_time(out_line['start'])))
+    infos.append("{:.2f}".format(convert_milliseconds_to_time(out_line['duration'])))
     infos.append(out_line['word'])
 
-    file.write(' '.join(infos) + '\n')
+    try: file.write(' '.join(infos) + '\n')
+    except:
+        print("🚨 Possible problem detected at '{0}' please check it out!".format(str(convert_milliseconds_to_time(out_line['start']))))
+        file.write("🚨 PROBLEM IDENTIFIED AT THIS POINT\n")
+
 file.close()
 
