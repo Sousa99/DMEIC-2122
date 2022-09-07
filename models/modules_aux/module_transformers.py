@@ -51,15 +51,15 @@ def get_training_args(output_dir: str, logging_dir: str) -> transformers.Trainin
 
     return training_args
 
-def get_xlm_roberta_base() -> Tuple[transformers.AutoTokenizer, transformers.AutoModelForSequenceClassification]:
+def get_xlm_roberta_base(num_labels: int = 2) -> Tuple[transformers.AutoTokenizer, transformers.AutoModelForSequenceClassification]:
     tokenizer   : transformers.AutoTokenizer                        = transformers.AutoTokenizer.from_pretrained('xlm-roberta-base')
-    model       : transformers.AutoModelForSequenceClassification   = transformers.AutoModelForSequenceClassification.from_pretrained("xlm-roberta-base", num_labels=2)
+    model       : transformers.AutoModelForSequenceClassification   = transformers.AutoModelForSequenceClassification.from_pretrained("xlm-roberta-base", num_labels=num_labels)
 
     return (tokenizer, model)
 
-def get_xlm_roberta_large() -> Tuple[transformers.AutoTokenizer, transformers.AutoModelForSequenceClassification]:
+def get_xlm_roberta_large(num_labels: int = 2) -> Tuple[transformers.AutoTokenizer, transformers.AutoModelForSequenceClassification]:
     tokenizer   : transformers.AutoTokenizer                        = transformers.AutoTokenizer.from_pretrained('xlm-roberta-large')
-    model       : transformers.AutoModelForSequenceClassification   = transformers.AutoModelForSequenceClassification.from_pretrained("xlm-roberta-large", num_labels=2)
+    model       : transformers.AutoModelForSequenceClassification   = transformers.AutoModelForSequenceClassification.from_pretrained("xlm-roberta-large", num_labels=num_labels)
 
     return (tokenizer, model)
 
@@ -82,10 +82,12 @@ class Dataset(torch.utils.data.Dataset):
 
 class TransformerModel():
 
-    def __init__(self, tokenizer: transformers.PreTrainedTokenizer, model: transformers.PreTrainedModel) -> None:
+    def __init__(self, tokenizer: transformers.PreTrainedTokenizer, model: Optional[transformers.PreTrainedModel], model_saved_path: Optional[str] = None) -> None:
+        self.model_saved_path   : Optional[str]                     = model_saved_path
         self.tokenizer          : transformers.PreTrainedTokenizer  = tokenizer
-        self.model              : transformers.PreTrainedModel      = model
-        self.model_saved_path   : Optional[str]                     = None
+
+        if self.model_saved_path is None: self.model : transformers.PreTrainedModel = model
+        else: self.model = transformers.AutoModelForSequenceClassification.from_pretrained(self.model_saved_path)
 
     def train(self, train_texts: pd.Series, train_labels: pd.Series, training_args: transformers.TrainingArguments) -> transformers.Trainer:
 
