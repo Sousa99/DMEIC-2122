@@ -23,7 +23,7 @@ CHECKPOINT_DIRECTORY    : Optional[str] = None
 EXECUTION_TIMESTAMP     : datetime      = datetime.now()
 
 EXPORT_CSV_EXTENSION            : str           = '.csv'
-EXPORT_IMAGE_EXTENSION          : str           = '.png'
+EXPORT_IMAGE_EXTENSION          : str           = '.pdf'
 EXPORT_VECTOR_IMAGE_EXTENSION   : str           = '.eps'
 
 CURRENT_DIRECTORIES     : List[str]     = []
