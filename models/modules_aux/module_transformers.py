@@ -37,14 +37,16 @@ FINAL_MODEL_SAVE    : str   = 'checkpoint-final'
 def get_training_args(output_dir: str, logging_dir: str) -> transformers.TrainingArguments:
     training_args = transformers.TrainingArguments(
         output_dir=output_dir,
-        num_train_epochs=3,
-        per_device_train_batch_size=8,
-        per_device_eval_batch_size=8,
-        warmup_steps=500,
-        weight_decay=0.01,
-        logging_strategy='no',
+        num_train_epochs=25,
+        per_device_train_batch_size=4,
+        per_device_eval_batch_size=4,
+        gradient_accumulation_steps=8,
+        logging_strategy='steps',
         logging_dir=logging_dir,
-        logging_steps=100,
+        logging_steps=1000,
+        save_strategy='steps',
+        save_steps=1000,
+        save_total_limit=2,
         optim="adamw_torch",
         disable_tqdm=True
     )
