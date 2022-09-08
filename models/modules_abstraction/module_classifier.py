@@ -35,20 +35,20 @@ VARIATIONS_DT_MAX_DEPTH =               [ pow(2, value) for value in range(0, 8)
 VARIATIONS_DT_MAX_FEATURES =            [ None, 'auto', 'sqrt', 'log2' ]
 VARIATIONS_DT_MIN_IMPURITY_DECREASE =   [ 0 ] + [ 0.1 * pow(2, value) for value in range(0, 4) ]
 
-VARIATIONS_SVM_C =      [ 0.1 * pow(2, value) for value in range(1, 4) ] + [ pow(2, value) for value in range(0, 7) ]
+VARIATIONS_SVM_C =      [ pow(2, value) for value in range(-2, 3) ]
 VARIATIONS_SVM_KERNEL = [ 'linear', 'poly', 'rbf', 'sigmoid' ]
 
-VARIATIONS_RF_ESTIMATORS =              [ 10, 25, 50, 75, 100, 125, 150 ]
+VARIATIONS_RF_ESTIMATORS =              [ 10, 50, 100, 150 ]
 VARIATIONS_RF_CRITERION =               [ 'gini', 'entropy' ]
 VARIATIONS_RF_MAX_DEPTH =               [ pow(2, value) for value in range(0, 8) ]
 VARIATIONS_RF_MAX_FEATURES =            [ None, 'auto', 'sqrt', 'log2' ]
-VARIATIONS_RF_MIN_IMPURITY_DECREASE =   [ 0 ] + [ 0.1 * pow(2, value) for value in range(0, 4) ]
+VARIATIONS_RF_MIN_IMPURITY_DECREASE =   [ 0, 0.25, 0.50 ]
 
-VARIATIONS_MLP_HIDDEN_LAYERS =      [ (50, ), (100, ), (100, 50), (50, 100), (50, 100, 50) ]
+VARIATIONS_MLP_HIDDEN_LAYERS =      [ (50, ), (100, ), (100, 50), (50, 100, 50) ]
 VARIATIONS_MLP_ACTIVATION =         [ 'logistic', 'tanh', 'relu' ]
 VARIATIONS_MLP_LEARNING_RATE_INIT = [ 0.001 * pow(5, value) for value in range(0, 4) ]
 VARIATIONS_MLP_LEARNING_RATE =      [ 'constant', 'invscaling', 'adaptive' ]
-VARIATIONS_MLP_MAX_ITERATIONS =     [ 100, 300, 500, 750, 1000, 1500, 2000, 3000 ]
+VARIATIONS_MLP_MAX_ITERATIONS =     [ 100, 500, 1000 ]
 
 VARIATIONS_NB_PRESET =  { }
 VARIATIONS_DT_PRESET =  { }
