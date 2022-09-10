@@ -78,8 +78,10 @@ class TranscriptionInfo():
         self.transcription_info : List[TranscriptionInfoItem] = []
 
         file = open(file_path, 'r')
-        for line in file.readlines():
-            self.transcription_info.append(TranscriptionInfoItem(line.strip()))
+        for line_index, line in enumerate(file.readlines()):
+            try: self.transcription_info.append(TranscriptionInfoItem(line.strip()))
+            except: raise Exception(f"Line at '{line_index}' from '{file_path}' could not be parsed!")
+
         file.close()
 
     def get_info_items(self) -> List[TranscriptionInfoItem]:
