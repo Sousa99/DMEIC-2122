@@ -37,29 +37,31 @@ FINAL_MODEL_SAVE    : str   = 'checkpoint-final'
 def get_training_args(output_dir: str, logging_dir: str) -> transformers.TrainingArguments:
     training_args = transformers.TrainingArguments(
         output_dir=output_dir,
-        num_train_epochs=3,
-        per_device_train_batch_size=8,
-        per_device_eval_batch_size=8,
-        warmup_steps=500,
-        weight_decay=0.01,
-        logging_strategy='no',
+        num_train_epochs=25,
+        per_device_train_batch_size=4,
+        per_device_eval_batch_size=4,
+        gradient_accumulation_steps=8,
+        logging_strategy='steps',
         logging_dir=logging_dir,
-        logging_steps=100,
+        logging_steps=1000,
+        save_strategy='steps',
+        save_steps=1000,
+        save_total_limit=2,
         optim="adamw_torch",
         disable_tqdm=True
     )
 
     return training_args
 
-def get_xlm_roberta_base() -> Tuple[transformers.AutoTokenizer, transformers.AutoModelForSequenceClassification]:
+def get_xlm_roberta_base(num_labels: int = 2) -> Tuple[transformers.AutoTokenizer, transformers.AutoModelForSequenceClassification]:
     tokenizer   : transformers.AutoTokenizer                        = transformers.AutoTokenizer.from_pretrained('xlm-roberta-base')
-    model       : transformers.AutoModelForSequenceClassification   = transformers.AutoModelForSequenceClassification.from_pretrained("xlm-roberta-base", num_labels=2)
+    model       : transformers.AutoModelForSequenceClassification   = transformers.AutoModelForSequenceClassification.from_pretrained("xlm-roberta-base", num_labels=num_labels)
 
     return (tokenizer, model)
 
-def get_xlm_roberta_large() -> Tuple[transformers.AutoTokenizer, transformers.AutoModelForSequenceClassification]:
+def get_xlm_roberta_large(num_labels: int = 2) -> Tuple[transformers.AutoTokenizer, transformers.AutoModelForSequenceClassification]:
     tokenizer   : transformers.AutoTokenizer                        = transformers.AutoTokenizer.from_pretrained('xlm-roberta-large')
-    model       : transformers.AutoModelForSequenceClassification   = transformers.AutoModelForSequenceClassification.from_pretrained("xlm-roberta-large", num_labels=2)
+    model       : transformers.AutoModelForSequenceClassification   = transformers.AutoModelForSequenceClassification.from_pretrained("xlm-roberta-large", num_labels=num_labels)
 
     return (tokenizer, model)
 
@@ -82,10 +84,12 @@ class Dataset(torch.utils.data.Dataset):
 
 class TransformerModel():
 
-    def __init__(self, tokenizer: transformers.PreTrainedTokenizer, model: transformers.PreTrainedModel) -> None:
+    def __init__(self, tokenizer: transformers.PreTrainedTokenizer, model: Optional[transformers.PreTrainedModel], model_saved_path: Optional[str] = None) -> None:
+        self.model_saved_path   : Optional[str]                     = model_saved_path
         self.tokenizer          : transformers.PreTrainedTokenizer  = tokenizer
-        self.model              : transformers.PreTrainedModel      = model
-        self.model_saved_path   : Optional[str]                     = None
+
+        if self.model_saved_path is None: self.model : transformers.PreTrainedModel = model
+        else: self.model = transformers.AutoModelForSequenceClassification.from_pretrained(self.model_saved_path)
 
     def train(self, train_texts: pd.Series, train_labels: pd.Series, training_args: transformers.TrainingArguments) -> transformers.Trainer:
 

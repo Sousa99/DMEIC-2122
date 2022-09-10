@@ -41,7 +41,7 @@ def entirety_roberta_analysis_dynamic(train_X: pd.DataFrame, train_Y: pd.Series,
     module_exporter.pop_current_directory()
 
     training_args           = module_transformers.get_training_args(output_dir, logging_dir)
-    tokenizer, model_base   = module_transformers.get_xlm_roberta_large()
+    tokenizer, model_base   = module_transformers.get_xlm_roberta_base()
 
     model   : module_transformers.TransformerModel  = module_transformers.TransformerModel(tokenizer, model_base)
     
