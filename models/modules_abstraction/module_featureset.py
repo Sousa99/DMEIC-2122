@@ -76,12 +76,12 @@ class FeatureSetAbstraction(abc.ABC):
                 file = open(load_path, 'rb')
                 try: 
                     self.basis_dataframe = pickle.load(file)
-                    print(f"✅ Loaded '{self.id}' basis dataframe from pickle checkpoint!")
+                    tqdm.write(f"✅ Loaded '{self.id}' basis dataframe from pickle checkpoint!")
                 except: self.static_dataframe = None
                 file.close()
         if self.basis_dataframe is None: self._develop_basis_df()
 
-        print(f"ℹ️ Attempting to save basis '{self.id}' pickle checkpoint")
+        tqdm.write(f"ℹ️ Attempting to save basis '{self.id}' pickle checkpoint")
 
         # Save back dataframe
         save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['basis']), filename_pkl)
@@ -90,7 +90,7 @@ class FeatureSetAbstraction(abc.ABC):
             pickle.dump(self.basis_dataframe, file)
             file.close()
 
-        print(f"ℹ️ Finished development of basis '{self.id}' dataframe")
+        tqdm.write(f"ℹ️ Finished development of basis '{self.id}' dataframe")
 
     def develop_static_df(self):
 
@@ -104,12 +104,12 @@ class FeatureSetAbstraction(abc.ABC):
                 file = open(load_path, 'rb')
                 try: 
                     self.static_dataframe = pickle.load(file)
-                    print(f"✅ Loaded '{self.id}' static dataframe from pickle checkpoint!")
+                    tqdm.write(f"✅ Loaded '{self.id}' static dataframe from pickle checkpoint!")
                 except: self.static_dataframme = None
                 file.close()
         if self.static_dataframe is None: self._develop_static_df()
 
-        print(f"ℹ️ Attempting to save static '{self.id}' pickle checkpoint")
+        tqdm.write(f"ℹ️ Attempting to save static '{self.id}' pickle checkpoint")
         
         # Save back dataframe
         save_path = os.path.join(module_exporter.get_checkpoint_save_directory(['static']), filename_pkl)
@@ -118,7 +118,7 @@ class FeatureSetAbstraction(abc.ABC):
             pickle.dump(self.static_dataframe, file)
             file.close()
 
-        print(f"ℹ️ Finished development of static '{self.id}' dataframe")
+        tqdm.write(f"ℹ️ Finished development of static '{self.id}' dataframe")
 
     def develop_dynamic_df(self, code: str, train_X: pd.DataFrame, train_Y: pd.Series, test_X: Optional[pd.DataFrame] = None) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
 
@@ -135,7 +135,7 @@ class FeatureSetAbstraction(abc.ABC):
             file = open(load_path, 'rb')
             try: 
                 dynamic_df_train, dynamic_df_test = pickle.load(file)
-                print(f"✅ Loaded '{self.id}' dynamic with code '{code}' dataframe from pickle checkpoint!")
+                tqdm.write(f"✅ Loaded '{self.id}' dynamic with code '{code}' dataframe from pickle checkpoint!")
             except: dynamic_df_train, dynamic_df_test = self._develop_dynamic_df(train_X, train_Y, test_X)
             file.close()
         else: dynamic_df_train, dynamic_df_test = self._develop_dynamic_df(train_X, train_Y, test_X)
