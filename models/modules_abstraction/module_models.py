@@ -87,6 +87,7 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
             'genders': [ 'All Genders' ],
             'data': [ 'V1 Simple', 'V2 Simple', 'V2 Complex' ],
             'variation_indexes': { 84: ['criterion = gini, max_depth = 2, max_features = None, min_impurity_decrease = 0.2'] },
+            'repetitions': 10,
         }
     }
 
@@ -282,7 +283,7 @@ class SequentialModel(ModelAbstraction):
             best_scorer_key, best_scorer = self.run_variation(variation)
             # Update General Scores
             variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 'Classifier Variation': best_scorer_key,
-                'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code, 'Data': variation.data_code }
+                'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code, 'Data': variation.data_code, 'Repetition': variation.repetition }
             for score in best_scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
             self.variations_results.append(variation_summary)
 

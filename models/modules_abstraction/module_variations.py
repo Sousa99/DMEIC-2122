@@ -15,12 +15,15 @@ import modules_abstraction.module_preprocessing as module_preprocessing
 class Variation():
 
     def __init__(self, variation_info: Dict[str, str]) -> None:
+
         self.load_features(variation_info['features'])
         self.load_tasks(variation_info['tasks'])
         self.load_genders(variation_info['genders'])
         self.load_data(variation_info['data'])
         self.load_classifier(variation_info['classifier'], variation_info['classifier_variations'])
         self.load_preprocessing(variation_info['preprocessing'])
+
+        self.repetition : int = variation_info['repetition']
 
     def load_features(self, key_features: str) -> None:
         self.features_code : List[str] = key_features
@@ -81,11 +84,11 @@ class Variation():
         return initialized_classifier
 
     def generate_code(self) -> str:
-        return ' - '.join([self.classifier_code_small, self.features_code, self.tasks_code, self.genders_code, self.data_code])
+        return ' - '.join([self.classifier_code_small, self.features_code, self.tasks_code, self.genders_code, self.data_code, f'Repetition {self.repetition:02d}'])
 
     def generate_code_dataset(self, replace_feature_code: Optional[str] = None) -> str:
-        if replace_feature_code is None: return ' - '.join([self.features_code, self.tasks_code, self.genders_code, self.data_code])
-        else: return ' - '.join([replace_feature_code, self.tasks_code, self.genders_code, self.data_code])
+        if replace_feature_code is None: return ' - '.join([self.features_code, self.tasks_code, self.genders_code, self.data_code, f'Repetition {self.repetition:02d}'])
+        else: return ' - '.join([replace_feature_code, self.tasks_code, self.genders_code, self.data_code, f'Repetition {self.repetition:02d}'])
 
 class VariationGenerator():
 
@@ -126,6 +129,8 @@ class VariationGenerator():
 
         if 'variation_indexes' in variation_config: variation_indexes       : Optional[Dict[int, List[str]]]    = variation_config['variation_indexes']
         else: variation_indexes                                             : Optional[Dict[int, List[str]]]    = None
+        if 'repetitions' in variation_config: variation_repetitions         : int                               = variation_config['repetitions']
+        else: variation_repetitions                                         : int                               = 1
 
         variations : List[Variation] = []
         for variation_index, (classifier_key, feature_key, task_key, gender_key, data_key, preprocessing_key) in \
@@ -136,10 +141,12 @@ class VariationGenerator():
                 classifier_variations : Optional[Dict[str, Any]] = None
                 if variation_indexes is not None:
                     classifier_variations = variation_indexes[variation_index]
-
-                variation_info = { 'tasks': task_key, 'genders': gender_key, 'data': data_key, 'features': feature_key,
-                    'classifier': classifier_key, 'classifier_variations': classifier_variations, 'preprocessing': preprocessing_key }
-                variations.append(Variation(variation_info))
+                
+                for repetition in range(0, variation_repetitions):
+                    variation_info = { 'tasks': task_key, 'genders': gender_key, 'data': data_key, 'features': feature_key,
+                        'classifier': classifier_key, 'classifier_variations': classifier_variations, 'preprocessing': preprocessing_key,
+                        'repetition': repetition }
+                    variations.append(Variation(variation_info))
 
         return variations
 
