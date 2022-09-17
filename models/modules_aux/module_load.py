@@ -55,11 +55,10 @@ class TranscriptionInfoItem():
         def convert_time_milliseconds(time: str) -> int:
             time_split : List[str] = time.split('.')
 
-            minutes = int(time_split[0])
-            seconds = int(time_split[1])
-            milliseconds = int(time_split[2])
+            seconds = int(time_split[0])
+            centiseconds = int(time_split[1])
 
-            return ((minutes * 60) + seconds) * 1000 + milliseconds
+            return seconds * 1000 + centiseconds * 10
 
         info_start = convert_time_milliseconds(line_split[2])
         info_end = convert_time_milliseconds(line_split[3])
@@ -78,8 +77,10 @@ class TranscriptionInfo():
         self.transcription_info : List[TranscriptionInfoItem] = []
 
         file = open(file_path, 'r')
-        for line in file.readlines():
-            self.transcription_info.append(TranscriptionInfoItem(line.strip()))
+        for line_index, line in enumerate(file.readlines()):
+            try: self.transcription_info.append(TranscriptionInfoItem(line.strip()))
+            except: raise Exception(f"Line at '{line_index}' from '{file_path}' could not be parsed!")
+
         file.close()
 
     def get_info_items(self) -> List[TranscriptionInfoItem]:
