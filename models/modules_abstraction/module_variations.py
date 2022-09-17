@@ -19,7 +19,7 @@ class Variation():
         self.load_tasks(variation_info['tasks'])
         self.load_genders(variation_info['genders'])
         self.load_data(variation_info['data'])
-        self.load_classifier(variation_info['classifier'])
+        self.load_classifier(variation_info['classifier'], variation_info['classifier_variations'])
         self.load_preprocessing(variation_info['preprocessing'])
 
     def load_features(self, key_features: str) -> None:
@@ -63,16 +63,22 @@ class Variation():
         self.data_code = key_data
         self.datas = temp_datas
 
-    def load_classifier(self, key_classifier: str) -> None:
+    def load_classifier(self, key_classifier: str, classifier_variations: Optional[List[str]]) -> None:
         temp_classifier = module_classifier.convert_key_to_classifier(key_classifier)
 
         self.classifier_code = key_classifier
         self.classifier_code_small = temp_classifier[0]
         self.classifier = temp_classifier[1]
 
+        self.classifier_variations = classifier_variations
+
     def load_preprocessing(self, keys_preprocessing: str) -> None:
 
         self.preprocesser = module_preprocessing.Preprocesser(keys_preprocessing)
+
+    def develop_classifier(self, categories: List[str]) -> module_classifier.Classifier:
+        initialized_classifier = self.classifier(categories, self.classifier_variations)
+        return initialized_classifier
 
     def generate_code(self) -> str:
         return ' - '.join([self.classifier_code_small, self.features_code, self.tasks_code, self.genders_code, self.data_code])
@@ -105,29 +111,34 @@ class VariationGenerator():
 
     def generate_variation_by_key(self, variation_config: Dict[str, List[str]]) -> List[Variation]:
 
-        if 'classifier' in variation_config: classifier_keys                : List[str]                 = variation_config['classifier']
-        else: classifier_keys                                               : List[str]                 = self.classifier_keys
-        if 'features' in variation_config: feature_keys                     : List[str]                 = variation_config['features']
-        else: feature_keys                                                  : List[str]                 = self.feature_keys
-        if 'tasks' in variation_config: task_keys                           : List[str]                 = variation_config['tasks']
-        else: task_keys                                                     : List[str]                 = self.task_keys
-        if 'genders' in variation_config: genders_keys                      : List[str]                 = variation_config['genders']
-        else: genders_keys                                                  : List[str]                 = self.genders_keys
-        if 'data' in variation_config: data_keys                            : List[str]                 = variation_config['data']
-        else: data_keys                                                     : List[str]                 = self.data_keys
-        if 'preprocessing' in variation_config: preprocessing_pipeline_keys : List[str]                 = variation_config['preprocessing']
-        else: preprocessing_pipeline_keys                                   : List[str]                 = self.preprocessing_pipeline_keys
+        if 'classifier' in variation_config: classifier_keys                : List[str]                         = variation_config['classifier']
+        else: classifier_keys                                               : List[str]                         = self.classifier_keys
+        if 'features' in variation_config: feature_keys                     : List[str]                         = variation_config['features']
+        else: feature_keys                                                  : List[str]                         = self.feature_keys
+        if 'tasks' in variation_config: task_keys                           : List[str]                         = variation_config['tasks']
+        else: task_keys                                                     : List[str]                         = self.task_keys
+        if 'genders' in variation_config: genders_keys                      : List[str]                         = variation_config['genders']
+        else: genders_keys                                                  : List[str]                         = self.genders_keys
+        if 'data' in variation_config: data_keys                            : List[str]                         = variation_config['data']
+        else: data_keys                                                     : List[str]                         = self.data_keys
+        if 'preprocessing' in variation_config: preprocessing_pipeline_keys : List[str]                         = variation_config['preprocessing']
+        else: preprocessing_pipeline_keys                                   : List[str]                         = self.preprocessing_pipeline_keys
 
-        if 'variation_indexes' in variation_config: variation_indexes       : Optional[Dict[int, Any]]  = variation_config['variation_indexes']
-        else: variation_indexes                                             : Optional[Dict[int, Any]]  = None
+        if 'variation_indexes' in variation_config: variation_indexes       : Optional[Dict[int, List[str]]]    = variation_config['variation_indexes']
+        else: variation_indexes                                             : Optional[Dict[int, List[str]]]    = None
 
         variations : List[Variation] = []
         for variation_index, (classifier_key, feature_key, task_key, gender_key, data_key, preprocessing_key) in \
             enumerate(itertools.product(classifier_keys, feature_keys, task_keys, genders_keys, data_keys, preprocessing_pipeline_keys)):
 
             if variation_indexes is None or variation_index in variation_indexes:
+
+                classifier_variations : Optional[Dict[str, Any]] = None
+                if variation_indexes is not None:
+                    classifier_variations = variation_indexes[variation_index]
+
                 variation_info = { 'tasks': task_key, 'genders': gender_key, 'data': data_key, 'features': feature_key,
-                    'classifier': classifier_key, 'preprocessing': preprocessing_key }
+                    'classifier': classifier_key, 'classifier_variations': classifier_variations, 'preprocessing': preprocessing_key }
                 variations.append(Variation(variation_info))
 
         return variations

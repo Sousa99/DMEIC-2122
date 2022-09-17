@@ -86,7 +86,7 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
             'tasks': [ 'Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7' ],
             'genders': [ 'All Genders' ],
             'data': [ 'V1 Simple', 'V2 Simple', 'V2 Complex' ],
-            'variation_indexes': { 5: {} },
+            'variation_indexes': { 84: ['criterion = gini, max_depth = 2, max_features = None, min_impurity_decrease = 0.2'] },
         }
     }
 
@@ -232,7 +232,7 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
         # Running the classifier itself
         print("🚀 Running model ...")
         data_splits = list(module_classifier.leave_one_out(dataframe_X))
-        classifier = variation.classifier(['Psychosis', 'Control'])
+        classifier = variation.develop_classifier(['Psychosis', 'Control'])
         for (split_index, (train_index, test_index)) in enumerate(tqdm(data_splits, desc="👉 Running classifier:", leave=False)):
             module_exporter.change_current_directory([variation.generate_code(), 'Feature Extraction', f'split {split_index}'])
             (X_train, y_train), (X_test, y_test) = feature_set.get_df_for_classification(variation, split_index, (train_index, test_index))
