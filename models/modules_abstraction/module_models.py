@@ -81,6 +81,13 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
             'genders': [ 'All Genders' ],
             'data': [ 'V2 Complex' ],
         },
+
+        'template-detail': {
+            'tasks': [ 'Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7' ],
+            'genders': [ 'All Genders' ],
+            'data': [ 'V1 Simple', 'V2 Simple', 'V2 Complex' ],
+            'variation_indexes': { 5: {} },
+        }
     }
 
     TARGET_METRIC = 'F1-Measure'
