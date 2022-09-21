@@ -126,8 +126,7 @@ def callbackWordFrequency(paths):
         file.close()
 
         # Pre processing done to the text
-        stanza_pipeline = stanza.Pipeline('pt', verbose=False)
-        processed = stanza_pipeline(text)
+        processed = STANZA_PIPELINE(text)
         processed_lemmas : List[str] = [ word.lemma for sentence in processed.sentences for word in sentence.words ]
 
         # Add to dict
@@ -169,6 +168,8 @@ TYPE_PSYCHOSIS = 'Psychosis'
 TYPE_BIPOLAR = 'Control'
 TYPES = [TYPE_CONTROL, TYPE_PSYCHOSIS]
 WORD_FREQUENCIES_LARGEST = 10
+
+STANZA_PIPELINE = stanza.Pipeline('pt', verbose=False)
 
 # ======================================================================================
 
