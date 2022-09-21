@@ -216,17 +216,17 @@ sns.set_theme(palette="deep")
 plt.clf()
 try: sns.displot(data=task_df, x="duration", col="task", hue='type', multiple='dodge', kde=True, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
 except: sns.displot(data=task_df, x="duration", col="task", hue='type', multiple='dodge', kde=False, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
-plt.savefig(args.save + ' - task duration by type.png')
+plt.savefig(args.save + ' - task duration by type.pdf')
 
 plt.clf()
 try: sns.displot(data=task_df, x="duration", row="gender", col="task", hue='type', multiple='dodge', kde=True, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
 except: sns.displot(data=task_df, x="duration", row="gender", col="task", hue='type', multiple='dodge', kde=False, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
-plt.savefig(args.save + ' - task duration by gender.png')
+plt.savefig(args.save + ' - task duration by gender.pdf')
 
 plt.clf()
 try: sns.displot(data=task_df, x="duration", row="schooling", col="task", hue='type', multiple='dodge', kde=True, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
 except: sns.displot(data=task_df, x="duration", row="schooling", col="task", hue='type', multiple='dodge', kde=False, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
-plt.savefig(args.save + ' - task duration by schooling.png')
+plt.savefig(args.save + ' - task duration by schooling.pdf')
 
 # ================================================================== WORD COUNT ==================================================================
 
@@ -236,7 +236,7 @@ sns.set_theme(palette="deep")
 plt.clf()
 try: sns.displot(data=task_df, x="word count", col="task", hue='type', multiple='dodge', kde=True, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
 except: sns.displot(data=task_df, x="word count", col="task", hue='type', multiple='dodge', kde=False, facet_kws=dict(sharex=False, sharey=False), common_bins=True)
-plt.savefig(args.save + ' - word count by type.png')
+plt.savefig(args.save + ' - word count by type.pdf')
 
 # ================================================================== WORD FREQUENCIES ==================================================================
 
@@ -272,4 +272,4 @@ for row_axes, type in zip(axes, TYPES):
         subplot = sns.barplot(data=sub_task_df, ax=axis, x="word", y="count")
         for item in subplot.get_xticklabels(): item.set_rotation(37.5)
 fig.tight_layout(pad=3.0)
-plt.savefig(args.save + ' - word frequencies by task and type.png')
+plt.savefig(args.save + ' - word frequencies by task and type.pdf')

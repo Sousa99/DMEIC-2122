@@ -115,7 +115,7 @@ for plan in EXECUTION_PLANS:
         g = sns.boxplot(y=metric, x=plan['key_to_study'], data=filtered_dataframe, saturation=0.65)
         adjust_box_widths(g, 0.9)
         plt.tight_layout()
-        plt.savefig(os.path.join(EXPORT_PATH, f"{plan['id']} - {metric} - results.png"))
+        plt.savefig(os.path.join(EXPORT_PATH, f"{plan['id']} - {metric} - results.pdf"))
 
         plt.clf()
         sns.set(font_scale = 1)
@@ -123,7 +123,7 @@ for plan in EXECUTION_PLANS:
         g = sns.boxplot(x='Tasks', y=metric, hue=plan['key_to_study'], data=filtered_dataframe, saturation=0.65)
         adjust_box_widths(g, 0.9)
         plt.tight_layout()
-        plt.savefig(os.path.join(EXPORT_PATH, f"{plan['id']} - {metric} - results by task.png"))
+        plt.savefig(os.path.join(EXPORT_PATH, f"{plan['id']} - {metric} - results by task.pdf"))
 
         plt.clf()
         sns.set(font_scale = 1)
@@ -131,9 +131,9 @@ for plan in EXECUTION_PLANS:
         g = sns.boxplot(x='Classifier', y=metric, hue=plan['key_to_study'], data=filtered_dataframe, saturation=0.55)
         adjust_box_widths(g, 0.9)
         plt.tight_layout()
-        plt.savefig(os.path.join(EXPORT_PATH, f"{plan['id']} - {metric} - results by classifier.png"))
+        plt.savefig(os.path.join(EXPORT_PATH, f"{plan['id']} - {metric} - results by classifier.pdf"))
 
         #plt.clf()
         #sns.set(font_scale = 1)
         #g = sns.catplot(x='Tasks', y=metric, hue=plan['key_to_study'], row='Classifier', kind="box", data=filtered_dataframe, saturation=0.65)
-        #plt.savefig(os.path.join(EXPORT_PATH, f"{plan['id']} - {metric} - results by classifier and task.png"))
+        #plt.savefig(os.path.join(EXPORT_PATH, f"{plan['id']} - {metric} - results by classifier and task.pdf"))
