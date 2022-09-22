@@ -8,9 +8,9 @@ CONTROL_RECORDS="../data/recordings/controls/"
 PSYCHOSIS_RECORDS="../data/recordings/psychosis/"
 BIPOLARS_RECORDS="../data/recordings/bipolars/"
 
-CONTROL_TRANSCRIPTIONS="../data/recordings_transcribed_results/controls/"
-PSYCHOSIS_TRANSCRIPTIONS="../data/recordings_transcribed_results/psychosis/"
-BIPOLARS_TRANSCRIPTIONS="../data/recordings_transcribed_results/bipolars/"
+CONTROL_TRANSCRIPTIONS="../data/fixed_transcriptions/controls/"
+PSYCHOSIS_TRANSCRIPTIONS="../data/fixed_transcriptions/psychosis/"
+BIPOLARS_TRANSCRIPTIONS="../data/fixed_transcriptions/bipolars/"
 
 NOW=$(date +"%Y.%m.%d %H.%M.%S")
 DIR="./records/${NOW}/"
