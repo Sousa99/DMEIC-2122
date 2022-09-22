@@ -14,11 +14,8 @@ PSYCHOSIS_AUDIOS="../data/recordings_converted/psychosis/"
 BIPOLAR_AUDIOS="../data/recordings_converted/bipolars/"
 
 CONTROL_TRANSCRIPTIONS="../data/fixed_transcriptions/controls/"
-CONTROL_TRANSCRIPTIONS="../data/recordings_transcribed_results/controls/"
 PSYCHOSIS_TRANSCRIPTIONS="../data/fixed_transcriptions/psychosis/"
-PSYCHOSIS_TRANSCRIPTIONS="../data/recordings_transcribed_results/psychosis/"
 BIPOLAR_TRANSCRIPTIONS="../data/fixed_transcriptions/bipolars/"
-BIPOLAR_TRANSCRIPTIONS="../data/recordings_transcribed_results/bipolars/"
 
 PARALLELIZATION_DIRECTORY="${CURRENT_DIR}/tmp_parallelization/${NOW}/scripts/"
 mkdir -p "${PARALLELIZATION_DIRECTORY}"
