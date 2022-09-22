@@ -81,6 +81,15 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
             'genders': [ 'All Genders' ],
             'data': [ 'V2 Complex' ],
         },
+
+        'template-detail': {
+            'tasks': [ 'Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7' ],
+            'genders': [ 'All Genders' ],
+            'data': [ 'V1 Simple', 'V2 Simple', 'V2 Complex' ],
+            'variation_indexes': { 84: ['criterion = gini, max_depth = 2, max_features = None, min_impurity_decrease = 0.2'] },
+            'repetitions': 10,
+            'study_features_importance': True,
+        }
     }
 
     TARGET_METRIC = 'F1-Measure'
@@ -206,7 +215,7 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
             profiler = module_profiling.DatasetProfiling(feature_df, target_df)
             profiler.make_profiling()
 
-    def run_variation(self, variation: module_variations.Variation) -> Tuple[str, module_scorer.Scorer]:
+    def run_variation(self, variation: module_variations.Variation) -> List[Tuple[str, module_scorer.Scorer, module_variations.Variation]]:
 
         print("🚀 Running variation '{0}'".format(variation.generate_code()))
         feature_sets_filter = list(filter(lambda feature_set: feature_set.id == variation.features_code, self.feature_sets))
@@ -216,32 +225,49 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
         module_exporter.change_current_directory([variation.generate_code(), 'Feature Extraction'])
         dataframe_X, dataframe_Y = feature_set.get_full_df(variation)
 
-        # Do profiling of current dataset
-        module_exporter.change_current_directory([variation.generate_code(), 'Data Profiling'])
-        print("🚀 Running profiling ...")
-        profiler = module_profiling.DatasetProfiling(dataframe_X, dataframe_Y, fast=True)
-        profiler.make_profiling()
+        # Generate Sub Variations if required
+        variations_to_run : List[module_variations.Variation] = [ variation ]
+        if variation.study_features_importance:
+            variations_to_run = variation.generate_sub_variations(dataframe_X.columns)
 
-        # Running the classifier itself
-        print("🚀 Running model ...")
-        data_splits = list(module_classifier.leave_one_out(dataframe_X))
-        classifier = variation.classifier(['Psychosis', 'Control'])
-        for (split_index, (train_index, test_index)) in enumerate(tqdm(data_splits, desc="👉 Running classifier:", leave=False)):
-            module_exporter.change_current_directory([variation.generate_code(), 'Feature Extraction', f'split {split_index}'])
-            (X_train, y_train), (X_test, y_test) = feature_set.get_df_for_classification(variation, split_index, (train_index, test_index))
-            classifier.process_iteration(X_train, y_train, X_test, y_test)
+        # Return value
+        best_scorers : List[Tuple[str, module_scorer.Scorer, module_variations.Variation]] = []
 
-        # Export Classifier Variations Results
-        module_exporter.change_current_directory([variation.generate_code(), 'Classifier'])
-        variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 
-            'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code, 'Data': variation.data_code }
-        classifier.export_variations_results(variation_summary, self.TARGET_METRIC)
-        # Export Best Classifier Variation Results
-        _, best_scorer = classifier.get_best_scorer(self.TARGET_METRIC)
-        best_scorer.export_results('results')
+        for variation_to_run in variations_to_run:
+
+            if variation.study_features_importance:
+                print("🚀 Running sub variation '{0}'".format(variation_to_run.generate_code()))
+
+            # Do profiling of current dataset
+            module_exporter.change_current_directory([variation_to_run.generate_code(), 'Data Profiling'])
+            print("🚀 Running profiling ...")
+            profiler = module_profiling.DatasetProfiling(dataframe_X, dataframe_Y, fast=True)
+            profiler.make_profiling()
+
+            # Running the classifier itself
+            print("🚀 Running model ...")
+            data_splits = list(module_classifier.leave_one_out(dataframe_X))
+            classifier = variation_to_run.develop_classifier(['Psychosis', 'Control'])
+            for (split_index, (train_index, test_index)) in enumerate(tqdm(data_splits, desc="👉 Running classifier:", leave=False)):
+                module_exporter.change_current_directory([variation_to_run.generate_code(), 'Feature Extraction', f'split {split_index}'])
+                (X_train, y_train), (X_test, y_test) = feature_set.get_df_for_classification(variation_to_run, split_index, (train_index, test_index))
+
+                if variation_to_run.study_features_importance: X_test = variation_to_run.random_for_feature_importance(X_train, X_test)
+                classifier.process_iteration(X_train, y_train, X_test, y_test)
+
+            # Export Classifier Variations Results
+            module_exporter.change_current_directory([variation_to_run.generate_code(), 'Classifier'])
+            variation_summary = { 'Key': variation_to_run.generate_code(), 'Classifier': variation_to_run.classifier_code, 
+                'Features': variation_to_run.features_code, 'Tasks': variation_to_run.tasks_code, 'Genders': variation_to_run.genders_code, 'Data': variation_to_run.data_code,
+                'Repetition': str(variation_to_run.repetition), 'Feature Importance': str(variation_to_run.study_feature_importance) }
+            classifier.export_variations_results(variation_summary, self.TARGET_METRIC)
+            # Export Best Classifier Variation Results
+            best_scorer_key, best_scorer = classifier.get_best_scorer(self.TARGET_METRIC)
+            best_scorer.export_results('results')
+            best_scorers.append((best_scorer_key, best_scorer, variation_to_run))
 
         print("✅ Completed variation")
-        return classifier.get_best_scorer(self.TARGET_METRIC)
+        return best_scorers
 
     def export_final_results(self):
 
@@ -272,12 +298,13 @@ class SequentialModel(ModelAbstraction):
 
         for variation in self.variations_to_test:
 
-            best_scorer_key, best_scorer = self.run_variation(variation)
-            # Update General Scores
-            variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 'Classifier Variation': best_scorer_key,
-                'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code, 'Data': variation.data_code }
-            for score in best_scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
-            self.variations_results.append(variation_summary)
+            for best_scorer_key, best_scorer, variation_ran in self.run_variation(variation):
+                # Update General Scores
+                variation_summary = { 'Key': variation_ran.generate_code(), 'Classifier': variation_ran.classifier_code, 'Classifier Variation': best_scorer_key,
+                    'Features': variation_ran.features_code, 'Tasks': variation_ran.tasks_code, 'Genders': variation_ran.genders_code, 'Data': variation_ran.data_code,
+                    'Repetition': str(variation_ran.repetition), 'Feature Importance': str(variation_ran.study_feature_importance) }
+                for score in best_scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
+                self.variations_results.append(variation_summary)
 
     def execute(self, feature_sets: Optional[List[module_featureset.FeatureSetAbstraction]] = None):
 
@@ -344,16 +371,19 @@ class ParallelModel(ModelAbstraction):
             print(f"✅ Variation has already been executed since file '{full_path}' already exists!")
             return
         
+        variations_summary : List[Dict[str, Any]] = []
         # Run Variation
-        best_scorer_key, best_scorer = self.run_variation(variation)
-        # Update General Scores
-        variation_summary = { 'Key': variation.generate_code(), 'Classifier': variation.classifier_code, 'Classifier Variation': best_scorer_key,
-            'Features': variation.features_code, 'Tasks': variation.tasks_code, 'Genders': variation.genders_code, 'Data': variation.data_code }
-        for score in best_scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
+        for best_scorer_key, best_scorer, variation_ran in self.run_variation(variation):
+            # Update General Scores
+            variation_summary = { 'Key': variation_ran.generate_code(), 'Classifier': variation_ran.classifier_code, 'Classifier Variation': best_scorer_key,
+                'Features': variation_ran.features_code, 'Tasks': variation_ran.tasks_code, 'Genders': variation_ran.genders_code, 'Data': variation_ran.data_code,
+                'Repetition': str(variation_ran.repetition), 'Feature Importance': str(variation_ran.study_feature_importance) }
+            for score in best_scorer.export_metrics(module_scorer.ScorerSet.Test): variation_summary[score['name']] = score['score']
+            variations_summary.append(variation_summary)
 
         # Save Temporarily Variation Summary
         file = open(full_path, 'wb')
-        pickle.dump(variation_summary, file)
+        pickle.dump(variations_summary, file)
         file.close()
 
     def load_variations_results(self):
@@ -367,10 +397,10 @@ class ParallelModel(ModelAbstraction):
                 exit(f"🚨 File for variation '{variation.generate_code()}' not found in '{directory_path}'")
 
             file = open(full_path, 'rb')
-            variation_summary = pickle.load(file)
+            variations_summary = pickle.load(file)
             file.close()
             # Save back variation summary
-            self.variations_results.append(variation_summary)
+            self.variations_results.extend(variations_summary)
 
     def execute(self, feature_sets: Optional[List[module_featureset.FeatureSetAbstraction]] = None):
 

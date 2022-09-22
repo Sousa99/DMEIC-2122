@@ -75,11 +75,10 @@ def parse_ctm_file(file_path: str):
     def convert_time_milliseconds(time: str) -> int:
         time_split : List[str] = time.split('.')
 
-        minutes = int(time_split[0])
-        seconds = int(time_split[1])
-        milliseconds = int(time_split[2])
+        seconds = int(time_split[0])
+        centiseconds = int(time_split[1])
 
-        return ((minutes * 60) + seconds) * 1000 + milliseconds
+        return seconds * 1000 + centiseconds * 10
 
     def convert_line_to_info(line: str):
         line_splitted = line.split()
@@ -175,4 +174,4 @@ sns.set_theme(palette="deep")
 plt.clf()
 sns.boxplot(data=dataframe_similarities)
 sns.swarmplot(data=dataframe_similarities, color=".25")
-plt.savefig(args.save + ' - distances by microphone.png')
+plt.savefig(args.save + ' - distances by microphone.pdf')

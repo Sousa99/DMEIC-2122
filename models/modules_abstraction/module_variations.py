@@ -1,8 +1,10 @@
+import copy
+import random
 import itertools
 
 import pandas as pd
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing     import Any, Dict, List, Optional, Tuple
 
 # Local Modules
 import modules_abstraction.module_classifier    as module_classifier
@@ -15,12 +17,17 @@ import modules_abstraction.module_preprocessing as module_preprocessing
 class Variation():
 
     def __init__(self, variation_info: Dict[str, str]) -> None:
+
         self.load_features(variation_info['features'])
         self.load_tasks(variation_info['tasks'])
         self.load_genders(variation_info['genders'])
         self.load_data(variation_info['data'])
-        self.load_classifier(variation_info['classifier'])
+        self.load_classifier(variation_info['classifier'], variation_info['classifier_variations'])
         self.load_preprocessing(variation_info['preprocessing'])
+
+        self.repetition : int = variation_info['repetition']
+        self.study_features_importance : bool = variation_info['study_features_importance']
+        self.study_feature_importance : Optional[str] = None
 
     def load_features(self, key_features: str) -> None:
         self.features_code : List[str] = key_features
@@ -63,23 +70,71 @@ class Variation():
         self.data_code = key_data
         self.datas = temp_datas
 
-    def load_classifier(self, key_classifier: str) -> None:
+    def load_classifier(self, key_classifier: str, classifier_variations: Optional[List[str]]) -> None:
         temp_classifier = module_classifier.convert_key_to_classifier(key_classifier)
 
         self.classifier_code = key_classifier
         self.classifier_code_small = temp_classifier[0]
         self.classifier = temp_classifier[1]
 
+        self.classifier_variations = classifier_variations
+
     def load_preprocessing(self, keys_preprocessing: str) -> None:
 
         self.preprocesser = module_preprocessing.Preprocesser(keys_preprocessing)
 
+    def develop_classifier(self, categories: List[str]) -> module_classifier.Classifier:
+        initialized_classifier = self.classifier(categories, self.classifier_variations)
+        return initialized_classifier
+
     def generate_code(self) -> str:
-        return ' - '.join([self.classifier_code_small, self.features_code, self.tasks_code, self.genders_code, self.data_code])
+        feature_importance_str : str = "No Feature Importance"
+        if self.study_features_importance and self.study_feature_importance is None: feature_importance_str : str = f"Feature Importance"
+        if self.study_features_importance and self.study_feature_importance is not None:
+            feature_standardized : str = self.study_feature_importance.replace("/", "")
+            feature_importance_str : str = f"{feature_standardized} Feature Importance"
+
+        return ' - '.join([self.classifier_code_small, self.features_code, self.tasks_code, self.genders_code, self.data_code, f'Repetition {self.repetition:02d}', feature_importance_str])
 
     def generate_code_dataset(self, replace_feature_code: Optional[str] = None) -> str:
-        if replace_feature_code is None: return ' - '.join([self.features_code, self.tasks_code, self.genders_code, self.data_code])
-        else: return ' - '.join([replace_feature_code, self.tasks_code, self.genders_code, self.data_code])
+        feature_importance_str : str = "No Feature Importance"
+        if self.study_features_importance and self.study_feature_importance is None: feature_importance_str : str = f"Feature Importance"
+        if self.study_features_importance and self.study_feature_importance is not None:
+            feature_standardized : str = self.study_feature_importance.replace("/", "")
+            feature_importance_str : str = f"{feature_standardized} Feature Importance"
+
+        if replace_feature_code is None: return ' - '.join([self.features_code, self.tasks_code, self.genders_code, self.data_code, f'Repetition {self.repetition:02d}', feature_importance_str])
+        else: return ' - '.join([replace_feature_code, self.tasks_code, self.genders_code, self.data_code, f'Repetition {self.repetition:02d}', feature_importance_str])
+
+    def generate_sub_variations(self, features: List[str]) -> List['Variation']:
+
+        sub_variations : List[Variation] = []
+        for feature in features:
+            sub_variation : Variation = copy.deepcopy(self)
+            sub_variation.study_feature_importance = feature
+
+            sub_variations.append(sub_variation)
+
+        return sub_variations
+
+    def random_for_feature_importance(self, X_train: pd.DataFrame, X_test: pd.DataFrame) -> pd.DataFrame:
+
+        column_sample : pd.Series = X_train[self.study_feature_importance]
+        column_dtype : Any = column_sample.dtype
+
+        if column_dtype == int:
+            minimum : int = int(column_sample.min())
+            maximum : int = int(column_sample.max())
+            X_test[self.study_feature_importance] = X_test[self.study_feature_importance].apply(lambda _: random.randint(minimum, maximum))
+        elif column_dtype == float:
+            minimum : float = float(column_sample.min())
+            maximum : float = float(column_sample.max())
+            X_test[self.study_feature_importance] = X_test[self.study_feature_importance].apply(lambda _: random.uniform(minimum, maximum))
+        else:
+            possible_values : List[Any] = column_sample.unique().tolist()
+            X_test[self.study_feature_importance] = X_test[self.study_feature_importance].apply(lambda _: random.choice(possible_values))
+
+        return X_test
 
 class VariationGenerator():
 
@@ -105,26 +160,47 @@ class VariationGenerator():
 
     def generate_variation_by_key(self, variation_config: Dict[str, List[str]]) -> List[Variation]:
 
-        if 'classifier' in variation_config: classifier_keys                : List[str] = variation_config['classifier']
-        else: classifier_keys                                               : List[str] = self.classifier_keys
-        if 'features' in variation_config: feature_keys                     : List[str] = variation_config['features']
-        else: feature_keys                                                  : List[str] = self.feature_keys
-        if 'tasks' in variation_config: task_keys                           : List[str] = variation_config['tasks']
-        else: task_keys                                                     : List[str] = self.task_keys
-        if 'genders' in variation_config: genders_keys                      : List[str] = variation_config['genders']
-        else: genders_keys                                                  : List[str] = self.genders_keys
-        if 'data' in variation_config: data_keys                            : List[str] = variation_config['data']
-        else: data_keys                                                     : List[str] = self.data_keys
-        if 'preprocessing' in variation_config: preprocessing_pipeline_keys : List[str] = variation_config['preprocessing']
-        else: preprocessing_pipeline_keys                                   : List[str] = self.preprocessing_pipeline_keys
+        if 'classifier' in variation_config: classifier_keys                            : List[str]                         = variation_config['classifier']
+        else: classifier_keys                                                           : List[str]                         = self.classifier_keys
+        if 'features' in variation_config: feature_keys                                 : List[str]                         = variation_config['features']
+        else: feature_keys                                                              : List[str]                         = self.feature_keys
+        if 'tasks' in variation_config: task_keys                                       : List[str]                         = variation_config['tasks']
+        else: task_keys                                                                 : List[str]                         = self.task_keys
+        if 'genders' in variation_config: genders_keys                                  : List[str]                         = variation_config['genders']
+        else: genders_keys                                                              : List[str]                         = self.genders_keys
+        if 'data' in variation_config: data_keys                                        : List[str]                         = variation_config['data']
+        else: data_keys                                                                 : List[str]                         = self.data_keys
+        if 'preprocessing' in variation_config: preprocessing_pipeline_keys             : List[str]                         = variation_config['preprocessing']
+        else: preprocessing_pipeline_keys                                               : List[str]                         = self.preprocessing_pipeline_keys
+
+        if 'variation_indexes' in variation_config: variation_indexes                   : Optional[Dict[int, List[str]]]    = variation_config['variation_indexes']
+        else: variation_indexes                                                         : Optional[Dict[int, List[str]]]    = None
+        if 'repetitions' in variation_config: variation_repetitions                     : int                               = variation_config['repetitions']
+        else: variation_repetitions                                                     : int                               = 1
+        if 'study_features_importance' in variation_config: study_features_importance   : int                               = variation_config['study_features_importance']
+        else: study_features_importance                                                 : int                               = False
 
         variations : List[Variation] = []
-        for (classifier_key, feature_key, task_key, gender_key, data_key, preprocessing_key) in \
-            itertools.product(classifier_keys, feature_keys, task_keys, genders_keys, data_keys, preprocessing_pipeline_keys):
+        for variation_index, (classifier_key, feature_key, task_key, gender_key, data_key, preprocessing_key) in \
+            enumerate(itertools.product(classifier_keys, feature_keys, task_keys, genders_keys, data_keys, preprocessing_pipeline_keys)):
 
-            variation_info = { 'tasks': task_key, 'genders': gender_key, 'data': data_key, 'features': feature_key,
-                'classifier': classifier_key, 'preprocessing': preprocessing_key }
-            variations.append(Variation(variation_info))
+            if variation_indexes is None or variation_index in variation_indexes:
+
+                classifier_variations : Optional[Dict[str, Any]] = None
+                if variation_indexes is not None:
+                    classifier_variations = variation_indexes[variation_index]
+                
+                for repetition in range(0, variation_repetitions):
+                    variation_info = { 'tasks': task_key, 'genders': gender_key, 'data': data_key, 'features': feature_key,
+                        'classifier': classifier_key, 'classifier_variations': classifier_variations, 'preprocessing': preprocessing_key,
+                        'repetition': repetition, 'study_features_importance': False }
+                    variations.append(Variation(variation_info))
+
+                if study_features_importance:
+                    variation_info = { 'tasks': task_key, 'genders': gender_key, 'data': data_key, 'features': feature_key,
+                        'classifier': classifier_key, 'classifier_variations': classifier_variations, 'preprocessing': preprocessing_key,
+                        'repetition': 0, 'study_features_importance': True }
+                    variations.append(Variation(variation_info))
 
         return variations
 

@@ -58,7 +58,7 @@ VARIATIONS_MLP_PRESET = { }
 
 # =================================== PRIVATE METHODS ===================================
 
-def develop_parameters_variations(keys: List[str], values: List[List[Any]]) -> Dict[str, Dict[str, Any]]:
+def develop_parameters_variations(keys: List[str], values: List[List[Any]], filter_variations: Optional[List[str]]) -> Dict[str, Dict[str, Any]]:
 
     variations : Dict[str, Dict[str, Any]] = {}
     permutations_values : List[Tuple[Any, ...]] = list(itertools.product(*values))
@@ -73,7 +73,9 @@ def develop_parameters_variations(keys: List[str], values: List[List[Any]]) -> D
             variation[param_key] = param_value
         # Store back into global variations
         variation_key = ", ".join(variation_keys)
-        variations[variation_key] = variation
+
+        if filter_variations is None or variation_key in filter_variations:
+            variations[variation_key] = variation
 
     return variations
 
@@ -87,6 +89,9 @@ class Classifier(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     @abc.abstractmethod
     def variations(self) -> Dict[str, Dict[str, Any]]: exit("🚨 Property 'variations' not defined")
+    @abc.abstractproperty
+    @abc.abstractmethod
+    def filter_variations(self) -> List[str]: exit("🚨 Property 'filter_variations' not defined")
 
     @abc.abstractmethod
     def compute_variations(self) -> Dict[str, Dict[str, Any]]:
@@ -145,15 +150,19 @@ class NaiveBayes(Classifier):
 
     scorers = {}
     variations = VARIATIONS_NB_PRESET
-    def __init__(self, categories: List[str]):
+    filter_variations = None
+
+    def __init__(self, categories: List[str], filter_variations: Optional[List[str]]):
+        self.filter_variations = filter_variations
         self.variations.update(self.compute_variations())
+
         for variation_key in self.variations:
             self.scorers[variation_key] = module_scorer.Scorer(categories)
 
     def compute_variations(self) -> Dict[str, Dict[str, Any]]:
         keys = [ 'algorithm' ]
         values = [ VARIATIONS_NB_ALGORITHM ]
-        return develop_parameters_variations(keys, values)
+        return develop_parameters_variations(keys, values, self.filter_variations)
 
     def make_prediction(self, params: Dict[str, Dict[str, Any]], train_X: pd.DataFrame, train_Y: pd.Series, test_X: pd.DataFrame) -> Tuple[pd.Series]:
         # Remove params not fed to classifier
@@ -181,15 +190,19 @@ class DecisionTree(Classifier):
 
     scorers = {}
     variations = VARIATIONS_DT_PRESET
-    def __init__(self, categories: List[str]):
+    filter_variations = None
+
+    def __init__(self, categories: List[str], filter_variations: Optional[List[str]]):
+        self.filter_variations = filter_variations
         self.variations.update(self.compute_variations())
+
         for variation_key in self.variations:
             self.scorers[variation_key] = module_scorer.Scorer(categories)
 
     def compute_variations(self) -> Dict[str, Dict[str, Any]]:
         keys = [ 'criterion', 'max_depth', 'max_features', 'min_impurity_decrease' ]
         values = [ VARIATIONS_DT_CRITERION, VARIATIONS_DT_MAX_DEPTH, VARIATIONS_DT_MAX_FEATURES, VARIATIONS_DT_MIN_IMPURITY_DECREASE ]
-        return develop_parameters_variations(keys, values)
+        return develop_parameters_variations(keys, values, self.filter_variations)
 
     def make_prediction(self, params: Dict[str, Dict[str, Any]], train_X: pd.DataFrame, train_Y: pd.Series, test_X: pd.DataFrame) -> Tuple[pd.Series]:
         tree_classifier = DecisionTreeClassifier(**params)
@@ -224,15 +237,19 @@ class SupportVectorMachine(Classifier):
 
     scorers = {}
     variations = VARIATIONS_SVM_PRESET
-    def __init__(self, categories: List[str]):
+    filter_variations = None
+
+    def __init__(self, categories: List[str], filter_variations: Optional[List[str]]):
+        self.filter_variations = filter_variations
         self.variations.update(self.compute_variations())
+
         for variation_key in self.variations:
             self.scorers[variation_key] = module_scorer.Scorer(categories)
 
     def compute_variations(self) -> Dict[str, Dict[str, Any]]:
         keys = [ 'C', 'kernel' ]
         values = [ VARIATIONS_SVM_C, VARIATIONS_SVM_KERNEL ]
-        return develop_parameters_variations(keys, values)
+        return develop_parameters_variations(keys, values, self.filter_variations)
 
     def make_prediction(self, params: Dict[str, Dict[str, Any]], train_X: pd.DataFrame, train_Y: pd.Series, test_X: pd.DataFrame) -> Tuple[pd.Series]:
         svm_classifier = SVC(**params)
@@ -253,15 +270,19 @@ class RandomForest(Classifier):
 
     scorers = {}
     variations = VARIATIONS_RF_PRESET
-    def __init__(self, categories: List[str]):
+    filter_variations = None
+
+    def __init__(self, categories: List[str], filter_variations: Optional[List[str]]):
+        self.filter_variations = filter_variations
         self.variations.update(self.compute_variations())
+
         for variation_key in self.variations:
             self.scorers[variation_key] = module_scorer.Scorer(categories)
 
     def compute_variations(self) -> Dict[str, Dict[str, Any]]:
         keys = [ 'n_estimators', 'criterion', 'max_depth', 'max_features', 'min_impurity_decrease' ]
         values = [ VARIATIONS_RF_ESTIMATORS, VARIATIONS_RF_CRITERION, VARIATIONS_RF_MAX_DEPTH, VARIATIONS_RF_MAX_FEATURES, VARIATIONS_RF_MIN_IMPURITY_DECREASE ]
-        return develop_parameters_variations(keys, values)
+        return develop_parameters_variations(keys, values, self.filter_variations)
 
     def make_prediction(self, params: Dict[str, Dict[str, Any]], train_X: pd.DataFrame, train_Y: pd.Series, test_X: pd.DataFrame) -> Tuple[pd.Series]:
         forest_classifier = RandomForestClassifier(**params)
@@ -301,15 +322,19 @@ class MultiLayerPerceptron(Classifier):
 
     scorers = {}
     variations = VARIATIONS_RF_PRESET
-    def __init__(self, categories: List[str]):
+    filter_variations = None
+
+    def __init__(self, categories: List[str], filter_variations: Optional[List[str]]):
+        self.filter_variations = filter_variations
         self.variations.update(self.compute_variations())
+        
         for variation_key in self.variations:
             self.scorers[variation_key] = module_scorer.Scorer(categories)
 
     def compute_variations(self) -> Dict[str, Dict[str, Any]]:
         keys = [ 'hidden_layer_sizes', 'activation', 'learning_rate_init', 'learning_rate', 'max_iter' ]
         values = [ VARIATIONS_MLP_HIDDEN_LAYERS, VARIATIONS_MLP_ACTIVATION, VARIATIONS_MLP_LEARNING_RATE_INIT, VARIATIONS_MLP_LEARNING_RATE, VARIATIONS_MLP_MAX_ITERATIONS ]
-        return develop_parameters_variations(keys, values)
+        return develop_parameters_variations(keys, values, self.filter_variations)
 
     def make_prediction(self, params: Dict[str, Dict[str, Any]], train_X: pd.DataFrame, train_Y: pd.Series, test_X: pd.DataFrame) -> Tuple[pd.Series]:
         mlp_classifier = MLPClassifier(**params)
@@ -356,7 +381,7 @@ def convert_key_to_classifier(key: str) -> Optional[Tuple[str, Type[Classifier]]
     elif key == 'Decision Tree':            return ('DT', DecisionTree)
     elif key == 'Support Vector Machine':   return ('SVM', SupportVectorMachine)
     elif key == 'Random Forest':            return ('RF', RandomForest)
-    elif key == 'Multi-Layer Perceptron':            return ('MLP', MultiLayerPerceptron)
+    elif key == 'Multi-Layer Perceptron':   return ('MLP', MultiLayerPerceptron)
     else: return None
 
 def leave_one_out(data: pd.DataFrame) -> Generator[tuple, None, None]:
