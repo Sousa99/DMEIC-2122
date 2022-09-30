@@ -20,7 +20,7 @@ BIPOLAR_TRANSCRIPTIONS="../data/fixed_transcriptions/bipolars/"
 PARALLELIZATION_DIRECTORY="${CURRENT_DIR}/tmp_parallelization/${NOW}/scripts/"
 mkdir -p "${PARALLELIZATION_DIRECTORY}"
 
-VARIATION_KEY="simple"
+VARIATION_KEY="second-detail"
 
 python3 model_second.py                                                                                                                     \
     -info_controls=${CONTROL_INFO}              -info_psychosis=${PSYCHOSIS_INFO}               -info_bipolars=${BIPOLAR_INFO}              \

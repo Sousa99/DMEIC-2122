@@ -14,7 +14,7 @@ CONTROL_TRANSCRIPTIONS="../data/fixed_transcriptions/controls/"
 PSYCHOSIS_TRANSCRIPTIONS="../data/fixed_transcriptions/psychosis/"
 BIPOLAR_TRANSCRIPTIONS="../data/fixed_transcriptions/bipolars/"
 
-VARIATION_KEY="simple"
+VARIATION_KEY="second-detail"
 
 TEMP_CONDOR_DIRECTORY="./tmp_condor/${NOW_WITHOUT_SPACE}"
 TEMP_CONDOR_LOGS_DIRECTORY="./tmp_condor/${NOW_WITHOUT_SPACE}/logs/"
