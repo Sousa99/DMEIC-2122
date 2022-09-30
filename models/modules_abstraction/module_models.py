@@ -82,17 +82,25 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
             'data': [ 'V2 Complex' ],
         },
 
-        'template-detail': {
+        'second-detail': {
             'tasks': [ 'Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7' ],
             'genders': [ 'All Genders' ],
             'data': [ 'V1 Simple', 'V2 Simple', 'V2 Complex' ],
-            'variation_indexes': { 84: ['criterion = gini, max_depth = 2, max_features = None, min_impurity_decrease = 0.2'] },
+            'variation_indexes': {
+                233: ['n_estimators = 150, criterion = gini, max_depth = 4, max_features = auto, min_impurity_decrease = 0'],
+                236: ['n_estimators = 100, criterion = gini, max_depth = 1, max_features = None, min_impurity_decrease = 0'],
+                176: ['C = 0.5, kernel = linear'],
+                242: ['n_estimators = 150, criterion = entropy, max_depth = 32, max_features = auto, min_impurity_decrease = 0'],
+                245: ['n_estimators = 50, criterion = entropy, max_depth = 128, max_features = None, min_impurity_decrease = 0'],
+                248: ['n_estimators = 10, criterion = entropy, max_depth = 4, max_features = log2, min_impurity_decrease = 0'],
+                251: ['n_estimators = 10, criterion = gini, max_depth = 16, max_features = sqrt, min_impurity_decrease = 0'] 
+                },
             'repetitions': 10,
             'study_features_importance': True,
         }
     }
 
-    TARGET_METRIC = 'F1-Measure'
+    TARGET_METRIC = 'UAR'
 
     GENERAL_DROP_COLUMNS = ['Subject', 'Task']
 

@@ -213,7 +213,8 @@ class VariationGenerator():
                 self.genders_keys, self.data_keys, self.preprocessing_pipeline_keys):
 
             variation_info = { 'tasks': task_key, 'genders': genders_key, 'data': data_key, 'features': feature_key,
-                'classifier': classifier_key, 'preprocessing': preprocessing_key }
+                'classifier': classifier_key, 'classifier_variations': None, 'preprocessing': preprocessing_key,
+                'repetition': repetition, 'study_features_importance': False }
             variations.append(Variation(variation_info))
 
         return variations
