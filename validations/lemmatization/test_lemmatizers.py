@@ -42,7 +42,7 @@ EXPORT_DIRECTORY = './exports/'
 EXECUTION_TIMESTAMP = datetime.now()
 EXPORT_CSV_EXTENSION = '.csv'
 EXPORT_TXT_EXTENSION = '.txt'
-EXPORT_IMAGE_EXTENSION = '.png'
+EXPORT_IMAGE_EXTENSION = '.pdf'
 
 CURRENT_DIRECTORIES = []
 
@@ -287,7 +287,17 @@ CURRENT_DIRECTORIES = []
 extracts_information_df.to_csv(compute_path('information_extracts', EXPORT_CSV_EXTENSION))
 analysis_information_df.to_csv(compute_path('information_analysis', EXPORT_CSV_EXTENSION))
 
-sns.boxplot(x="score", y="lemmatizer", orient='h', data=extracts_information_df.reset_index())
+sns.set(style='whitegrid', rc={"grid.linewidth": 0.1})
+sns.set_context("paper", font_scale=1.15)
+
+plt.figure()
+violin_plot = sns.violinplot(data=extracts_information_df.reset_index(), x="score", y="lemmatizer", inner=None, color=".8")
+strip_plot = sns.stripplot(data=extracts_information_df.reset_index(), x="score", y="lemmatizer", jitter=False, alpha=0.15)
+plt.tight_layout()
 plt.savefig(compute_path('boxplot_score', EXPORT_IMAGE_EXTENSION))
-sns.boxplot(x="duration", y="lemmatizer", orient='h', data=extracts_information_df.reset_index())
-plt.savefig(compute_path('boxplot_duration', EXPORT_IMAGE_EXTENSION))
+
+plt.figure()
+violin_plot = sns.violinplot(data=extracts_information_df.reset_index(), x="duration", y="lemmatizer", inner=None, color=".8")
+strip_plot = sns.stripplot(data=extracts_information_df.reset_index(), x="duration", y="lemmatizer", jitter=False, alpha=0.15)
+plt.tight_layout()
+plt.savefig(compute_path('boxplot_score', EXPORT_IMAGE_EXTENSION))
