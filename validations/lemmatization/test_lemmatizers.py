@@ -22,9 +22,11 @@ print()
 from enum       import Enum
 from pprint     import pprint
 from random     import sample
+from functools  import partial
 from datetime   import datetime
 from typing     import Any, Dict, List, Optional, Tuple, Type
 
+import numpy                    as np
 import pandas                   as pd
 import seaborn                  as sns
 import matplotlib.pyplot        as plt
@@ -291,6 +293,30 @@ sns.set(style='whitegrid', rc={"grid.linewidth": 0.1})
 sns.set_context("paper", font_scale=1.15)
 
 plt.figure()
+violin_plot = sns.violinplot(data=extracts_information_df.reset_index(), x="lemmatizer", y="score", inner=None, color=".8")
+strip_plot = sns.stripplot(data=extracts_information_df.reset_index(), x="lemmatizer", y="score", jitter=False, alpha=0.15)
+plt.xlabel("Lemmatizer")
+plt.ylabel("Score")
+plt.tight_layout()
+sns.set_context("paper", font_scale=1.15)
+
+plt.figure()
+violin_plot = sns.violinplot(data=extracts_information_df.reset_index(), x="lemmatizer", y="duration", inner=None, color=".8")
+strip_plot = sns.stripplot(data=extracts_information_df.reset_index(), x="lemmatizer", y="duration", jitter=False, alpha=0.15)
+plt.xlabel("Lemmatizer")
+plt.ylabel("Seconds / Word")
+plt.tight_layout()
+plt.figure()
+violin_plot = sns.violinplot(data=extracts_information_df.reset_index(), x="score", y="lemmatizer", inner=None, color=".8")
+strip_plot = sns.stripplot(data=extracts_information_df.reset_index(), x="score", y="lemmatizer", jitter=False, alpha=0.15)
+plt.tight_layout()
+plt.savefig(compute_path('boxplot_score', EXPORT_IMAGE_EXTENSION))
+
+plt.figure()
+violin_plot = sns.violinplot(data=extracts_information_df.reset_index(), x="duration", y="lemmatizer", inner=None, color=".8")
+strip_plot = sns.stripplot(data=extracts_information_df.reset_index(), x="duration", y="lemmatizer", jitter=False, alpha=0.15)
+plt.tight_layout()
+sns.set_context("paper", font_scale=1.15)
 violin_plot = sns.violinplot(data=extracts_information_df.reset_index(), x="score", y="lemmatizer", inner=None, color=".8")
 strip_plot = sns.stripplot(data=extracts_information_df.reset_index(), x="score", y="lemmatizer", jitter=False, alpha=0.15)
 plt.tight_layout()
