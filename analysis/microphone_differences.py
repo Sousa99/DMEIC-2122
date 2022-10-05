@@ -158,7 +158,7 @@ for type, transcription_path in zip(['Controls', 'Psychosis', 'Bipolars'], [args
                     distance = edit_distance(first_transcription, second_transcription)
                     similarity = distance_to_similarity(distance, max(len(first_transcription), len(second_transcription)))
 
-                    entry[first_key_converted + ' / ' + second_key_converted] = similarity
+                    entry[second_key_converted + ' / ' + first_key_converted] = similarity
 
             similarities.append(entry)
         
@@ -172,6 +172,29 @@ print("Exporting 'microphone distances' plots ...")
 sns.set_theme(palette="deep")
 
 plt.clf()
-sns.boxplot(data=dataframe_similarities)
-sns.swarmplot(data=dataframe_similarities, color=".25")
-plt.savefig(args.save + ' - distances by microphone.pdf')
+sns.violinplot(data=dataframe_similarities, inner=None)
+sns.swarmplot(data=dataframe_similarities, color=".25", alpha=0.08)
+plt.savefig(args.save + ' - violin unfiltered.pdf')
+
+plt.clf()
+boxplot = sns.boxplot(data=dataframe_similarities)
+plt.savefig(args.save + ' - boxplot unfiltered.pdf')
+for patch in boxplot.artists:
+    r, g, b, a = patch.get_facecolor()
+    patch.set_facecolor((r, g, b, .8))
+
+filtered_dataframe = dataframe_similarities.reindex(columns=['Tr / LR', 'LR / Fix', 'Tr / Fix'])
+
+plt.clf()
+sns.violinplot(data=filtered_dataframe, inner=None)
+sns.swarmplot(data=filtered_dataframe, color=".25", alpha=0.08)
+plt.savefig(args.save + ' - violin filtered.pdf')
+
+plt.clf()
+boxplot = sns.boxplot(data=filtered_dataframe)
+plt.savefig(args.save + ' - boxplot filtered.pdf')
+for patch in boxplot.artists:
+    r, g, b, a = patch.get_facecolor()
+    patch.set_facecolor((r, g, b, .8))
+
+filtered_dataframe.aggregate(['mean', 'std']).to_csv(args.save + ' - metrics.csv')
