@@ -233,29 +233,27 @@ class MergedFeatureSetAbstraction(FeatureSetAbstraction):
     def __init__(self, feature_sets: List[FeatureSetAbstraction]) -> None:
         super().__init__(' + '.join(map(lambda feature_set: feature_set.id, feature_sets)))
         self.feature_sets = feature_sets
+
+        all_drop_columns : Set[str] = set()
+        for feature_set in self.feature_sets:
+            all_drop_columns.update(feature_set.drop_columns)
+        self.drop_columns = list(all_drop_columns)
     
     def _develop_basis_df(self):
         basis_dfs : List[pd.DataFrame] = []
-        all_drop_columns : Set[str] = set()
         for feature_set in self.feature_sets:
             if feature_set.basis_dataframe is None:
                 feature_set.develop_basis_df()
             basis_dfs.append(feature_set.basis_dataframe)
-            all_drop_columns.update(feature_set.drop_columns)
-        self.drop_columns = list(all_drop_columns)
-
         final_basis_df = reduce(lambda dataset_left, dataset_right: module_aux.join_dataframes(dataset_left, dataset_right), basis_dfs)
         self.basis_dataframe = final_basis_df
 
     def _develop_static_df(self):
         static_dfs : List[pd.DataFrame] = []
-        all_drop_columns : Set[str] = set()
         for feature_set in self.feature_sets:
             if feature_set.static_dataframe is None:
                 feature_set.develop_static_df()
             static_dfs.append(feature_set.static_dataframe)
-            all_drop_columns.update(feature_set.drop_columns)
-        self.drop_columns = list(all_drop_columns)
 
         final_static_df = reduce(lambda dataset_left, dataset_right: module_aux.join_dataframes(dataset_left, dataset_right), static_dfs)
         self.static_dataframe = final_static_df
@@ -264,13 +262,10 @@ class MergedFeatureSetAbstraction(FeatureSetAbstraction):
         
         dynamic_dfs_train : List[pd.DataFrame] = []
         dynamic_dfs_test : List[pd.DataFrame] = []
-        all_drop_columns : Set[str] = set()
         for feature_set in self.feature_sets:
             train_X, test_X = feature_set._develop_dynamic_df(train_X, train_Y, test_X)
             dynamic_dfs_train.append(train_X)
             if test_X is not None: dynamic_dfs_test.append(test_X)
-            all_drop_columns.update(feature_set.drop_columns)
-        self.drop_columns = list(all_drop_columns)
 
         final_dynamic_df_train = reduce(lambda dataset_left, dataset_right: module_aux.join_dataframes(dataset_left, dataset_right), dynamic_dfs_train)
         if test_X is not None: final_dynamic_df_test = reduce(lambda dataset_left, dataset_right: module_aux.join_dataframes(dataset_left, dataset_right), dynamic_dfs_test)

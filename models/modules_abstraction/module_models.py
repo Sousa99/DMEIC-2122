@@ -219,7 +219,6 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
             module_exporter.change_current_directory(['Feature Extraction'])
             feature_df, target_df = feature_set.get_full_df()
 
-            feature_df = feature_df.drop(feature_set.drop_columns, axis=1, errors='ignore')
             module_exporter.change_current_directory(['Data Profiling', feature_key])
             profiler = module_profiling.DatasetProfiling(feature_df, target_df)
             profiler.make_profiling()
@@ -250,8 +249,7 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
             # Do profiling of current dataset
             module_exporter.change_current_directory([variation_to_run.generate_code(), 'Data Profiling'])
             print("🚀 Running profiling ...")
-            dropped_dataframe_X = dataframe_X.drop(feature_set.drop_columns, axis=1, errors='ignore')
-            profiler = module_profiling.DatasetProfiling(dropped_dataframe_X, dataframe_Y, fast=True)
+            profiler = module_profiling.DatasetProfiling(dataframe_X, dataframe_Y, fast=True)
             profiler.make_profiling()
 
             # Running the classifier itself
