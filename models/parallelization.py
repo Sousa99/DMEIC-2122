@@ -161,6 +161,7 @@ class ParallelizationManager():
             current_scripts_machine = self.current_scripts[machine.get_hostname()]
             filtered_current_scripts = list(filter(lambda script_iter: script_iter.get_execution_id() != execution_script.get_execution_id(), current_scripts_machine))
             self.current_scripts[machine.get_hostname()] = filtered_current_scripts
+            tqdm.write(f"✅ Script '{execution_script.get_execution_id()}' concluded on machine '{machine.get_hostname()}'!")
             if tracker is not None: tracker.update(1)
 
         print("🚀 Started execution of scripts...")
@@ -183,6 +184,7 @@ class ParallelizationManager():
             execution_script = self.scripts_stack.pop(0)
             thread = threading.Thread(target=run_process_in_thread, args=(self, on_process_exit, execution_script, selected_machine, progress_tracker_completed))
             progress_tracker_submitted.update(1)
+            tqdm.write(f"🚀 Script '{execution_script.get_execution_id()}' started on machine '{selected_machine.get_hostname()}'!")
             thread.start()
 
         # Wait for remaining jobs to finish
