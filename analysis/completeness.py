@@ -74,6 +74,14 @@ def filter_valid_records(dataframe: pd.DataFrame) -> pd.DataFrame:
 
     return new_dataframe
 
+def filter_only_original(dataframe: pd.DataFrame) -> pd.DataFrame:
+    new_dataframe = dataframe.copy(deep=True)
+    new_dataframe = new_dataframe[new_dataframe['Language'] == 'European Portuguese']
+    new_dataframe = new_dataframe[new_dataframe['Already Recorded Before'] == 'No']
+    new_dataframe = new_dataframe[new_dataframe['Data Variation'] == 'Original']
+
+    return new_dataframe
+
 # =================================== MAIN EXECUTION ===================================
 
 AGES_CATEGORIES = ['18 - 29', '30 - 39', '40 - 49', '50 - 59', '60 - 69', '70 - 79', '>= 80']
@@ -108,7 +116,8 @@ full_dataframe = full_dataframe.replace(DATA_NEW_CATEGORIES)
 sns.set_theme(palette="deep")
 
 iterations = [{ 'id': 'non-filtered', 'filter_function': None },
-    { 'id': 'filtered', 'filter_function': filter_valid_records }]
+    { 'id': 'filtered', 'filter_function': filter_valid_records },
+    { 'id': 'original', 'filter_function': filter_only_original }]
 
 for iteration in iterations:
 
@@ -206,3 +215,5 @@ for iteration in iterations:
     plt.savefig(args.save + ' - ' + iteration['id'] + ' - years since diagnosis distribution.pdf')
 
     plt.close('all')
+
+# Extra Graphs
