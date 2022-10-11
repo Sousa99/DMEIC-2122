@@ -37,7 +37,7 @@ import NLPyPort.FullPipeline    as nlpyport
 if not os.path.exists('./exports/'): os.makedirs('./exports', exist_ok=True)
 NUMBER_EXTRACTS_PRINT : int = 1
 
-NUMBER_EXTRACTS_TO_USE : int = 2500
+NUMBER_EXTRACTS_TO_USE : int = 1000
 CORPORA_FILE : str = "./corpora/CETEMPublico/CETEMPublicoAnotado2019.txt"
 
 EXPORT_DIRECTORY = './exports/'
@@ -173,7 +173,8 @@ class Extract():
         export_information : Dict[str, List[str]] = { 'words': self.words, 'lemmas_correct': self.lemmas }
 
         information : List[Dict[str, Any]] = []
-        lemmatizers : List[Type[Lemmatizer]] = [ LemmatizerNLPyPort, LemmatizerStanza, LemmatizerSTRING ]
+        #lemmatizers : List[Type[Lemmatizer]] = [ LemmatizerNLPyPort, LemmatizerStanza, LemmatizerSTRING ]
+        lemmatizers : List[Type[Lemmatizer]] = [ LemmatizerNLPyPort, LemmatizerStanza ]
         for lemmatizer in lemmatizers:
 
             words = self.get_words()
@@ -203,8 +204,10 @@ process_return = subprocess.run(command_to_run, shell=True, check=True, universa
 lines_with_extracts : List[str] = process_return.stdout.decode().splitlines()
 lines_with_extracts = filter(lambda line: line != "", lines_with_extracts)
 lines_with_extracts : List[int] = list(map(lambda line: int(line), lines_with_extracts))
+lines_with_extracts.sort()
 
-chosen_extracts : List[int] = sample(lines_with_extracts, NUMBER_EXTRACTS_TO_USE)
+#chosen_extracts : List[int] = sample(lines_with_extracts, NUMBER_EXTRACTS_TO_USE)
+chosen_extracts : List[int] = lines_with_extracts[:NUMBER_EXTRACTS_TO_USE]
 chosen_extracts.sort(reverse=True)
 
 file = open(CORPORA_FILE, 'r', encoding='latin-1')
