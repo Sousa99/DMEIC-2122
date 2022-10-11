@@ -260,6 +260,10 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
                 module_exporter.change_current_directory([variation_to_run.generate_code(), 'Feature Extraction', f'split {split_index}'])
                 (X_train, y_train), (X_test, y_test) = feature_set.get_df_for_classification(variation_to_run, split_index, (train_index, test_index))
 
+                # Skip if column to "study" does not exit
+                if (variation_to_run.study_features_importance) and (variation_to_run.study_feature_importance is not None) and (variation_to_run.study_feature_importance not in X_train.columns):
+                    continue
+
                 if variation_to_run.study_features_importance: X_test = variation_to_run.random_for_feature_importance(X_train, X_test)
                 classifier.process_iteration(X_train, y_train, X_test, y_test)
 
