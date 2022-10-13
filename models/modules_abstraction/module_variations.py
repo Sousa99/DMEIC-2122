@@ -103,8 +103,8 @@ class Variation():
             feature_standardized : str = self.study_feature_importance.replace("/", "")
             feature_importance_str : str = f"{feature_standardized} Feature Importance"
 
-        if replace_feature_code is None: return ' - '.join([self.features_code, self.tasks_code, self.genders_code, self.data_code, f'Repetition {self.repetition:02d}', feature_importance_str])
-        else: return ' - '.join([replace_feature_code, self.tasks_code, self.genders_code, self.data_code, f'Repetition {self.repetition:02d}', feature_importance_str])
+        if replace_feature_code is None: return ' - '.join([self.features_code, self.tasks_code, self.genders_code, self.data_code, f'Repetition {self.repetition:02d}'])
+        else: return ' - '.join([replace_feature_code, self.tasks_code, self.genders_code, self.data_code, f'Repetition {self.repetition:02d}'])
 
     def generate_sub_variations(self, features: List[str]) -> List['Variation']:
 
