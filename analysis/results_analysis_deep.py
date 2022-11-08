@@ -86,7 +86,7 @@ for metric in arguments.metrics:
     plt.clf()
     plt.figure(figsize=(10, 5))
     g = sns.barplot(data=dataframe_for_confidence, x=COLUMN_TASKS, y=metric, order=list(tasks))
-    for container in g.containers: g.bar_label(container, fmt='%0.2f', label_type='center')
+    for container in g.containers: g.bar_label(container, fmt='%0.2f', label_type='center', fontsize=15, fontweight="bold")
     plt.tight_layout()
     plt.savefig(os.path.join(EXPORT_PATH, f'confidence study - {metric}.pdf'))
 
@@ -118,12 +118,12 @@ for metric in arguments.metrics:
     
     plt.clf()
     plt.figure(figsize=(23, 11))
-    g = sns.heatmap(final_feature_importance_df, annot=True, fmt="0.2f", linewidths=1.0, square=True, cmap=CMAP, center=0.0, linecolor=(0.0, 0.0, 0.0), cbar_kws={"orientation": "horizontal", "location": "top", "shrink": 0.5})
+    g = sns.heatmap(final_feature_importance_df, annot=True, fmt="0.2f", linewidths=1.0, square=True, cmap=CMAP, center=0.0, linecolor=(0.0, 0.0, 0.0), cbar_kws={"orientation": "horizontal", "location": "top", "shrink": 0.5}, annot_kws={"fontsize": 17, "weight": "bold"})
     plt.xticks(rotation=45, ha="right", fontsize="x-large")
     plt.yticks(rotation=0, fontsize="x-large")
 
     cax = g.figure.axes[-1]
-    cax.tick_params(labelsize=20)
+    cax.tick_params(labelsize=22)
 
     plt.tight_layout()
     plt.savefig(os.path.join(EXPORT_PATH, f'feature importance study - {metric}.pdf'), bbox_inches='tight')
