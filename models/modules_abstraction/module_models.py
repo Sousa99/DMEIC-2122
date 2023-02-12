@@ -97,6 +97,22 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
                 },
             'repetitions': 10,
             'study_features_importance': True,
+        },
+
+        'joined-super-simple': {
+            'tasks': [ 'Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 'Task 6', 'Task 7' ],
+            'genders': [ 'All Genders' ],
+            'data': [ 'V2 Complex' ],
+            'variation_indexes': {
+                21: ['n_estimators = 150, criterion = gini, max_depth = 4, max_features = auto, min_impurity_decrease = 0'],
+                22: ['n_estimators = 100, criterion = gini, max_depth = 1, max_features = None, min_impurity_decrease = 0'],
+                16: ['C = 0.5, kernel = linear'],
+                24: ['n_estimators = 150, criterion = entropy, max_depth = 32, max_features = auto, min_impurity_decrease = 0'],
+                25: ['n_estimators = 50, criterion = entropy, max_depth = 128, max_features = None, min_impurity_decrease = 0'],
+                26: ['n_estimators = 10, criterion = entropy, max_depth = 4, max_features = log2, min_impurity_decrease = 0'],
+                27: ['n_estimators = 10, criterion = gini, max_depth = 16, max_features = sqrt, min_impurity_decrease = 0'] 
+                },
+            'record_subjects': True,
         }
     }
 
@@ -276,6 +292,8 @@ class ModelAbstraction(metaclass=abc.ABCMeta):
             # Export Best Classifier Variation Results
             best_scorer_key, best_scorer = classifier.get_best_scorer(self.TARGET_METRIC)
             best_scorer.export_results('results')
+            if variation.record_subjects: best_scorer.export_subjects_results('subjects-results')
+
             best_scorers.append((best_scorer_key, best_scorer, variation_to_run))
 
         print("✅ Completed variation")

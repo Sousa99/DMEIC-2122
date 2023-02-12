@@ -28,6 +28,7 @@ class Variation():
         self.repetition : int = variation_info['repetition']
         self.study_features_importance : bool = variation_info['study_features_importance']
         self.study_feature_importance : Optional[str] = None
+        self.record_subjects : bool = variation_info['record_subjects']
 
     def load_features(self, key_features: str) -> None:
         self.features_code : List[str] = key_features
@@ -177,8 +178,10 @@ class VariationGenerator():
         else: variation_indexes                                                         : Optional[Dict[int, List[str]]]    = None
         if 'repetitions' in variation_config: variation_repetitions                     : int                               = variation_config['repetitions']
         else: variation_repetitions                                                     : int                               = 1
-        if 'study_features_importance' in variation_config: study_features_importance   : int                               = variation_config['study_features_importance']
-        else: study_features_importance                                                 : int                               = False
+        if 'study_features_importance' in variation_config: study_features_importance   : bool                              = variation_config['study_features_importance']
+        else: study_features_importance                                                 : bool                              = False
+        if 'record_subjects' in variation_config: record_subjects                       : bool                              = variation_config['record_subjects']
+        else: record_subjects                                                           : bool                              = False
 
         variations : List[Variation] = []
         for variation_index, (classifier_key, feature_key, task_key, gender_key, data_key, preprocessing_key) in \
@@ -193,13 +196,13 @@ class VariationGenerator():
                 for repetition in range(0, variation_repetitions):
                     variation_info = { 'tasks': task_key, 'genders': gender_key, 'data': data_key, 'features': feature_key,
                         'classifier': classifier_key, 'classifier_variations': classifier_variations, 'preprocessing': preprocessing_key,
-                        'repetition': repetition, 'study_features_importance': False }
+                        'repetition': repetition, 'study_features_importance': False, 'record_subjects': record_subjects }
                     variations.append(Variation(variation_info))
 
                 if study_features_importance:
                     variation_info = { 'tasks': task_key, 'genders': gender_key, 'data': data_key, 'features': feature_key,
                         'classifier': classifier_key, 'classifier_variations': classifier_variations, 'preprocessing': preprocessing_key,
-                        'repetition': 0, 'study_features_importance': True }
+                        'repetition': 0, 'study_features_importance': True, 'record_subjects': record_subjects }
                     variations.append(Variation(variation_info))
 
         return variations

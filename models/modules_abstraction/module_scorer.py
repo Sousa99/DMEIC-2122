@@ -30,6 +30,8 @@ class Scorer():
         self.test_true_negatives    = 0.0
         self.test_false_positives   = 0.0
         self.test_false_negatives   = 0.0
+        # Subjects' Information
+        self.subjects_results = []
 
     def add_points(self, train_Y: pd.Series, train_pred_Y: pd.Series, test_Y: pd.Series, test_pred_Y: pd.Series):
         
@@ -59,6 +61,18 @@ class Scorer():
     def number_points(self, scorer_set: ScorerSet) -> float:
         points = self.get_points_from_set(scorer_set)
         return sum(list(points.values()))
+
+    def add_subjects_information(self, test_Y: pd.Series, test_pred_Y: pd.Series):
+
+        for (subject_key, test_y_elem, pred_Y_elem) in zip(test_Y.index, test_Y, test_pred_Y):
+
+            subject_information = {
+                'key': subject_key,
+                'label': test_y_elem,
+                'predicted': pred_Y_elem
+            }
+
+            self.subjects_results.append(subject_information)
 
     # ============================================= METRICS RETRIEVAL =============================================
     def calculate_accuracy(self, scorer_set: ScorerSet) -> float:
@@ -127,6 +141,11 @@ class Scorer():
         metrics = self.export_metrics(ScorerSet.Test)
         module_exporter.export_confusion_matrix(confusion_matrix, self.categories, filename + ' - confusion matrix (test)')
         module_exporter.export_metrics_bar_graph(metrics, filename + ' - scores (test)')
+
+    def export_subjects_results(self, filename: str = 'tmp'):
+
+        subjects_results_df = pd.DataFrame.from_dict(self.subjects_results)
+        module_exporter.export_csv(subjects_results_df, filename, False)
         
 
 # =================================== PUBLIC METHODS ===================================
